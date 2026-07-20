@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useSession, signOut } from 'next-auth/react'
-import { BookOpen, LogOut, User, LogIn, UserPlus } from 'lucide-react'
+import { BookOpen, LogOut, User, LogIn, UserPlus, Sparkles } from 'lucide-react'
 
 export default function Navigation() {
   const { data: session, status } = useSession()
@@ -23,6 +23,13 @@ export default function Navigation() {
               className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
             >
               <BookOpen className="h-4 w-4" /> Chapters
+            </Link>
+
+            <Link
+              href="/lab"
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-colors shadow-sm"
+            >
+              <Sparkles className="h-4 w-4" /> AI Lab
             </Link>
           </div>
 
