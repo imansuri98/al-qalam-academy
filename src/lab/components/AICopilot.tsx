@@ -78,7 +78,7 @@ export default function AICopilot() {
             onChange={(e) => setInputText(e.target.value)}
             placeholder="Type any word or phrase (e.g. فِي الْبَيْتِ or كَتَبَ)..."
             rows={3}
-            className="w-full bg-slate-950/80 border border-slate-800 focus:border-indigo-500 rounded-xl p-4 text-sm text-slate-100 placeholder-slate-600 font-serif leading-relaxed focus:outline-hidden transition-all"
+            className="w-full bg-slate-950/80 border border-slate-800 focus:border-indigo-500 rounded-xl p-4 text-lg text-slate-100 placeholder-slate-600 font-serif leading-relaxed focus:outline-hidden transition-all"
           />
           <button
             onClick={() => handleAnalyze(inputText)}
@@ -115,7 +115,7 @@ export default function AICopilot() {
                 }}
                 className="px-3 py-1.5 rounded-lg bg-slate-800/60 hover:bg-slate-850 hover:text-white border border-slate-800 text-[11px] text-slate-300 font-medium transition-all"
               >
-                <span className="font-serif block text-slate-200 text-left mb-0.5">{ph.text}</span>
+                <span className="font-serif text-base block text-slate-200 text-left mb-0.5">{ph.text}</span>
                 <span className="text-[9px] text-slate-500 font-sans block text-left">{ph.label}</span>
               </button>
             ))}

@@ -39,13 +39,13 @@ export default function LessonView({
                 Category: {chapter.category}
               </span>
             </div>
-            <div className="flex items-baseline gap-2.5">
+            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
               <h1 className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight font-serif">
                 {chapter.title}
               </h1>
               {chapter.arabicTitle && (
-                <span className="font-serif text-lg text-indigo-600 font-bold hidden sm:inline">
-                  ({chapter.arabicTitle})
+                <span className="font-serif text-xl sm:text-2xl text-indigo-600 font-bold" dir="rtl">
+                  {chapter.arabicTitle}
                 </span>
               )}
             </div>

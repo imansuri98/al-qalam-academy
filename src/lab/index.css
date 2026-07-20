@@ -1,20 +1,27 @@
-@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-serif: "Amiri", "Georgia", serif;
+  /* Amiri (classical Naskh) for Arabic script, Noto Sans Arabic for UI/body text.
+     Both are already self-hosted via next/font in the root layout — reuse those
+     CSS variables instead of loading fonts a second time. */
+  --font-sans: var(--font-noto-arabic), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-amiri), Georgia, serif;
 
   /* Premium Royal Academic Emerald (Replacing Indigo) */
   --color-indigo-50: #f1f8f5;
   --color-indigo-100: #e0f0eb;
+  --color-indigo-110: #ddf0e9;
+  --color-indigo-150: #d0eee2;
   --color-indigo-200: #c0ebd9;
   --color-indigo-300: #93dbc0;
+  --color-indigo-305: #90dabe;
   --color-indigo-400: #5cbda0;
   --color-indigo-500: #0f9371;
+  --color-indigo-505: #0f9170;
   --color-indigo-600: #0a7358;
   --color-indigo-650: #08614a;
   --color-indigo-700: #06513d;
+  --color-indigo-750: #054736;
   --color-indigo-800: #043d2e;
   --color-indigo-900: #022b20;
   --color-indigo-950: #01140f;
@@ -22,15 +29,33 @@
   /* Natural Ancient Earth Slate-Parchment Colors (Replacing Slate) */
   --color-slate-50: #faf8f5;
   --color-slate-100: #f4f0e6;
+  --color-slate-105: #f3efe4;
+  --color-slate-120: #f0ebdf;
   --color-slate-150: #eae4d5;
   --color-slate-200: #dfdacd;
+  --color-slate-205: #ded9cc;
+  --color-slate-250: #d6d0c1;
   --color-slate-300: #cdc6b5;
+  --color-slate-305: #cbc4b3;
+  --color-slate-350: #bab2a0;
+  --color-slate-355: #b8b19e;
   --color-slate-400: #a79f8b;
+  --color-slate-440: #968e7a;
+  --color-slate-450: #928a76;
+  --color-slate-455: #908874;
   --color-slate-500: #7d7561;
+  --color-slate-505: #7b7360;
   --color-slate-600: #5d5644;
+  --color-slate-650: #524a3a;
+  --color-slate-655: #504938;
   --color-slate-700: #463f2f;
+  --color-slate-705: #453e2e;
+  --color-slate-750: #3a3426;
   --color-slate-800: #2d281d;
+  --color-slate-805: #2c271c;
+  --color-slate-850: #252017;
   --color-slate-900: #1d1911;
+  --color-slate-905: #1c1810;
   --color-slate-950: #0f0b07;
 
   /* Royal Manuscript Gold (Replacing Amber) */
@@ -43,7 +68,49 @@
   --color-amber-600: #ab7f12;
   --color-amber-700: #88600e;
   --color-amber-800: #6c4b10;
+  --color-amber-850: #604211;
   --color-amber-900: #533a12;
+
+  /* Intermediate shade steps for accent hues used across the lab UI
+     (person-column coding, quiz feedback, mode highlights). These keep their
+     stock Tailwind hue — only the missing in-between steps are filled in. */
+  --color-emerald-55: #e9fdf3;
+  --color-emerald-120: #c7f9e1;
+  --color-emerald-150: #baf7da;
+  --color-emerald-205: #a0f3ce;
+  --color-emerald-250: #81eec2;
+  --color-emerald-350: #2fdea4;
+  --color-emerald-605: #009765;
+  --color-emerald-650: #008a5e;
+  --color-emerald-750: #006d4d;
+  --color-emerald-805: #005f44;
+  --color-emerald-850: #005840;
+
+  --color-blue-105: #dae9fe;
+  --color-blue-850: #1a3aa3;
+
+  --color-violet-150: #e5e0fe;
+  --color-violet-350: #b59cff;
+  --color-violet-750: #660bd4;
+  --color-violet-850: #5512ad;
+
+  --color-red-105: #ffe1e1;
+  --color-red-650: #d40009;
+  --color-red-750: #b0040c;
+
+  --color-sky-305: #6ed3ff;
+  --color-cyan-850: #08566e;
+
+  /* Intermediate display sizes for the big Arabic showcase text in the
+     interactive lab (conjugation/case simulators). */
+  --text-2\.5xl: 1.6875rem;
+  --text-2\.5xl--line-height: 1.267;
+  --text-3\.5xl: 2.0625rem;
+  --text-3\.5xl--line-height: 1.156;
+  --text-4\.5xl: 2.625rem;
+  --text-4\.5xl--line-height: 1.056;
+  --text-5\.5xl: 3.375rem;
+  --text-5\.5xl--line-height: 1;
 }
 
 /* Pristine scrollbars */

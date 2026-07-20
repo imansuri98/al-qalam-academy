@@ -14,7 +14,7 @@ export const chaptersData: Chapter[] = [
         id: 'c1-l1',
         title: 'The Gender Binary in Arabic',
         type: 'table',
-        text: 'In Classical Arabic, every single noun belongs strictly to one of two genders. See how even inanimate objects are assigned gender:',
+        text: 'In Arabic, every noun is either masculine or feminine — even objects that have no real gender, like a house or a car. Look at these examples:',
         tableHeaders: ['Noun Type', 'Masculine (Muzakkar)', 'Feminine (Muannas)'],
         tableRows: [
           ['Living Beings', 'رَجُلٌ (A man)', 'اِمْرَأَةٌ (A woman)'],
@@ -26,7 +26,7 @@ export const chaptersData: Chapter[] = [
         id: 'c1-l2',
         title: 'The Main Feminine Sign: Round Ta (ة)',
         type: 'table',
-        text: 'The easiest and most common sign of a feminine noun is the Ta Marbuta (ة - Round Ta). Here is how a masculine noun transforms when the Round Ta is attached:',
+        text: 'The easiest way to spot a feminine noun is the Ta Marbuta (ة), a small round letter at the end of a word. Just add it to a masculine word and it becomes feminine:',
         tableHeaders: ['Base Masculine', 'Add Suffix', 'Pronunciation Shift', 'Resulting Feminine Form'],
         tableRows: [
           ['صَاحِبٌ (Companion - M)', 'ة', '-un → -atun', 'صَاحِبَةٌ (Companion - F)'],
@@ -50,7 +50,7 @@ export const chaptersData: Chapter[] = [
         id: 'c1-l4',
         title: 'Feminine Without Ta Marbuta (ة)',
         type: 'table',
-        text: 'For some nouns, there is no physical ة, but the word is treated as naturally or historically feminine. Beginners must learn these classical exceptions:',
+        text: 'Some words are feminine even though they have no ة. There is no shortcut for these — you just have to memorize them:',
         tableHeaders: ['Exception Type', 'Arabic Word', 'Phonetic', 'English Meaning'],
         tableRows: [
           ['Natural / Body Parts', 'يَدٌ', 'Yadun', 'Hand (paired body parts are feminine)'],
@@ -121,7 +121,7 @@ export const chaptersData: Chapter[] = [
         id: 'c2-l1',
         title: 'Number Systems: English vs Arabic',
         type: 'table',
-        text: 'Unlike English which only has singular and plural, classical Arabic features a precise three-state number system with a dedicated dual ending:',
+        text: 'English only has singular and plural — one book, two books, ten books. Arabic has a third option in between: a special "dual" ending used only when there are exactly two of something.',
         tableHeaders: ['Number of Items', 'English Group', 'Arabic Grammatical Category', 'Suffix Feature'],
         tableRows: [
           ['Exactly One (1)', 'Singular', 'Wahid (وَاحِد)', 'Base word form (e.g., مُسْلِمٌ)'],
@@ -218,7 +218,7 @@ export const chaptersData: Chapter[] = [
         id: 'c3-l1',
         title: 'Pointers Matrix Concept',
         type: 'table',
-        text: 'In Classical Arabic, pointing words change dynamically based on gender, quantity, and proximity. Let us contrast these elements:',
+        text: 'Words like "this" and "that" change form in Arabic depending on three things: is it near or far, masculine or feminine, and one thing or more than one? Compare English and Arabic:',
         tableHeaders: ['Core Attribute', 'English System', 'Arabic (Ism-e-Ishāra) System', 'Required Matching'],
         tableRows: [
           ['Proximity', 'Near (This) vs Far (That)', 'Near (قَرِيب) vs Far (بَعِيد)', 'Must match relative physical distance'],
@@ -251,7 +251,7 @@ export const chaptersData: Chapter[] = [
         id: 'c3-l2-examples',
         title: 'Examples (Singular)',
         type: 'table',
-        text: 'Observe these singular pointing combinations and how the pointing pronoun aligns with its companion noun:',
+        text: 'Here is how the pointing word matches the gender of the noun it points to:',
         tableHeaders: ['Pointer Type', 'Arabic Phrase', 'Pronunciation', 'English Translation'],
         tableRows: [
           ['Masculine Near', 'هَذَا مُسْلِمٌ', 'Haazaa muslimun', 'This is a Muslim man'],
@@ -274,7 +274,7 @@ export const chaptersData: Chapter[] = [
         id: 'c3-l3-examples',
         title: 'Examples (Dual)',
         type: 'table',
-        text: 'Notice how dual pointer pronouns match exactly two nouns, retaining gender distinctions:',
+        text: 'These forms are used only when pointing at exactly two people or things:',
         tableHeaders: ['Pointer Type', 'Arabic Phrase', 'Pronunciation', 'English Translation'],
         tableRows: [
           ['Masculine Near (2)', 'هَذَانِ مُسْلِمَانِ', 'Haazaani muslimaani', 'These two are Muslim men'],
@@ -296,7 +296,7 @@ export const chaptersData: Chapter[] = [
         id: 'c3-l4-examples',
         title: 'Examples (Plural)',
         type: 'table',
-        text: 'In plural pointers (3+), near and far pronouns are shared across both genders, simplifying your choices:',
+        text: 'Good news: for three or more, masculine and feminine share the same word — one less thing to memorize:',
         tableHeaders: ['Pointer Type', 'Arabic Phrase', 'Pronunciation', 'English Translation'],
         tableRows: [
           ['Near Plural (M)', 'هَؤُلَاءِ مُسْلِمُونَ', 'Haau’laai muslimoona', 'These are Muslim men'],
@@ -349,7 +349,7 @@ export const chaptersData: Chapter[] = [
         id: 'c4-l1',
         title: 'The Grammar of Pronouns (Dhamā’ir)',
         type: 'table',
-        text: 'Arabic pronouns are classified into three distinct points of view (perspectives), each carrying dedicated forms:',
+        text: 'Arabic pronouns come in three "person" categories, just like English (I/we, you, he/she/they):',
         tableHeaders: ['Grammatical Perspective', 'Arabic Name', 'Functional Focus', 'Example Meaning'],
         tableRows: [
           ['Third Person (Absent)', 'Ghaa’ib (غَائب)', 'Referring to someone not present', 'He, She, They'],
@@ -361,7 +361,7 @@ export const chaptersData: Chapter[] = [
         id: 'c4-l1-why',
         title: 'Natural Pronoun Substitutions',
         type: 'table',
-        text: 'Pronouns streamline speeches. Observe how Arabic replaces repetitive proper nouns with pronouns:',
+        text: 'Pronouns save you from repeating the same name over and over. Watch how the second مُحَمَّدٌ gets replaced with هُوَ (he):',
         tableHeaders: ['Noun Context', 'Repetitive Phrase', 'With Pronoun Suffix/Word', 'English Transition'],
         tableRows: [
           ['Subject Word', 'مُحَمَّدٌ مُسْلِمٌ. مُحَمَّدٌ مُجْتَهِدٌ', 'مُحَمَّدٌ مُسْلِمٌ. هُوَ مُجْتَهِدٌ', 'Muhammad is a Muslim. He is hardworking.'],
@@ -372,7 +372,7 @@ export const chaptersData: Chapter[] = [
         id: 'c4-l1-types',
         title: 'Two Main Classes of Pronouns',
         type: 'table',
-        text: 'Arabic split pronouns into separate standalone words and attached suffix units:',
+        text: 'Arabic has two kinds of pronouns: ones that stand alone as their own word, and ones that attach directly onto the end of another word:',
         tableHeaders: ['Pronoun Class', 'Arabic Term', 'Shorthand Property', 'Example Form'],
         tableRows: [
           ['Separate Pronouns', 'الضَّمَائِرُ الْمُنْفَصِلَةُ', 'Stands independently as a separate word', 'هُوَ (Huwa - He)'],
@@ -421,7 +421,7 @@ export const chaptersData: Chapter[] = [
         id: 'c4-l3-attached-intro',
         title: 'Suffix Pronouns in Action',
         type: 'table',
-        text: 'Attached pronouns connect directly to other words to show possession and owner relations:',
+        text: 'Attached pronouns stick onto the end of a noun to show who owns it — similar to how English uses "his" or "her" right after a noun:',
         tableHeaders: ['Base Noun', 'Suffix Pronoun', 'Combined Written Word', 'Resulting Meaning'],
         tableRows: [
           ['كِتَابٌ (Book)', 'ـهُ (-hu / His)', 'كِتَابُهُ (Kitābuhu)', 'His book'],
@@ -532,7 +532,7 @@ export const chaptersData: Chapter[] = [
         id: 'c5-l1',
         title: 'The Balance of Definiteness',
         type: 'table',
-        text: 'Nouns are fundamentally split into general entities and specific objects. Contrast these definitions:',
+        text: 'Every Arabic noun is either general ("a house") or specific ("the house") — just like in English with "a" and "the":',
         tableHeaders: ['Category', 'Arabic Term', 'English Concept', 'Typical Ending / Feature'],
         tableRows: [
           ['Indefinite Nouns', 'Nakira (نَكِرَة)', 'General / unspecified ("a" or "some")', 'Ends in Tanween double Pesh (e.g. بَيْتٌ)'],
@@ -554,7 +554,7 @@ export const chaptersData: Chapter[] = [
         id: 'c5-l2',
         title: 'Indefinite Sign: Tanween (Double Vowel)',
         type: 'table',
-        text: 'Most indefinite general nouns end with a Tanween (Double Pesh "ـٌ" / Double Zabar "ـً" / Double Zair "ـٍ"). See these core examples:',
+        text: 'You can usually spot a general (indefinite) noun because it ends in a double-vowel sound called Tanween — think of it as the Arabic version of "a / an":',
         tableHeaders: ['Indefinite Noun (Nakira)', 'Pronunciation', 'General Meaning', 'Indication Marker'],
         tableRows: [
           ['رَجُلٌ', 'Rajulun', 'A man (any man)', 'Ends in double damma (tanween)'],
@@ -566,7 +566,7 @@ export const chaptersData: Chapter[] = [
         id: 'c5-l3',
         title: 'Making a word Specific: The "Al" Rule',
         type: 'table',
-        text: 'By adding prefix ال (Al-) to a Nakira word, it becomes Marifa. Crucially, as the prefix joins, the tanween ending is stripped down into a single vowel:',
+        text: 'To turn a general noun into a specific one, just add ال ("the") to the front. One important side-effect: the double-vowel Tanween ending drops down to a single vowel:',
         tableHeaders: ['Transformation Phase', 'Arabic Form', 'Syntactic Action', 'State Achieved'],
         tableRows: [
           ['Starting Base', 'بَيْتٌ (Baytun)', 'Indefinite noun with Tanween Pesh', 'Nakira (General)'],
@@ -619,7 +619,7 @@ export const chaptersData: Chapter[] = [
         id: 'c6-l1',
         title: 'The Simple Nominal Formula',
         type: 'table',
-        text: 'Basic nominal sentences in classical Arabic do not contain primary verbs. Instead, they balance two nominal components:',
+        text: 'The simplest Arabic sentence has no verb at all — just two nouns side by side, like saying "The house big" instead of "The house IS big":',
         tableHeaders: ['Component Name', 'Arabic Term', 'Functional Role', 'Core Characteristic'],
         tableRows: [
           ['Subject', 'Mubtada (المُبْتَدَأ)', 'The entity being introduced or spoken about', 'Usually Definite (Marifa)'],
@@ -640,7 +640,7 @@ export const chaptersData: Chapter[] = [
         id: 'c6-l2',
         title: 'Vowel Agreement Constraints',
         type: 'table',
-        text: 'Mubtada and Khabar share the nominative case (Damma), but differ in definiteness:',
+        text: 'Both halves of the sentence end in Damma (the "u" sound), but they differ in one way — the subject is specific, the predicate is general:',
         tableHeaders: ['Component', 'Grammatical Role', 'Definiteness Pattern', 'Ending Vowel State', 'Model Element'],
         tableRows: [
           ['Mubtada', 'Subject', 'Marifa (Definite - with ال prefix)', 'Damma / Pesh (ُـ)', 'اَلْبَيْتُ (The house)'],
@@ -662,7 +662,7 @@ export const chaptersData: Chapter[] = [
         id: 'c6-l4',
         title: 'The Gender & Number Consistency Rule',
         type: 'table',
-        text: 'The Khabar must always mirror both the gender and number of the Mubtada. Proper name Mubtadas do not need "ال" as they are already definite. Observe this full agreement framework across all states:',
+        text: 'The predicate (Khabar) always has to match the subject gender and number. Proper names like زَيْدٌ do not need ال — a name is already specific on its own. Here is every combination:',
         tableHeaders: ['Type / Number & Gender', 'Definiteness State', 'Mubtada (Subject)', 'Khabar (Predicate)', 'Complete Sentence', 'Phonetic Pronunciation', 'English Translation'],
         tableRows: [
           ['Wahid (Singular) - Muzakkar', 'With Alif-Lam (اَلـ)', 'اَلرَّجُلُ', 'صَالِحٌ', 'اَلرَّجُلُ صَالِحٌ', 'Al-rajulu saalihun', 'The man is pious.'],
@@ -713,7 +713,7 @@ export const chaptersData: Chapter[] = [
         id: 'c7-l1',
         title: 'The Owner and The Owned',
         type: 'table',
-        text: 'To say "Zaid’s pen" or "The door of the house" in Classical Arabic, we link two nouns. They play distinct grammatical roles:',
+        text: 'To show ownership — "the pen of Zaid," "the door of the house" — Arabic links two nouns back-to-back. Each one plays a different role:',
         tableHeaders: ['Structural Order', 'Grammatical Term', 'Meaning', 'Vowel State'],
         tableRows: [
           ['First Noun', 'Mudaf (المُضَاف)', 'The item being possessed or associated', 'Can take any single ending vowel (No "ال" or Tanween)'],
@@ -747,7 +747,7 @@ export const chaptersData: Chapter[] = [
         id: 'c7-l2',
         title: 'Rules for the Owned Item (Mudaf)',
         type: 'table',
-        text: 'The owned item (Mudaf) must be kept light. See this comparative table of valid versus invalid construction rules:',
+        text: 'The first noun (the thing being owned) follows two strict rules: no ال, and no Tanween. Compare right and wrong:',
         tableHeaders: ['Construction Rule', 'Valid Formulation', 'Invalid Formulation', 'Reason'],
         tableRows: [
           ['Forbidden "ال"', 'بَابُ الْبَيْتِ', 'اَلْبَابُ الْبَيْتِ', 'Mudaf can never take the definite prefix "ال"'],
@@ -759,7 +759,7 @@ export const chaptersData: Chapter[] = [
         id: 'c7-l3',
         title: 'Rules for the Owner (Mudaf Ilaih)',
         type: 'table',
-        text: 'The owner is always placed in the Zeer (Kasra "ـِ" or "ـٍ") majroor case. Review how this affects different owners:',
+        text: 'The second noun (the owner) always ends in Kasra — no exceptions. Here is how that looks for different kinds of owners:',
         tableHeaders: ['Owner Classification', 'Base Noun', 'Mudaf Ilaih form', 'Full Possession Phrase', 'Resulting Meaning'],
         tableRows: [
           ['Definite Owner', 'اَلطَّالِبُ (The Student)', 'الطَّالِبِ', 'كِتَابُ الطَّالِبِ', 'The student’s book'],
@@ -812,7 +812,7 @@ export const chaptersData: Chapter[] = [
         id: 'c8-l1',
         title: 'Introduction to Adjectives',
         type: 'table',
-        text: 'In English, we say "a pious man" (Adjective before Noun). In Arabic, the order is completely reversed. See the core structure:',
+        text: 'In English the adjective comes first: "a pious man." In Arabic it is the opposite — the noun comes first, and the adjective follows right after it:',
         tableHeaders: ['Language Paradigm', 'Word Order Formula', 'Example Phrase', 'Role Descriptions'],
         tableRows: [
           ['English Syntax', 'Adjective + Noun', 'A pious (Adjective) man (Noun)', 'Descriptor comes before the person'],
@@ -823,7 +823,7 @@ export const chaptersData: Chapter[] = [
         id: 'c8-l2',
         title: 'The Shadow Rule ("Follow the Leader")',
         type: 'table',
-        text: 'The Sifat is like a shadow of the Mausuf. It must mimic the leader in exactly four core grammatical aspects:',
+        text: 'Think of the adjective (Sifat) as a shadow that copies the noun (Mausuf) in four ways — wherever the noun goes, the adjective must match it:',
         tableHeaders: ['Agreement Variable', 'Rule Specification', 'Masculine Noun Example', 'Feminine Noun Example'],
         tableRows: [
           ['1. Vowel Case', 'Must share identical vowel states (Nominative, Accusative, Genitive)', 'رَجُلٌ صَالِحٌ (Damma)', 'بِنْتٌ صَالِحَةٌ (Damma)'],
@@ -885,6 +885,7 @@ export const chaptersData: Chapter[] = [
         id: 'c9-l1',
         title: 'Step 1: Digits 1 to 10',
         type: 'table',
+        text: 'Let us start simple — here are the numbers 1 through 10. Just memorize these first, everything else builds on them:',
         tableHeaders: ['Number', 'Arabic Script', 'Phonetic Pronunciation'],
         tableRows: [
           ['1', 'وَاحِدٌ', 'Waahidun'],
@@ -997,7 +998,7 @@ export const chaptersData: Chapter[] = [
         id: 'c10-l1',
         title: 'Words vs Actions: Parts of Speech',
         type: 'table',
-        text: 'Every statement pivots between entities and actions. Contrast the properties of nouns and verbs below:',
+        text: 'Every Arabic word is either a THING (a noun) or an ACTION (a verb). Here is the difference:',
         tableHeaders: ['Word Category', 'Arabic Term', 'Functional focus', 'Example', 'Meaning'],
         tableRows: [
           ['Noun', 'Ism (اِسْم)', 'Identifies static persons, places, things', 'كِتَابٌ', 'A book'],
@@ -1019,7 +1020,7 @@ export const chaptersData: Chapter[] = [
         id: 'c10-l3',
         title: 'The 3-Letter Root Secret (ك-ت-ب)',
         type: 'table',
-        text: 'Nearly every verb maps to a 3-letter semantic anchor. See how the root ك-ت-ب (writing) morphs across the eras:',
+        text: 'Almost every Arabic verb is built from a 3-letter root that carries its core meaning. Watch the root ك-ت-ب ("write") change shape across the three tenses:',
         tableHeaders: ['Verb Aspect', 'Arabic Form', 'Transliteration', 'English Translation', 'Syntactic Focus'],
         tableRows: [
           ['Past Tense', 'كَتَبَ', 'Kataba', 'He wrote', 'Finished action (suffix rules)'],
@@ -1032,7 +1033,7 @@ export const chaptersData: Chapter[] = [
         id: 'c10-l4',
         title: 'The Suffix Paradigm of Past Verbs',
         type: 'table',
-        text: 'Instead of separate verbs, Arabic simply appends standard suffixes to represent different doers. See how consistent these endings are:',
+        text: 'Arabic does not use separate words like English "I / you / he" — instead, it just changes the ending of the SAME verb. Here is the pattern:',
         tableHeaders: ['Subject Actor', 'Added Suffix Sg.', 'Model Conjugate (فَعَلَ)', 'Root: كَتَبَ (Write)', 'English Translation'],
         tableRows: [
           ['3rd person Masculine (He)', 'None (Base)', 'فَعَلَ', 'كَتَبَ', 'He wrote'],
@@ -1045,7 +1046,7 @@ export const chaptersData: Chapter[] = [
         id: 'c10-l5',
         title: 'The 14 Segas of Past Tense Conjugation (Using نَصَرَ)',
         type: 'table',
-        text: 'Let us see how the base verb **نَصَرَ** ("He helped") conjugates through all 14 Segas according to who did the action:',
+        text: 'Now let us see all 14 forms of a past-tense verb, using **نَصَرَ** ("he helped") as our model. Each ending tells you exactly who did the action:',
         tableHeaders: ['Subject / Person', 'Arabic Form', 'What Changed', 'English Meaning'],
         tableRows: [
           ['3rd Person Masc (He)', 'نَصَرَ', 'Base form', 'He helped'],
@@ -1096,7 +1097,7 @@ export const chaptersData: Chapter[] = [
         id: 'c11.1-l1',
         title: 'The Active Clause Components',
         type: 'table',
-        text: 'A verbal sentence (Jumla Fiʿliyya) centers around an action. See the three essential pillars:',
+        text: 'A verb sentence is built from three pieces: the action, the one who did it, and the thing it was done to:',
         tableHeaders: ['Syntactic Pillar', 'Arabic Term', 'Functional Role', 'Typical Default Case Vowel state'],
         tableRows: [
           ['The Action / Verb', 'Fiʿl (فِعْل)', 'Defines what event occurred', 'Constructed from root letters (e.g. قَرَأَ)'],
@@ -1108,7 +1109,7 @@ export const chaptersData: Chapter[] = [
         id: 'c11.1-l2',
         title: 'The Secret Ending Case Signs',
         type: 'table',
-        text: 'Even if the word order in the sentence is rearranged, the ending vowel signs tell us who did what:',
+        text: 'Arabic word order can be shuffled around, but you can always tell who is who by the last vowel sound on each word:',
         tableHeaders: ['Sentence Role', 'Primary Arabic Vowel Case Mark', 'Pronunciation Key', 'Technical State Name'],
         tableRows: [
           ['Subject Actor (Fāʿil)', 'Damma (ُـ / ٌـ) at the end', 'Pesh / Double Pesh sound', 'Marfooʿ (مَرْفُوع)'],
@@ -1119,7 +1120,7 @@ export const chaptersData: Chapter[] = [
         id: 'c11.1-l3',
         title: 'Analysing a Classic Example',
         type: 'table',
-        text: 'Let us decompose the classic clause: قَرَأَ طَالِبٌ كِتَابًا (A student read a book):',
+        text: 'Let us break down a full example sentence — قَرَأَ طَالِبٌ كِتَابًا (A student read a book):',
         tableHeaders: ['Written Word', 'Grammatical Role', 'Vowel State', 'English Transliteration & Meaning'],
         tableRows: [
           ['قَرَأَ', 'Fiʿl (Verb)', 'Past Tense Fatha (Mabni)', 'Qaraʾa - Read / Deciphered'],
@@ -1160,7 +1161,7 @@ export const chaptersData: Chapter[] = [
         id: 'c11.2-l1',
         title: 'The Rule of the Visible Doer (Fā‘il Ẓāhir)',
         type: 'table',
-        text: 'A doer written explicitly as a separate word is called a Visible Fā‘il. Observe its dual rules:',
+        text: 'When the doer is written out as its own separate word, it is called a Visible Fā‘il. Two rules always apply:',
         tableHeaders: ['Grammatical Rule', 'Concrete Behaviour', 'Detailed Explanation'],
         tableRows: [
           ['1. Singular Verb Policy', 'Verb ALWAYS remains singular (Mufrad)', 'Even if the doer is dual (2) or plural (3+), the verb does not take dual/plural suffixes'],
@@ -1171,7 +1172,7 @@ export const chaptersData: Chapter[] = [
         id: 'c11.2-l2',
         title: 'The Examples with "الدَّرْسَ" (The Lesson)',
         type: 'table',
-        text: 'In the following examples, notice how the object **الدَّرْسَ** always has a Fatha (-) because it is the Maf‘ool Bihi. See how the verb stays singular while matching the doer\'s gender:',
+        text: 'In every example below, the object **الدَّرْسَ** keeps its Fatha ending because it is the Maf‘ool Bihi. Notice the verb always stays singular — only its gender changes to match the doer:',
         tableHeaders: ['Class / Gender', 'Arabic Sentence', 'Visible Fā‘il', 'English Translation'],
         tableRows: [
           ['Singular Masculine', 'كَتَبَ الطَّالِبُ الدَّرْسَ', 'الطَّالِبُ', 'The boy wrote the lesson'],
@@ -1186,7 +1187,7 @@ export const chaptersData: Chapter[] = [
         id: 'c11.2-l3',
         title: 'Smart Notice: Verb Agreement',
         type: 'table',
-        text: 'Because the number is already clear from the visible Fā‘il noun, the verb stays singular. See gender contrasts:',
+        text: 'The verb does not need to show how many doers there are — the visible noun already tells us that. So the verb only changes to match gender:',
         tableHeaders: ['Subject Gender', 'Verb Base Form', 'Complete Sentence Example', 'Syntactic Match', 'Merger Pronunciation Note'],
         tableRows: [
           ['Masculine', 'كَتَبَ (Singular)', 'كَتَبَ الطُّلَّابُ', 'Singular verb + Masc. plural noun', 'Direct fluent flow'],
@@ -1227,7 +1228,7 @@ export const chaptersData: Chapter[] = [
         id: 'c11.3-l1',
         title: 'Implied and Attached Subjects',
         type: 'table',
-        text: 'Every statement needs a doer. If no visible noun is written after the verb, the verb contains its own built-in pronoun:',
+        text: 'Every action needs someone doing it. When there is no separate noun after the verb, the doer is a pronoun hidden inside the verb itself:',
         tableHeaders: ['Subject Property', 'Syntactic Name', 'How to Decode', 'Core Consequence'],
         tableRows: [
           ['Implied Pronoun', 'Fāʿil Mustatir (فَاعِل مُسْتَتِر)', 'Implicitly hide in 1st/2nd/3rd person bases', 'Decoded by analyzing prefix/suffix of verb'],
@@ -1238,7 +1239,7 @@ export const chaptersData: Chapter[] = [
         id: 'c11.3-l2',
         title: 'The 14 Hidden Forms with "الدَّرْسَ" (The Lesson)',
         type: 'table',
-        text: 'In the following examples, notice how the subject (implied pronoun doer) is embedded perfectly inside the verb, while the object "الدَّرْسَ" remains visible:',
+        text: 'In each sentence below, the doer is baked right into the verb ending — you do not see it as a separate word, but you can still tell exactly who it is:',
         tableHeaders: ['Arabic Sentence', 'Hidden Fā‘il (Pronoun)', 'English Meaning'],
         tableRows: [
           ['كَتَبَ الدَّرْسَ', 'هُوَ (He)', 'He wrote the lesson'],
@@ -1260,7 +1261,7 @@ export const chaptersData: Chapter[] = [
         id: 'c11.3-l3',
         title: 'Prior Noun Rule & Golden Rule',
         type: 'table',
-        text: 'Arabic grammar states that a doer must follow its verb. Study this crucial ordering requirement:',
+        text: 'Normally the doer comes right after its verb. So what happens when a noun appears BEFORE the verb instead? Compare these two orders:',
         tableHeaders: ['Sentence Structure', 'Grammatical Analysis', 'Subject Identity', 'Translational Meaning'],
         tableRows: [
           ['الْبِنْتُ كَتَبَتِ الدَّرْسَ', 'Prior subject "الْبِنْتُ" starts sentence', 'Fāʿil is hidden pronoun (هِيَ) inside verb', 'The girl - she wrote the lesson'],
@@ -1301,7 +1302,7 @@ export const chaptersData: Chapter[] = [
         id: 'c12.1-l1',
         title: 'The Muḍāri‘ Identity',
         type: 'table',
-        text: 'The Muḍāri‘ verb represents ongoing (present) or intended (future) actions. Learn how its structure differs from the past tense:',
+        text: 'The Muḍāri‘ verb describes something happening now, or about to happen. It is built very differently from the past tense:',
         tableHeaders: ['Verb Family', 'Conjugation Change Area', 'Indicator Prefix Letters', 'Example Transition (كَتَبَ)'],
         tableRows: [
           ['Past Tense (Māḍī)', 'Changes exclusively at the suffix (ending)', 'None (root letters form base)', 'كَتَبْتُ (I wrote)'],
@@ -1324,7 +1325,7 @@ export const chaptersData: Chapter[] = [
         id: 'c12.1-l3',
         title: 'Instating absolute Future: Suffix سَـ',
         type: 'table',
-        text: 'While the Muḍāri‘ represents both present and future, attaching these markers locks the meaning exclusively to the future:',
+        text: 'By itself, Muḍāri‘ can mean either "now" or "later." Add one of these markers to pin the meaning down to the future only:',
         tableHeaders: ['Future Marker Type', 'How to Apply', 'Example Phrase', 'Translational Distinction'],
         tableRows: [
           ['Immediate Future', 'Attach prefixed "سَـ" directly to the verb', 'سَيَكْتُبُ (Sayaktubu)', 'He will write immediately'],
@@ -1365,7 +1366,7 @@ export const chaptersData: Chapter[] = [
         id: 'c12.2-l1',
         title: 'The Suffix-Prefix Combinations',
         type: 'table',
-        text: 'To form the 14 standard Muḍāriʿ conjugations, we link beginning prefixes with special ending suffixes:',
+        text: 'Each of the 14 present-tense forms is built the same way: a prefix at the front tells you the person, and a suffix at the end tells you the number:',
         tableHeaders: ['Subject Profile', 'Affixed Prefix', 'Affixed Suffix', 'Resulting Grammatical Class Name'],
         tableRows: [
           ['Dual (Two individuals)', 'يـ / تـ', 'ـَانِ (-āni)', 'Tathniyah (تثنية)'],
@@ -1391,7 +1392,7 @@ export const chaptersData: Chapter[] = [
         id: 'c12.2-l3',
         title: 'Feminine Plural Nuance',
         type: 'table',
-        text: 'The feminine plural forms end with a sukoon followed by Nun Fatha "نَ" (Nun of Femininity). These forms are Mabni:',
+        text: 'The feminine plural forms always end the same way — a silent letter followed by "نَ." Unlike most present-tense verbs, these never change, no matter what:',
         tableHeaders: ['Grammatical State', 'Verbal Form example', 'Pronunciation', 'Modifiability Character'],
         tableRows: [
           ['3rd Person Fem. Plural', 'يَفْعَلْنَا / يَفْعَلْنَ', 'Yafʿalna', 'Mabni (Rigid / Never changes)'],
@@ -1432,7 +1433,7 @@ export const chaptersData: Chapter[] = [
         id: 'c12.3-l1',
         title: 'Middle Vowel Shift Rule (ʿAyn Kalimah)',
         type: 'table',
-        text: 'As a verb moves from past (Māḍī) to present (Muḍāriʿ), the vowel on its middle (ʿAyn) root letter shifts. This groups verbs into six standard doors (Bābs):',
+        text: 'When a verb moves from past to present tense, the vowel in the MIDDLE of its root often changes. Arabic groups every verb into one of six patterns, called Bābs, based on exactly how that vowel shifts:',
         tableHeaders: ['Grammatical Concept', 'Arabic Term', 'Shorthand Meaning', 'Why it matters'],
         tableRows: [
           ['Middle Root Letter', 'ʿAyn Kalimah (عَيْن الْكَلِمَة)', 'The second letter of the 3-letter root', 'Its vowel vowel shift defines the verb’s sound family'],
@@ -1457,7 +1458,7 @@ export const chaptersData: Chapter[] = [
         id: 'c12.3-l3',
         title: 'Vocalizing Unmarked Verbs',
         type: 'table',
-        text: 'Standard printed Arabic leaves out vowels. Here is how modern dictionaries mark Bābs so you know how to read them:',
+        text: 'Printed Arabic usually skips the vowel marks, so how do you know how to pronounce a verb? Dictionaries add a small letter next to it to tell you which Bāb it belongs to:',
         tableHeaders: ['Dictionary Mark', 'Active Bāb Family', 'Middle Vowel in Past', 'Middle Vowel in Present', 'Example Reading'],
         tableRows: [
           ['Shorthand (ن)', 'Nasara', 'Fatha (e.g. صَ)', 'Damma (e.g. صُ)', 'نَصَرَ → يَنْصُرُ'],
@@ -1498,7 +1499,7 @@ export const chaptersData: Chapter[] = [
         id: 'c13-l1',
         title: 'Who Receives Commands?',
         type: 'table',
-        text: 'In classical Arabic, commands (Amr) can only be directed to people directly interacting with you. Observe these scope settings:',
+        text: 'You can only give a direct command to someone you are speaking TO — not to yourself, and not to someone who is not there:',
         tableHeaders: ['Persona Layer', 'Arabic Name', 'Command Authority', 'Applicable Forms'],
         tableRows: [
           ['1st Person (Speaker)', 'Mutakallim (المتكلم)', '❌ Cannot command oneself directly', 'No Amr forms'],
@@ -1510,7 +1511,7 @@ export const chaptersData: Chapter[] = [
         id: 'c13-l2',
         title: 'The 3-Step Command Formula',
         type: 'table',
-        text: 'Follow these three precise sequential steps on a present-tense active verb to form a command:',
+        text: 'To turn a present-tense verb into a command, follow these three steps in order:',
         tableHeaders: ['Step Priority', 'Action to Execute', 'Form state for "You write" (تَكْتُبُ)', 'Resulting sound state'],
         tableRows: [
           ['Step 1', 'Strip the starting marker prefix (تـ) completely', 'كْتُبُ', 'Starting with silent letter'],
@@ -1564,7 +1565,7 @@ export const chaptersData: Chapter[] = [
         id: 'c14-l1',
         title: 'Forbidding Actions',
         type: 'table',
-        text: 'While Amr commands command people to act, An-Nahy forbids them. Contrast these active intentions:',
+        text: 'Amr tells someone to DO something. An-Nahy tells them NOT to do it — just add لَا (no / do not) in front:',
         tableHeaders: ['Objective Class', 'Grammatical Purpose', 'Arabic Prototype', 'Resulting Meaning'],
         tableRows: [
           ['Amr (Command)', 'Instructs someone to execute an action', 'اُكْتُبْ', 'Write! (Order)'],
@@ -1575,7 +1576,7 @@ export const chaptersData: Chapter[] = [
         id: 'c14-l2',
         title: 'The Forbidding Formula',
         type: 'table',
-        text: 'Unlike Amr where the marker is stripped, Nahy preserves the starting present "تـ" letter. Follow these two actions:',
+        text: 'Unlike Amr, Nahy keeps the verb starting "تـ" letter — you do not remove anything from the front. Just do these two steps:',
         tableHeaders: ['Syntactic Action', 'Form state for "You write" (تَكْتُبُ)', 'Vowel Adjustment', 'Standard Outcome'],
         tableRows: [
           ['1. Place forbidding particle "لَا" before verb', 'لَا تَكْتُبُ', 'Sentence starts with negative "No"', 'Invalid/incomplete'],
@@ -1619,7 +1620,7 @@ export const chaptersData: Chapter[] = [
         id: 'c15.1-l1',
         title: 'The Three Pillars of Speech',
         type: 'table',
-        text: 'Every single word in Classical Arabic relates directly to one of three universal categories:',
+        text: 'Every single word in Arabic falls into exactly one of three categories:',
         tableHeaders: ['Pillar Category', 'Arabic Term', 'Shorthand Meaning', 'Core Functional Property'],
         tableRows: [
           ['Noun', 'Ism (اِسْم)', 'Person, place, object, or adjective', 'Has complete standalone meaning, accepts "ال" and Tanween'],
@@ -1631,7 +1632,7 @@ export const chaptersData: Chapter[] = [
         id: 'c15.1-l2',
         title: 'Understanding the Glue Concept',
         type: 'table',
-        text: 'A particle functions like syntactic glue. Study how its meaning remains incomplete until linked:',
+        text: 'A particle (Harf) is like glue — it does not mean much by itself, only once it is stuck between two other words:',
         tableHeaders: ['Input Class', 'Input Word', 'Standalone Understanding', 'Coupled Phrase Result', 'Meaning Level achieved'],
         tableRows: [
           ['Pure Noun', 'كِتَابٌ (Kitābun)', 'You understand a physical book', '—', 'Complete concept'],
@@ -1643,7 +1644,7 @@ export const chaptersData: Chapter[] = [
         id: 'c15.1-l3',
         title: 'Smart Understanding: Nouns vs Verbs vs Particles',
         type: 'table',
-        text: 'To memorize the speech components easily, analyze this functional comparison:',
+        text: 'Here is a simple way to remember the difference between the three word types:',
         tableHeaders: ['Syntactic Building Block', 'Analogical Role', 'Sentential Assignment', 'Concrete Example'],
         tableRows: [
           ['Noun (Ism)', 'The Object', 'Acts as subject, target, or descriptor', 'اَلْكِتَابُ (The book)'],
@@ -1656,7 +1657,7 @@ export const chaptersData: Chapter[] = [
         id: 'c15.1-l4',
         title: 'All Hurūf are Mabni',
         type: 'table',
-        text: 'A foundational absolute rule is that all Arabic particles are Mabni (unalterable):',
+        text: 'One simple rule to remember: particles NEVER change their ending, no matter where they sit in the sentence:',
         tableHeaders: ['Grammatical Concept', 'Behavioral Definition', 'Impact on Vowels', 'Consistent Forms'],
         tableRows: [
           ['Mabni State (مَبْنِيّ)', 'Rigid / Indestructible ending', 'They never change their final vowels regardless of sentence location', 'فِي (In), مِنْ (From), عَلَى (On)']
@@ -1700,7 +1701,7 @@ export const chaptersData: Chapter[] = [
         id: 'c15.2-l1',
         title: 'The Pulling Action (Majroor)',
         type: 'table',
-        text: 'Prepositions in Arabic are called Hurūf al-Jarr. They pull following nouns down into Kasra ending vowel states:',
+        text: 'Arabic prepositions (like "in," "on," "from") are called Hurūf al-Jarr — literally "pulling letters," because they pull the noun after them down to a Kasra ending:',
         tableHeaders: ['Particle Type', 'Target Word Class', 'Assigned Vowel ending', 'Resulting Grammatical State'],
         tableRows: [
           ['Hurūf al-Jarr (حُرُوف الجَرّ)', 'Nouns ONLY (Verbs are immune)', 'Kasra (ـِ / ـٍ) double or single', 'Majroor (مَجْرُور / Pulled Down)']
@@ -1710,7 +1711,7 @@ export const chaptersData: Chapter[] = [
         id: 'c15.2-l2',
         title: 'How It Changes (Damma to Kasra)',
         type: 'table',
-        text: 'See how a noun’s normal nominative state changes the second a Harf Jarr enters before it:',
+        text: 'Watch what happens to a noun ending the moment you put a preposition in front of it:',
         tableHeaders: ['Noun Phase', 'Arabic Form Phrase', 'Ending Vowel', 'Active Connector', 'Meaning Achieved'],
         tableRows: [
           ['Starting State (Isolated)', 'اَلْبَيْتُ', 'Damma (Pesh)', 'None', 'The house'],
@@ -1722,7 +1723,7 @@ export const chaptersData: Chapter[] = [
         id: 'c15.2-l3',
         title: 'Common Hurūf al-Jarr to Memorize',
         type: 'table',
-        text: 'These are the most important pulling prepositions in Arabic:',
+        text: 'Here are the most common prepositions to memorize first:',
         tableHeaders: ['Harf', 'Pronunciation', 'Meaning', 'Example', 'Meaning'],
         tableRows: [
           ['مِنْ', 'Min', 'From', 'مِنَ الْمَسْجِدِ', 'From the masjid'],
@@ -1738,7 +1739,7 @@ export const chaptersData: Chapter[] = [
         id: 'c15.2-l4',
         title: 'Full Sentence Examples',
         type: 'table',
-        text: 'Study these full verbal sentences using Hurūf al-Jarr:',
+        text: 'Here are some full sentences using these prepositions:',
         tableHeaders: ['Arabic Structural Phrase', 'Phonetic Pronunciation', 'Active Harf Jarr', 'Resulting Noun State', 'English Translation'],
         tableRows: [
           ['صَلَّيْتُ فِي الْمَسْجِدِ', 'Sallaytu fil-masjidi', 'فِي (In)', 'الْمَسْجِدِ (Majroor with Kasra)', 'I prayed in the masjid'],
@@ -1779,7 +1780,7 @@ export const chaptersData: Chapter[] = [
         id: 'c15.3-l1',
         title: 'The Sticky Single-Letter Hurūf',
         type: 'table',
-        text: 'Single-letter particles merge directly into spelling. Examine these sticky prepositions:',
+        text: 'Some one-letter prepositions attach directly onto the next word, with no space — that is why we call them "sticky":',
         tableHeaders: ['Sticky Particle', 'Target meaning', 'Example Written form', 'Phonetic Sound', 'English Translation'],
         tableRows: [
           ['بِـ (Bi)', 'With / By means of', 'بِالْقَلَمِ', 'Bil-qalami', 'With the pen'],
@@ -1791,7 +1792,7 @@ export const chaptersData: Chapter[] = [
         id: 'c15.3-l2',
         title: 'Dropping the Alif Rule',
         type: 'table',
-        text: 'Connecting the prefix preposition "لِـ" to a noun starting with "ال" triggers a spelling reduction rule:',
+        text: 'When لِـ ("for") attaches to a word that starts with ال ("the"), one small spelling change happens — the Alif disappears:',
         tableHeaders: ['Word Phase', 'Arabic Form', 'Spelling Action', 'Resulting Spelled Word'],
         tableRows: [
           ['Base noun with "ال"', 'اَللَّهُ', 'Starts with definite Alif-Lam', 'اَللَّهُ'],
@@ -1803,7 +1804,7 @@ export const chaptersData: Chapter[] = [
         id: 'c15.3-l3',
         title: 'Pronunciation Helpers (Helping Vowels)',
         type: 'table',
-         text: 'Sometimes Arabic classical speech adds a small helping vowel to avoid clashing silent letters and keep the pronunciation smooth:',
+         text: 'Sometimes two silent letters bump into each other and are hard to pronounce back-to-back. Arabic adds a small helping vowel to smooth things out:',
         tableHeaders: ['Original Merge Clash', 'Easier Pronunciation', 'Reason / Helper', 'English Meaning'],
         tableRows: [
           ['مِنْ الْمَسْجِدِ (Min al-masjid)', 'مِنَ الْمَسْجِدِ (Min-al-masjidi)', 'Sukoon is changed to Fatha (َـ)', 'From the masjid'],
@@ -1814,7 +1815,7 @@ export const chaptersData: Chapter[] = [
         id: 'c15.3-l4',
         title: 'The Wāw of Oath (وَ)',
         type: 'table',
-        text: 'When making solemn oaths, the letter Wāw behaves as a Harf Jarr pulling the following noun to Kasra:',
+        text: 'The letter و usually just means "and" — but in an oath ("By Allah!") it acts like a preposition instead, pulling the next word to Kasra:',
         tableHeaders: ['Context of وَ', 'Function', 'Consecutive Vowel ending', 'Solemn Oath Example', 'Meaning'],
         tableRows: [
           ['Conjunction', 'Joins two nouns ("and")', 'Copies the case of preceding noun', 'زَيْدٌ وَخَالِدٌ', 'Zaid and Khalid'],
@@ -1865,7 +1866,7 @@ export const chaptersData: Chapter[] = [
         id: 'c16-l1',
         title: 'What is a Harf Atf?',
         type: 'table',
-        text: 'Conjunctions link syntactic components together. Master these two critical partner definitions:',
+        text: 'A conjunction links two nouns together — think of it as "Word A and Word B." Each side has its own name:',
         tableHeaders: ['Grammatical Component', 'Arabic Term', 'Functional placement description', 'Example (زَيْدٌ وَخَالِدٌ)'],
         tableRows: [
           ['The Preceding Lead Word', 'Maʿtoof Alaih (المَعْطُوف عَلَيْه)', 'The noun directly in front of conjunction', 'زَيْدٌ'],
@@ -1876,7 +1877,7 @@ export const chaptersData: Chapter[] = [
         id: 'c16-l2',
         title: 'The Great Case Copying Rule',
         type: 'table',
-        text: 'Conjunctions transmit case endings directly to the following Maʿtoof noun. See how endings copy perfectly:',
+        text: 'Whatever case ending the first noun has, the conjunction copies it exactly onto the second noun:',
         tableHeaders: ['Preceding Lead Case state', 'Maʿtoof Alaih Vowel', 'Maʿtoof connected Vowel', 'Full Connected Example', 'Meaning'],
         tableRows: [
           ['Nominative (Damma)', 'Damma (e.g. زَيْدٌ)', 'Damma (e.g. خَالِدٌ)', 'زَيْدٌ وَخَالِدٌ', 'Zaid and Khalid (as subject)'],
@@ -1934,7 +1935,7 @@ export const chaptersData: Chapter[] = [
         id: 'c17-l1',
         title: 'Introducing Inna & Her Sisters',
         type: 'table',
-        text: 'The particle Inna and its siblings attach exclusively to nominal sentences to change emphasis and focus:',
+        text: 'إِنَّ and its "sister" particles attach to the front of a noun-sentence to add emphasis, like saying "Indeed..." in English:',
         tableHeaders: ['Particle Family', 'Scope of deployment', 'Active Functional Objective', 'Example Starter'],
         tableRows: [
           ['Inna and Akhawātuhā (إِنَّ وَأَخَوَاتُهَا)', 'Nominal sentences only (Jumla Ismiyyah)', 'Adds strong semantic emphasis, contrast or doubt', 'إِنَّ (Indeed)']
@@ -1944,7 +1945,7 @@ export const chaptersData: Chapter[] = [
         id: 'c17-l2',
         title: 'The Transmutation Rule',
         type: 'table',
-        text: 'Normally, a nominal sentence ends with two Dammas. When Inna enters, it creates a drastic case ending shift:',
+        text: 'Normally the subject of a noun-sentence ends in Damma. But the moment إِنَّ appears, the subject ending flips to Fatha:',
         tableHeaders: ['Sentence Component', 'Standard Default state Vowel', 'Post-Inna Shift state Vowel', 'New Syntactic Name', 'Action Example'],
         tableRows: [
           ['Subject (Mubtada)', 'Damma (e.g. الْبَيْتُ)', 'Fatha (e.g. الْبَيْتَ)', 'Ism Inna (اِسْم إِنَّ)', 'إِنَّ الْبَيْتَ...'],

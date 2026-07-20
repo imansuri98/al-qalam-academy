@@ -1,4 +1,5 @@
 "use client";
+import './index.css';
 import React, { useState, useEffect } from 'react';
 import { Chapter, UserProgress } from './types';
 import { chaptersData } from './chaptersData';
