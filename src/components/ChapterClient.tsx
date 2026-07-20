@@ -238,10 +238,10 @@ export default function ChapterClient({
 
                     const props = {
                       exerciseId: ex._id,
-                      questionText: ex.questionText,
-                      translationText: ex.translationText,
+                      questionText: ex.questionText || '',
+                      translationText: ex.translationText || '',
                       options: ex.options || [],
-                      explanation: ex.explanation,
+                      explanation: ex.explanation || '',
                       onComplete: (score: number, maxScore: number) =>
                         handleExerciseComplete(ex._id, score, maxScore),
                     }
