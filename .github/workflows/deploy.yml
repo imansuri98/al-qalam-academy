@@ -22,4 +22,5 @@ jobs:
             npm ci --legacy-peer-deps
             npx drizzle-kit push
             npm run build
+            ln -sf /var/www/al-qalam-academy/.next/static /var/www/al-qalam-academy/.next/standalone/.next/static
             pm2 restart al-qalam-academy
