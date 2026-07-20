@@ -13,6 +13,11 @@ export default defineConfig({
   dataset,
   basePath: '/studio',
 
+  auth: {
+    loginMethod: 'dual',
+    redirectOnSingle: false,
+  },
+
   plugins: [structureTool()],
 
   schema: {
