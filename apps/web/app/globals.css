@@ -1,0 +1,85 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Naskh+Arabic:wght@400;500;600;700;800&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-main: #F8FAF6;
+  --bg-card: #FFFFFF;
+  --border-color: #E2E8F0;
+  
+  /* World-Class Optical High-Contrast Font Colors */
+  --text-primary: #0F172A; /* Deep Obsidian Charcoal for Headings */
+  --text-secondary: #475569; /* Slate Graphite for Subheadings */
+  --text-muted: #64748B; /* Muted Slate for Secondary Metadata */
+  
+  /* Brand Accent */
+  --brand-accent: #C2410C; /* Refined Terracotta Sandstone */
+  --brand-accent-hover: #9A3412;
+  
+  --font-arabic: 'Noto Naskh Arabic', 'Amiri', serif;
+  --font-english: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  font-family: var(--font-english);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* World-Class Calligraphic Vowelled Arabic Typography */
+.font-arabic,
+.arabic-text,
+.arabic-title,
+[dir="rtl"] {
+  font-family: 'Noto Naskh Arabic', 'Amiri', serif !important;
+  color: #090D16 !important;
+  line-height: 2.2 !important;
+  letter-spacing: -0.01em;
+}
+
+/* World-Class Glass & Card Components */
+.glass-nav {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
+}
+
+.pro-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.03);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pro-card:hover {
+  border-color: #C2410C;
+  box-shadow: 0 8px 24px -4px rgba(194, 65, 12, 0.1);
+  transform: translateY(-1px);
+}
+
+/* World-Class Brand Accents & Buttons */
+.brand-badge {
+  background-color: #FFF7ED;
+  border: 1px solid rgba(194, 65, 12, 0.2);
+  color: #C2410C;
+  font-weight: 700;
+}
+
+.brand-button {
+  background-color: #C2410C;
+  color: #FFFFFF;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.brand-button:hover {
+  background-color: #9A3412;
+  box-shadow: 0 6px 18px -3px rgba(194, 65, 12, 0.35);
+}

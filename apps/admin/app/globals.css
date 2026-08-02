@@ -1,0 +1,61 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Naskh+Arabic:wght@400;500;600;700;800&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-main: #F8FAF6;
+  --bg-card: #FFFFFF;
+  --border-color: #E2E8F0;
+  
+  /* High-Contrast Optical Typography */
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #64748B;
+  
+  /* Brand Accent */
+  --brand-accent: #C2410C;
+  --brand-accent-hover: #9A3412;
+
+  /* Legacy compatibility maps */
+  --color-claude-bg: #F8FAF6;
+  --color-claude-card: #FFFFFF;
+  --color-claude-border: #E2E8F0;
+  --color-claude-text: #0F172A;
+  --color-claude-muted: #64748B;
+  --color-claude-terracotta: #C2410C;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Calligraphic Arabic Fonts */
+.font-arabic,
+.arabic-text,
+.arabic-title,
+[dir="rtl"] {
+  font-family: 'Noto Naskh Arabic', 'Amiri', serif !important;
+  color: #090D16 !important;
+  line-height: 2.1 !important;
+}
+
+/* Clean Admin Cards */
+.claude-card,
+.pro-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.03);
+  transition: all 0.2s ease;
+}
+
+.claude-card:hover,
+.pro-card:hover {
+  border-color: #C2410C;
+  box-shadow: 0 4px 16px -2px rgba(194, 65, 12, 0.08);
+}

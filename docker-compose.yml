@@ -1,0 +1,61 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: alarabi_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword123
+      POSTGRES_DB: alarabi
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    container_name: alarabi_web
+    restart: always
+    environment:
+      - PORT=3000
+      - DATABASE_URL=postgres://postgres:postgrespassword123@postgres:5432/alarabi
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+
+  admin:
+    build:
+      context: .
+      dockerfile: Dockerfile.admin
+    container_name: alarabi_admin
+    restart: always
+    environment:
+      - PORT=3001
+      - DATABASE_URL=postgres://postgres:postgrespassword123@postgres:5432/alarabi
+    ports:
+      - "3001:3001"
+    depends_on:
+      - postgres
+
+  nginx:
+    image: nginx:alpine
+    container_name: alarabi_nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    depends_on:
+      - web
+      - admin
+
+volumes:
+  postgres_data:
