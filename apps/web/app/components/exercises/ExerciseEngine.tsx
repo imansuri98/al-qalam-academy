@@ -25,6 +25,7 @@ export interface ExerciseData {
     | "TASHKEEL_PICKER"
     | "SENTENCE_REORDER"
     | "IRAB_PARSING"
+    | "SARF_PARSING"
     | "TRANSLATION"
     | "TRANSLATION_EN_AR"
     | "MULTIPLE_CHOICE"
@@ -55,6 +56,13 @@ export default function ExerciseEngine({ exercises }: ExerciseEngineProps) {
   const [irabCaseSign, setIrabCaseSign]   = useState<string>("");
   const [irabGrammarRole, setIrabGrammarRole] = useState<string>("");
 
+  /* 3-Step Sarf Morphological Parsing State */
+  const [sarfRoot, setSarfRoot]     = useState<string>("");
+  const [sarfForm, setSarfForm]     = useState<string>("");
+  const [sarfPerson, setSarfPerson] = useState<string>("");
+  const [sarfGender, setSarfGender] = useState<string>("");
+  const [sarfNumber, setSarfNumber] = useState<string>("");
+
   const [isAnswered, setIsAnswered] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [scoreCount, setScoreCount] = useState(0);
@@ -77,6 +85,11 @@ export default function ExerciseEngine({ exercises }: ExerciseEngineProps) {
     setIrabCaseState("");
     setIrabCaseSign("");
     setIrabGrammarRole("");
+    setSarfRoot("");
+    setSarfForm("");
+    setSarfPerson("");
+    setSarfGender("");
+    setSarfNumber("");
     setIsAnswered(false);
   }, [activeExIdx, activeQIdx, activeEx]);
 
@@ -125,6 +138,13 @@ export default function ExerciseEngine({ exercises }: ExerciseEngineProps) {
       userCorrect =
         (irabCaseState !== "" && targetCorrect.includes(irabCaseState)) ||
         (irabGrammarRole !== "" && targetCorrect.includes(irabGrammarRole)) ||
+        (selectedOption !== null && selectedOption.trim() === targetCorrect);
+    } else if (activeEx.exerciseType === "SARF_PARSING") {
+      const targetCorrect = activeQ.correctAnswer.trim();
+      userCorrect =
+        (sarfRoot !== "" && targetCorrect.includes(sarfRoot)) ||
+        (sarfForm !== "" && targetCorrect.includes(sarfForm)) ||
+        (sarfPerson !== "" && targetCorrect.includes(sarfPerson)) ||
         (selectedOption !== null && selectedOption.trim() === targetCorrect);
     } else {
       userCorrect = selectedOption?.trim() === activeQ.correctAnswer.trim();
@@ -308,6 +328,138 @@ export default function ExerciseEngine({ exercises }: ExerciseEngineProps) {
                     {word}
                   </button>
                 ))}
+              </div>
+            </div>
+          ) : activeEx.exerciseType === "SARF_PARSING" ? (
+            /* DRILL TYPE: 3-STEP SARF MORPHOLOGICAL ANALYSIS */
+            <div className="space-y-6 bg-white p-6 rounded-2xl border border-[#E2E8F0] shadow-xs">
+              {/* Live Sarf Formula Preview */}
+              <div className="p-4 rounded-xl bg-purple-50/90 border border-purple-200 text-center space-y-1">
+                <span className="text-[10px] font-bold text-purple-800 uppercase tracking-wider block">Live Morphological Analysis (التَّصْرِيفُ وَالصَّرْفُ)</span>
+                <p className="font-arabic text-2xl font-black text-[#090D16] dir-rtl leading-relaxed" dir="rtl">
+                  {sarfRoot || sarfForm || sarfPerson
+                    ? `الجَذْر: ${sarfRoot || "..."} • ${sarfForm || "..."} • ${sarfPerson} ${sarfGender} ${sarfNumber}`.trim()
+                    : "Select Root, Form Category, and Person/Grammatical Features below..."}
+                </p>
+              </div>
+
+              {/* STEP 1: Root Letters */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-extrabold text-[#0F172A]">Step 1: Identify 3-Letter Root (الجَذْرُ)</span>
+                  <input
+                    value={sarfRoot}
+                    onChange={(e) => setSarfRoot(e.target.value)}
+                    placeholder="e.g. ك - ت - ب"
+                    className="font-arabic text-base font-bold px-3 py-1 rounded-lg border border-[#E2E8F0] text-right dir-rtl focus:outline-none focus:border-purple-400"
+                    dir="rtl"
+                  />
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {["ك - ت - ب", "ن - ص - ر", "ف - ع - ل", "ض - ر - ب"].map((item) => (
+                    <button
+                      key={item}
+                      onClick={() => setSarfRoot(item)}
+                      className={`p-2.5 rounded-xl border text-xs font-bold transition-all ${
+                        sarfRoot === item
+                          ? "bg-purple-700 text-white border-purple-800 shadow-2xs"
+                          : "bg-white border-[#E2E8F0] text-[#0F172A] hover:border-purple-400"
+                      }`}
+                    >
+                      <span className="font-arabic text-base font-bold block dir-rtl" dir="rtl">{item}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* STEP 2: Derived Form Category */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-extrabold text-[#0F172A]">Step 2: Word Form Category (الصِّيغَةُ)</span>
+                  <span className="text-[10px] font-mono text-purple-700 font-bold">{sarfForm || "Not selected"}</span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {[
+                    "فِعْلٌ مَاضٍ (Past Verb)",
+                    "فِعْلٌ مُضَارِعٌ (Present Verb)",
+                    "فِعْلُ أَمْرٍ (Imperative Verb)",
+                    "اسْمُ فَاعِلٍ (Active Participle)",
+                    "اسْمُ مَفْعُولٍ (Passive Participle)",
+                    "مَصْدَرٌ (Verbal Noun)"
+                  ].map((item) => (
+                    <button
+                      key={item}
+                      onClick={() => setSarfForm(item.split(" ")[0])}
+                      className={`p-3 rounded-xl border text-xs font-bold transition-all ${
+                        sarfForm === item.split(" ")[0]
+                          ? "bg-purple-700 text-white border-purple-800 shadow-2xs"
+                          : "bg-white border-[#E2E8F0] text-[#0F172A] hover:border-purple-400"
+                      }`}
+                    >
+                      <span className="font-arabic text-base font-bold block dir-rtl" dir="rtl">{item}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* STEP 3: Pronoun Features */}
+              <div className="space-y-3 border-t border-[#E2E8F0] pt-4">
+                <span className="text-xs font-extrabold text-[#0F172A] block">Step 3: Pronoun & Conjugation Features (التَّصْرِيفُ)</span>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Person (الضَّمِير)</label>
+                    <div className="space-y-1">
+                      {["الْمُتَكَلِّم (1st Person)", "الْمُخَاطَب (2nd Person)", "الْغَائِب (3rd Person)"].map((p) => (
+                        <button
+                          key={p}
+                          onClick={() => setSarfPerson(p.split(" ")[0])}
+                          className={`w-full p-2 rounded-lg text-xs font-bold border text-right dir-rtl transition-all ${
+                            sarfPerson === p.split(" ")[0] ? "bg-purple-100 border-purple-400 text-purple-900" : "bg-white border-[#E2E8F0]"
+                          }`}
+                          dir="rtl"
+                        >
+                          {p}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Gender (الْجِنْس)</label>
+                    <div className="space-y-1">
+                      {["مُذَكَّر (Masculine)", "مُؤَنَّث (Feminine)"].map((g) => (
+                        <button
+                          key={g}
+                          onClick={() => setSarfGender(g.split(" ")[0])}
+                          className={`w-full p-2 rounded-lg text-xs font-bold border text-right dir-rtl transition-all ${
+                            sarfGender === g.split(" ")[0] ? "bg-purple-100 border-purple-400 text-purple-900" : "bg-white border-[#E2E8F0]"
+                          }`}
+                          dir="rtl"
+                        >
+                          {g}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Number (الْعَدَد)</label>
+                    <div className="space-y-1">
+                      {["مُفْرَد (Singular)", "مُثَنَّى (Dual)", "جَمْع (Plural)"].map((n) => (
+                        <button
+                          key={n}
+                          onClick={() => setSarfNumber(n.split(" ")[0])}
+                          className={`w-full p-2 rounded-lg text-xs font-bold border text-right dir-rtl transition-all ${
+                            sarfNumber === n.split(" ")[0] ? "bg-purple-100 border-purple-400 text-purple-900" : "bg-white border-[#E2E8F0]"
+                          }`}
+                          dir="rtl"
+                        >
+                          {n}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           ) : activeEx.exerciseType === "IRAB_PARSING" ? (

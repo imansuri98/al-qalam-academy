@@ -675,6 +675,7 @@ export default function Course1AdminPage() {
                               <option value="TRANSLATION">Translation 1: Arabic → English</option>
                               <option value="TRANSLATION_EN_AR">Translation 2: English → Arabic</option>
                               <option value="IRAB_PARSING">I'rab 3-Step Syntactic Breakdown</option>
+                              <option value="SARF_PARSING">Sarf 3-Step Morphological Conjugation Drill</option>
                               <option value="MULTIPLE_CHOICE">Multiple Choice (Open MCQ)</option>
                             </select>
                           </div>
