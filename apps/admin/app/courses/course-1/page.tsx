@@ -705,111 +705,114 @@ export default function Course1AdminPage() {
               <span className="text-xs text-claude-textMuted font-mono">{levels.length} Levels</span>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-5">
               {levels.map((lvl, lvlIdx) => {
                 const isLvlExpanded = !!expandedLevels[lvl.id];
                 return (
-                  <div key={lvl.id} className="claude-card rounded-2xl bg-white border border-claude-border shadow-sm overflow-hidden">
-                    {/* Level bar */}
+                  <div key={lvl.id} className="rounded-2xl border-2 border-indigo-200 bg-indigo-50/30 shadow-md overflow-hidden">
+                    {/* Level Bar (Deep Indigo Theme) */}
                     <div
                       onClick={() => toggleLevel(lvl.id)}
-                      className="p-4 bg-claude-bg/60 hover:bg-claude-bg cursor-pointer flex items-center justify-between border-b border-claude-border transition-colors select-none"
+                      className="p-4.5 bg-indigo-900 hover:bg-indigo-950 text-white cursor-pointer flex items-center justify-between transition-colors select-none"
                     >
                       <div className="flex items-center gap-3">
-                        <span className="w-7 h-7 rounded-lg bg-white border border-claude-border font-bold text-xs flex items-center justify-center">
+                        <span className="w-8 h-8 rounded-xl bg-indigo-800 border border-indigo-700 font-bold text-xs flex items-center justify-center text-indigo-200">
                           {isLvlExpanded ? "▼" : "►"}
                         </span>
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-blue-100 text-blue-900 border border-blue-200">
+                            <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-indigo-400/20 text-indigo-200 border border-indigo-400/30">
                               Level {lvlIdx + 1}
                             </span>
-                            <span className="text-sm font-bold text-claude-textMain">{lvl.titleEn}</span>
+                            <span className="text-base font-extrabold text-white">{lvl.titleEn}</span>
                           </div>
-                          <span className="font-arabic text-base text-slate-900 font-bold block" dir="rtl">{lvl.titleAr}</span>
+                          <span className="font-arabic text-lg text-amber-200 font-bold block" dir="rtl">{lvl.titleAr}</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <button onClick={(e) => handleAddModule(lvl.id, e)}
-                          className="px-3 py-1.5 text-xs font-bold text-claude-terracotta bg-claude-terracottaLight border border-claude-terracotta/20 rounded-xl hover:bg-claude-terracotta hover:text-white transition-colors">
-                          + Module
+                          className="px-3.5 py-1.5 text-xs font-bold text-amber-900 bg-amber-300 border border-amber-400 rounded-xl hover:bg-amber-400 transition-colors shadow-2xs">
+                          + Add Module
                         </button>
                         <button onClick={(e) => handleDeleteLevel(lvl.id, e)}
-                          className="px-2.5 py-1.5 text-xs font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100">
+                          className="px-2.5 py-1.5 text-xs font-bold text-rose-300 bg-rose-950/60 border border-rose-800 rounded-xl hover:bg-rose-900">
                           🗑️
                         </button>
                       </div>
                     </div>
 
-                    {/* Modules */}
+                    {/* Modules Container (Warm Amber Theme) */}
                     {isLvlExpanded && (
-                      <div className="p-5 space-y-4 bg-white">
+                      <div className="p-5 space-y-4 bg-indigo-50/20">
                         {lvl.modules.map((mod, modIdx) => {
                           const isModExpanded = !!expandedModules[mod.id];
                           return (
-                            <div key={mod.id} className="border border-claude-border rounded-xl overflow-hidden bg-claude-bg/20">
-                              {/* Module bar */}
+                            <div key={mod.id} className="border-2 border-amber-200 rounded-2xl overflow-hidden bg-amber-50/40 shadow-2xs">
+                              {/* Module Bar (Amber Theme) */}
                               <div
                                 onClick={() => toggleModule(mod.id)}
-                                className="p-3.5 bg-white hover:bg-claude-bg cursor-pointer flex items-center justify-between border-b border-claude-border transition-colors select-none"
+                                className="p-4 bg-amber-100/90 hover:bg-amber-200/90 cursor-pointer flex items-center justify-between border-b border-amber-200 transition-colors select-none"
                               >
-                                <div className="flex items-center gap-2">
-                                  <span className="w-6 h-6 rounded-lg bg-claude-terracottaLight text-claude-terracotta font-bold text-xs flex items-center justify-center border border-claude-terracotta/20">
+                                <div className="flex items-center gap-3">
+                                  <span className="w-7 h-7 rounded-xl bg-amber-700 text-white font-bold text-xs flex items-center justify-center shadow-2xs">
                                     {isModExpanded ? "▼" : "►"}
                                   </span>
                                   <div>
-                                    <span className="text-xs font-extrabold text-claude-textMain block">
-                                      Module {modIdx + 1}: {mod.titleEn}
-                                    </span>
-                                    <span className="font-arabic text-sm text-slate-900 font-bold" dir="rtl">{mod.titleAr}</span>
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 border border-amber-300">
+                                        Module {modIdx + 1}
+                                      </span>
+                                      <span className="text-sm font-extrabold text-amber-950">{mod.titleEn}</span>
+                                    </div>
+                                    <span className="font-arabic text-base text-amber-900 font-bold block" dir="rtl">{mod.titleAr}</span>
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <button onClick={(e) => handleAddLesson(lvl.id, mod.id, e)}
-                                    className="px-2.5 py-1 text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg hover:bg-emerald-100">
-                                    + Lesson
+                                    className="px-3 py-1.5 text-xs font-bold bg-emerald-700 text-white border border-emerald-800 rounded-xl hover:bg-emerald-800 shadow-2xs">
+                                    + Add Lesson
                                   </button>
                                   <button onClick={(e) => handleDeleteModule(lvl.id, mod.id, e)}
-                                    className="text-xs text-rose-500 hover:text-rose-700 px-1">✕ Mod</button>
+                                    className="text-xs text-rose-600 hover:text-rose-800 px-2 font-bold">✕ Delete Mod</button>
                                 </div>
                               </div>
 
-                              {/* Lessons */}
+                              {/* Lessons Container (Emerald Theme) */}
                               {isModExpanded && (
-                                <div className="p-3.5 space-y-2 bg-claude-bg/30">
+                                <div className="p-4 space-y-3 bg-amber-50/20">
                                   {mod.lessons.map((les, lesIdx) => (
                                     <div
                                       key={les.id}
-                                      className="claude-card rounded-xl p-3 bg-white border border-claude-border hover:border-claude-borderHover transition-all flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-sm"
+                                      className="rounded-xl p-4 bg-emerald-50/90 border-2 border-emerald-200 hover:border-emerald-400 transition-all flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-2xs"
                                     >
                                       <div className="flex items-center gap-3 flex-1 min-w-0">
-                                        <div className="w-8 h-8 rounded-lg bg-claude-terracotta text-white font-extrabold text-xs flex items-center justify-center shrink-0">
+                                        <div className="w-9 h-9 rounded-xl bg-emerald-700 text-white font-black text-xs flex items-center justify-center shrink-0 shadow-2xs">
                                           {lesIdx + 1}
                                         </div>
                                         <div className="min-w-0">
-                                          <span className="font-arabic text-base font-bold text-slate-900 block truncate" dir="rtl">{les.titleAr}</span>
-                                          <span className="text-xs font-bold text-claude-textMain block truncate">Lesson {lesIdx + 1}: {les.titleEn}</span>
+                                          <span className="font-arabic text-base font-extrabold text-emerald-950 block truncate" dir="rtl">{les.titleAr}</span>
+                                          <span className="text-xs font-bold text-emerald-900 block truncate">Lesson {lesIdx + 1}: {les.titleEn}</span>
                                         </div>
                                       </div>
                                       <div className="flex items-center gap-2 shrink-0">
-                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200">
+                                        <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-purple-100 text-purple-800 border border-purple-200">
                                           🎯 {(les.exercises || []).length} Exercises
                                         </span>
                                         <button
                                           onClick={() => handleOpenLessonStudio(les)}
-                                          className="px-3.5 py-2 rounded-xl bg-claude-terracotta text-white font-bold text-xs hover:bg-[#B85C3C] transition-colors shadow-sm"
+                                          className="px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-xs transition-colors shadow-2xs flex items-center gap-1.5"
                                         >
-                                          ✏️ Edit Full Studio
+                                          ✏️ Open Lesson Studio
                                         </button>
                                         <button
                                           onClick={(e) => handleDeleteLesson(lvl.id, mod.id, les.id, e)}
-                                          className="p-1.5 text-rose-500 hover:bg-rose-50 border border-rose-200 rounded-lg text-xs"
+                                          className="p-2 text-rose-600 hover:bg-rose-100 border border-rose-200 rounded-xl text-xs"
                                         >✕</button>
                                       </div>
                                     </div>
                                   ))}
                                   {mod.lessons.length === 0 && (
-                                    <p className="text-xs text-claude-textMuted py-2 text-center">No lessons yet — click + Lesson to add</p>
+                                    <p className="text-xs text-amber-800/60 py-3 text-center font-medium">No lessons yet — click + Add Lesson to create one</p>
                                   )}
                                 </div>
                               )}
@@ -817,7 +820,7 @@ export default function Course1AdminPage() {
                           );
                         })}
                         {lvl.modules.length === 0 && (
-                          <p className="text-xs text-claude-textMuted text-center py-4">No modules — click + Module to add</p>
+                          <p className="text-xs text-indigo-900/60 text-center py-4 font-medium">No modules — click + Add Module to create one</p>
                         )}
                       </div>
                     )}
