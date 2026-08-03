@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   BookOpen,
@@ -15,11 +15,60 @@ import {
   ExternalLink,
   ChevronLeft,
   ChevronRight,
+  LogOut,
 } from "lucide-react";
 
 export default function AdminLayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [session, setSession] = useState<{ name: string; email: string; role: string } | null>(null);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+
+  useEffect(() => {
+    // If we're on login page, skip authentication check
+    if (pathname === "/login") {
+      setIsCheckingAuth(false);
+      return;
+    }
+
+    // Check localStorage session
+    const storedSession = localStorage.getItem("alarabi_admin_session");
+    if (!storedSession) {
+      router.push("/login");
+    } else {
+      try {
+        setSession(JSON.parse(storedSession));
+      } catch (e) {
+        localStorage.removeItem("alarabi_admin_session");
+        router.push("/login");
+      }
+    }
+    setIsCheckingAuth(false);
+  }, [pathname, router]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("alarabi_admin_session");
+    router.push("/login");
+  };
+
+  // If on login page, render full clean view
+  if (pathname === "/login") {
+    return <div className="min-h-screen bg-claude-bg">{children}</div>;
+  }
+
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-[#F8FAF6] flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <div className="w-10 h-10 rounded-xl bg-[#C2410C] text-white font-arabic text-xl font-bold flex items-center justify-center mx-auto animate-pulse">
+            ع
+          </div>
+          <p className="text-xs font-bold text-[#64748B]">Verifying Admin Session...</p>
+        </div>
+      </div>
+    );
+  }
 
   const navigation = [
     { name: "Overview Dashboard", href: "/", icon: LayoutDashboard },
@@ -88,21 +137,31 @@ export default function AdminLayoutWrapper({ children }: { children: React.React
           </nav>
         </div>
 
-        {/* Footer Admin User Info */}
-        <div className="p-4 border-t border-[#E2E8F0] bg-[#F8FAF6]">
-          <Link href="/admins" className="flex items-center gap-3 group">
-            <div className="w-8 h-8 rounded-full bg-[#0F172A] text-white text-xs font-bold flex items-center justify-center shadow-2xs">
-              SA
-            </div>
-            {isSidebarOpen && (
-              <div className="overflow-hidden text-xs">
-                <p className="font-extrabold text-[#0F172A] group-hover:text-[#C2410C] transition-colors truncate">
-                  Super Admin 👑
-                </p>
-                <p className="text-[10px] text-[#64748B] truncate">admin@alarabi.edu</p>
+        {/* Footer Admin User Info & Logout */}
+        <div className="p-4 border-t border-[#E2E8F0] bg-[#F8FAF6] space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 overflow-hidden">
+              <div className="w-8 h-8 rounded-full bg-[#0F172A] text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-2xs">
+                {session?.name ? session.name.substring(0, 2).toUpperCase() : "AD"}
               </div>
-            )}
-          </Link>
+              {isSidebarOpen && (
+                <div className="overflow-hidden text-xs">
+                  <p className="font-extrabold text-[#0F172A] truncate">
+                    {session?.name || "Super Admin"}
+                  </p>
+                  <p className="text-[10px] text-[#64748B] truncate">{session?.email || "admin@alarabi.com"}</p>
+                </div>
+              )}
+            </div>
+
+            <button
+              onClick={handleLogout}
+              title="Log Out of Admin Studio"
+              className="p-1.5 rounded-lg hover:bg-rose-100 text-rose-600 transition-colors shrink-0"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </aside>
 
@@ -123,10 +182,10 @@ export default function AdminLayoutWrapper({ children }: { children: React.React
 
           <div className="flex items-center gap-4">
             <span className="text-xs font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-900 border border-emerald-200">
-              ● Server Running (Port 3001)
+              ● Live CMS (Port 3001)
             </span>
             <a
-              href="http://localhost:3000"
+              href="https://academy.alqalamlib.com"
               target="_blank"
               rel="noreferrer"
               className="px-3.5 py-1.5 rounded-xl bg-[#F8FAF6] border border-[#E2E8F0] hover:border-[#C2410C] text-xs font-bold text-[#0F172A] transition-colors flex items-center gap-1.5"
