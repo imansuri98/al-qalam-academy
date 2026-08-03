@@ -7,6 +7,15 @@ export interface PassageQuestion {
   id: string;
   questionAr: string;
   questionEn: string;
+  exerciseType?:
+    | "TASHKEEL_PICKER"
+    | "SENTENCE_REORDER"
+    | "IRAB_PARSING"
+    | "SARF_PARSING"
+    | "TRANSLATION"
+    | "TRANSLATION_EN_AR"
+    | "MULTIPLE_CHOICE"
+    | string;
   options?: string[];
   optionsCsv?: string;
   correctAnswer: string;

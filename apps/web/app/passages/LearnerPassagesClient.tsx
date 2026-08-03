@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import LearnerNavbar from "../components/LearnerNavbar";
 import { DEFAULT_PASSAGES, PassageItem } from "@alarabi/curriculum";
+import ExerciseEngine, { ExerciseData } from "../components/exercises/ExerciseEngine";
 
 export default function LearnerPassagesClient() {
   const [activeCategory, setActiveCategory] = useState<"ALL" | "QURAN" | "HADITH" | "LITERATURE">("ALL");
@@ -68,13 +69,7 @@ export default function LearnerPassagesClient() {
     : passages.filter((p: PassageItem) => p.category === activeCategory);
 
   const handleOpenSolver = (passage: PassageItem) => {
-    if (!passage.isUnlocked) return;
     setSelectedPassage(passage);
-    setActiveQIdx(0);
-    setSelectedOption(null);
-    setIsAnswered(false);
-    setScore(0);
-    setIsCompleted(false);
   };
 
   const handleSelectOption = (opt: string) => {
@@ -167,17 +162,34 @@ export default function LearnerPassagesClient() {
                         🔒 Locked
                       </span>
                     )}
-                  </div>
-
-                  {/* Title & Citation */}
-                  <div>
-                    <h2 className="text-base font-extrabold text-[#0F172A] leading-snug">
-                      {passage.titleEn}
-                    </h2>
-                    <span className="text-xs font-mono text-[#64748B] block mt-0.5">
-                      {passage.citationEn}
+                    <span className="text-[10px] font-bold px-2.5 py-1 rounded bg-[#F8FAF6] text-[#0F172A] border border-[#E2E8F0]">
+                      {passage.category} Capstone Passage
+                    </span>
+                    <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded border ${
+                      isUnlocked ? "bg-emerald-50 text-emerald-800 border-emerald-200" : "bg-amber-50 text-amber-800 border-amber-200"
+                    }`}>
+                      {isUnlocked ? "🔓 Unlocked" : `🔒 Milestone Gate (${passage.unlockScope || "MODULE"})`}
                     </span>
                   </div>
+
+                  {(passage.titleAr || passage.titleEn) && (
+                    <div>
+                      {passage.titleAr && (
+                        <span className="font-arabic text-2xl font-bold text-[#090D16] block dir-rtl" dir="rtl">
+                          {passage.titleAr}
+                        </span>
+                      )}
+                      {passage.titleEn && (
+                        <h2 className="text-base font-extrabold text-[#0F172A] mt-0.5">
+                          {passage.titleEn}
+                        </h2>
+                      )}
+                    </div>
+                  )}
+
+                  {passage.citationEn && (
+                    <p className="text-xs font-semibold text-[#64748B]">{passage.citationEn}</p>
+                  )}
 
                   {/* Full Vowelled Arabic Passage Card */}
                   <div className="p-5 rounded-xl bg-[#F8FAF6] border border-[#E2E8F0] dir-rtl text-right" dir="rtl">
@@ -187,23 +199,25 @@ export default function LearnerPassagesClient() {
                   </div>
 
                   {/* English Translation */}
-                  <p className="text-xs text-[#64748B] italic leading-relaxed">
-                    "{passage.englishTranslation}"
-                  </p>
+                  {passage.englishTranslation && (
+                    <p className="text-xs text-[#64748B] italic leading-relaxed">
+                      "{passage.englishTranslation}"
+                    </p>
+                  )}
                 </div>
 
                 {/* Bottom Action / Unlock Requirement */}
-                <div className="pt-3 border-t border-[#E2E8F0]">
-                  {isUnlocked ? (
-                    <button
-                      onClick={() => handleOpenSolver(passage)}
-                      className="w-full py-3 rounded-xl brand-button font-bold text-xs shadow-2xs flex items-center justify-center gap-2"
-                    >
-                      Solve Grammatical Drills →
-                    </button>
-                  ) : (
-                    <div className="text-xs text-amber-800 font-medium bg-amber-50 p-3 rounded-xl border border-amber-200 text-center">
-                      {passage.unlockRequirementEn}
+                <div className="pt-3 border-t border-[#E2E8F0] space-y-2">
+                  <button
+                    onClick={() => handleOpenSolver(passage)}
+                    className="w-full py-3 rounded-xl brand-button font-bold text-xs shadow-2xs flex items-center justify-center gap-2"
+                  >
+                    Solve Grammatical Drills ({passage.questions.length} Qs) →
+                  </button>
+
+                  {!isUnlocked && (passage.unlockedAfterMilestoneTitle || passage.unlockRequirementEn) && (
+                    <div className="text-[11px] text-amber-900 font-semibold bg-amber-50 p-2.5 rounded-xl border border-amber-200 text-center">
+                      🔒 Prerequisite: Finish <strong>{passage.unlockedAfterMilestoneTitle || passage.unlockRequirementEn}</strong>
                     </div>
                   )}
                 </div>
@@ -214,141 +228,68 @@ export default function LearnerPassagesClient() {
       </main>
 
       {/* PASSAGE SOLVER MODAL */}
-      {selectedPassage && (
-        <div className="fixed inset-0 z-50 bg-[#0F172A]/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white border border-[#E2E8F0] rounded-3xl max-w-2xl w-full p-6 md:p-8 space-y-6 shadow-xl relative animate-in fade-in zoom-in-95 duration-200">
-            <button
-              onClick={() => setSelectedPassage(null)}
-              className="absolute top-6 right-6 p-2 rounded-full hover:bg-[#F8FAF6] text-[#64748B] transition-colors"
-            >
-              ✕
-            </button>
+      {selectedPassage && (() => {
+        const passageExerciseUnits: ExerciseData[] = [
+          {
+            id: `ex-pas-${selectedPassage.id}`,
+            exerciseType: (selectedPassage.questions[0]?.exerciseType as any) || "MULTIPLE_CHOICE",
+            titleAr: selectedPassage.titleAr || selectedPassage.citationEn || "تَمَارِينُ النَّصِّ",
+            titleEn: selectedPassage.titleEn || selectedPassage.citationEn || "Capstone Passage Drills",
+            instructionAr: "أَجِبْ عَنِ الأَسْئِلَةِ التَّالِيَةِ عَنِ النَّصِّ",
+            instructionEn: `Solve questions for: ${selectedPassage.citationEn || selectedPassage.titleEn || "Classical Passage"}`,
+            questions: selectedPassage.questions.map((q, idx) => ({
+              id: q.id || `pq-${idx}`,
+              sentenceAr: q.questionAr || selectedPassage.arabicText,
+              sentenceEn: q.questionEn || selectedPassage.englishTranslation,
+              options: q.options || (q.optionsCsv ? q.optionsCsv.split(",").map((s) => s.trim()) : []),
+              correctAnswer: q.correctAnswer,
+              grammaticalRuleEn: q.grammaticalRuleEn,
+            })),
+          },
+        ];
 
-            {!isCompleted ? (
+        return (
+          <div className="fixed inset-0 z-50 bg-[#0F172A]/40 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+            <div className="bg-white border border-[#E2E8F0] rounded-3xl max-w-3xl w-full p-6 md:p-8 space-y-6 shadow-xl relative animate-in fade-in zoom-in-95 duration-200 my-8">
+              <button
+                onClick={() => setSelectedPassage(null)}
+                className="absolute top-6 right-6 p-2 rounded-full hover:bg-[#F8FAF6] text-[#64748B] transition-colors"
+              >
+                ✕
+              </button>
+
               <div className="space-y-6">
                 {/* Modal Header */}
                 <div className="border-b border-[#E2E8F0] pb-4">
                   <span className="text-[10px] font-bold px-2.5 py-1 rounded bg-[#F8FAF6] text-[#0F172A] border border-[#E2E8F0]">
                     {selectedPassage.category} Capstone Drills
                   </span>
-                  <h2 className="text-xl font-extrabold text-[#0F172A] mt-2">
-                    {selectedPassage.titleEn}
-                  </h2>
-                  <span className="text-xs font-mono text-[#64748B]">{selectedPassage.citationEn}</span>
+                  {(selectedPassage.titleAr || selectedPassage.titleEn) && (
+                    <h2 className="text-xl font-extrabold text-[#0F172A] mt-2">
+                      {selectedPassage.titleEn || selectedPassage.titleAr}
+                    </h2>
+                  )}
+                  {selectedPassage.citationEn && (
+                    <span className="text-xs font-mono text-[#64748B] block mt-1">{selectedPassage.citationEn}</span>
+                  )}
                 </div>
 
-                {/* Arabic Script Display */}
-                <div className="p-5 rounded-2xl bg-[#F8FAF6] border border-[#E2E8F0] text-right dir-rtl" dir="rtl">
-                  <p className="font-arabic text-xl font-bold text-[#090D16] leading-loose">
-                    {selectedPassage.arabicText}
-                  </p>
-                </div>
-
-                {/* Current Interactive Question */}
-                <div className="p-6 rounded-2xl bg-white border border-[#E2E8F0] space-y-5 shadow-2xs">
-                  <div className="flex items-center justify-between text-xs font-mono text-[#64748B] border-b border-[#E2E8F0] pb-3">
-                    <span>Question {activeQIdx + 1} of {selectedPassage.questions.length}</span>
-                    <span className="font-bold text-[#C2410C]">Score: {score}</span>
-                  </div>
-
-                  <div className="space-y-2">
-                    <span className="font-arabic text-xl font-bold text-[#090D16] block dir-rtl text-right" dir="rtl">
-                      {selectedPassage.questions[activeQIdx]?.questionAr}
-                    </span>
-                    <p className="text-xs font-medium text-[#64748B]">
-                      {selectedPassage.questions[activeQIdx]?.questionEn}
+                {/* Vowelled Arabic Passage Display */}
+                {selectedPassage.arabicText && (
+                  <div className="p-5 rounded-2xl bg-[#F8FAF6] border border-[#E2E8F0] text-right dir-rtl" dir="rtl">
+                    <p className="font-arabic text-xl font-bold text-[#090D16] leading-loose">
+                      {selectedPassage.arabicText}
                     </p>
                   </div>
+                )}
 
-                  {/* Multiple Choice Options */}
-                  <div className="grid grid-cols-1 gap-2.5">
-                    {(selectedPassage.questions[activeQIdx]?.options || []).map((opt: string, idx: number) => {
-                      const isSelected = selectedOption === opt;
-                      let btnStyle = "bg-white border-[#E2E8F0] text-[#0F172A] hover:border-[#C2410C]";
-
-                      if (isAnswered) {
-                        if (opt.trim() === selectedPassage.questions[activeQIdx].correctAnswer.trim()) {
-                          btnStyle = "bg-emerald-50 border-emerald-500 text-emerald-900 font-bold";
-                        } else if (isSelected && !isCorrect) {
-                          btnStyle = "bg-rose-50 border-rose-400 text-rose-900";
-                        }
-                      } else if (isSelected) {
-                        btnStyle = "bg-[#FFF7ED] border-[#C2410C] text-[#C2410C] font-bold";
-                      }
-
-                      return (
-                        <button
-                          key={idx}
-                          onClick={() => handleSelectOption(opt)}
-                          disabled={isAnswered}
-                          className={`p-4 rounded-xl border text-right font-arabic text-base font-bold transition-all ${btnStyle}`}
-                          dir="rtl"
-                        >
-                          {opt}
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {/* Feedback Explanation */}
-                  {isAnswered && (
-                    <div className={`p-4 rounded-xl border text-xs space-y-1 ${
-                      isCorrect ? "bg-emerald-50 border-emerald-200 text-emerald-900" : "bg-rose-50 border-rose-200 text-rose-900"
-                    }`}>
-                      <span className="font-bold block text-sm">
-                        {isCorrect ? "✓ Correct Parsing!" : "✗ Incorrect Option"}
-                      </span>
-                      <p className="leading-relaxed">
-                        Grammar Rule: {selectedPassage.questions[activeQIdx].grammaticalRuleEn}
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Footer Buttons */}
-                <div className="flex items-center justify-end gap-3 pt-2">
-                  {!isAnswered ? (
-                    <button
-                      onClick={handleCheckAnswer}
-                      disabled={!selectedOption}
-                      className="px-6 py-3 rounded-xl brand-button font-bold text-xs disabled:opacity-50"
-                    >
-                      Check Answer
-                    </button>
-                  ) : (
-                    <button
-                      onClick={handleNextQ}
-                      className="px-6 py-3 rounded-xl brand-button font-bold text-xs"
-                    >
-                      {activeQIdx + 1 < selectedPassage.questions.length ? "Next Question →" : "View Results →"}
-                    </button>
-                  )}
-                </div>
+                {/* ALL 7 EXERCISE TYPES SUPPORTED VIA EXERCISE ENGINE */}
+                <ExerciseEngine exercises={passageExerciseUnits} />
               </div>
-            ) : (
-              <div className="text-center py-10 space-y-6">
-                <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center mx-auto text-3xl">
-                  ✓
-                </div>
-
-                <div className="space-y-2">
-                  <h2 className="text-2xl font-extrabold text-[#0F172A]">Capstone Mastery Complete!</h2>
-                  <p className="text-sm text-[#64748B]">
-                    You successfully scored {score} out of {selectedPassage.questions.length} on {selectedPassage.titleEn}.
-                  </p>
-                </div>
-
-                <button
-                  onClick={() => setSelectedPassage(null)}
-                  className="px-8 py-3 rounded-xl brand-button font-bold text-xs"
-                >
-                  Return to Passages Studio
-                </button>
-              </div>
-            )}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

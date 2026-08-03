@@ -37,6 +37,7 @@ export default function ClassicalPassagesStudioPage() {
   const [citationEn, setCitationEn] = useState("");
   const [arabicText, setArabicText] = useState("");
   const [englishTranslation, setEnglishTranslation] = useState("");
+  const [isUnlocked, setIsUnlocked] = useState(true);
   const [unlockScope, setUnlockScope] = useState<"MODULE" | "LEVEL">("MODULE");
   const [unlockedAfterMilestoneTitle, setUnlockedAfterMilestoneTitle] = useState("");
   const [questionsList, setQuestionsList] = useState<PassageQuestion[]>([]);
@@ -50,23 +51,25 @@ export default function ClassicalPassagesStudioPage() {
   const handleOpenEditor = (passage?: PassageItem) => {
     if (passage) {
       setActivePassage(passage);
-      setTitleAr(passage.titleAr);
-      setTitleEn(passage.titleEn);
+      setTitleAr(passage.titleAr || "");
+      setTitleEn(passage.titleEn || "");
       setCategory(passage.category);
-      setCitationEn(passage.citationEn);
-      setArabicText(passage.arabicText);
-      setEnglishTranslation(passage.englishTranslation);
+      setCitationEn(passage.citationEn || "");
+      setArabicText(passage.arabicText || "");
+      setEnglishTranslation(passage.englishTranslation || "");
+      setIsUnlocked(passage.isUnlocked ?? true);
       setUnlockScope(passage.unlockScope || "MODULE");
       setUnlockedAfterMilestoneTitle(passage.unlockedAfterMilestoneTitle || "");
       setQuestionsList([...passage.questions]);
     } else {
       setActivePassage(null);
-      setTitleAr("نَصٌّ كَلَاسِيكِيٌّ جَدِيدٌ");
-      setTitleEn("New Module/Level Capstone Passage");
+      setTitleAr("");
+      setTitleEn("");
       setCategory("QURAN");
-      setCitationEn("Quran / Hadith / Literature Citation");
-      setArabicText("الْنَّصُّ الْعَرَبِيُّ بِالتَّشْكِيلِ...");
-      setEnglishTranslation("English translation...");
+      setCitationEn("");
+      setArabicText("");
+      setEnglishTranslation("");
+      setIsUnlocked(true);
       setUnlockScope("MODULE");
       setUnlockedAfterMilestoneTitle("Module 1 Capstone: Nominal Sentence Drills (Level 1)");
       setQuestionsList([
@@ -74,6 +77,7 @@ export default function ClassicalPassagesStudioPage() {
           id: `pq-new-${Date.now()}`,
           questionAr: "السُّؤَالُ الْأَوَّلُ عَنِ النَّصِّ",
           questionEn: "Question 1 about the passage",
+          exerciseType: "MULTIPLE_CHOICE",
           optionsCsv: "خِيَار 1, خِيَار 2, خِيَار 3, خِيَار 4",
           correctAnswer: "خِيَار 1",
           grammaticalRuleEn: "Parsing rule explanation",
@@ -96,6 +100,7 @@ export default function ClassicalPassagesStudioPage() {
           citationEn,
           arabicText,
           englishTranslation,
+          isUnlocked,
           unlockScope,
           unlockedAfterMilestoneTitle,
           questions: questionsList,
@@ -108,6 +113,7 @@ export default function ClassicalPassagesStudioPage() {
           citationEn,
           arabicText,
           englishTranslation,
+          isUnlocked,
           unlockScope,
           unlockedAfterMilestoneTitle,
           questions: questionsList,
@@ -367,12 +373,13 @@ export default function ClassicalPassagesStudioPage() {
 
               <div className="md:col-span-4">
                 <label className="text-[10px] font-bold uppercase tracking-wider text-claude-textMuted block mb-1">
-                  Title (Arabic Script)
+                  Title (Arabic Script) — <span className="text-purple-600 font-normal">Optional</span>
                 </label>
                 <input
                   type="text"
                   value={titleAr}
                   onChange={(e) => setTitleAr(e.target.value)}
+                  placeholder="e.g. سُورَةُ الْفَاتِحَةِ (Optional)"
                   className="w-full font-arabic text-lg font-bold text-slate-900 border-b border-claude-border focus:border-purple-600 focus:outline-none py-1 dir-rtl"
                   dir="rtl"
                 />
@@ -380,12 +387,13 @@ export default function ClassicalPassagesStudioPage() {
 
               <div className="md:col-span-4">
                 <label className="text-[10px] font-bold uppercase tracking-wider text-claude-textMuted block mb-1">
-                  Title & Citation (English)
+                  Title & Citation (English) — <span className="text-purple-600 font-normal">Optional</span>
                 </label>
                 <input
                   type="text"
                   value={titleEn}
                   onChange={(e) => setTitleEn(e.target.value)}
+                  placeholder="e.g. Surah Al-Fatiha Passage (Optional)"
                   className="w-full text-xs font-bold text-claude-textMain border-b border-claude-border focus:border-purple-600 focus:outline-none py-1"
                 />
               </div>
@@ -420,9 +428,20 @@ export default function ClassicalPassagesStudioPage() {
 
               {/* Milestone Scope & Unlock Target */}
               <div className="p-4 bg-purple-50 border border-purple-200 rounded-2xl space-y-3">
-                <span className="text-xs font-extrabold text-purple-900 uppercase tracking-wider block">
-                  🔒 Milestone Unlock Gate (Available ONLY after Finishing Module or Level)
-                </span>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-extrabold text-purple-900 uppercase tracking-wider block">
+                    🔒 Milestone Unlock Gate (Available ONLY after Finishing Module or Level)
+                  </span>
+                  <label className="flex items-center gap-2 text-xs font-bold text-purple-900 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={isUnlocked}
+                      onChange={(e) => setIsUnlocked(e.target.checked)}
+                      className="w-4 h-4 rounded text-purple-600 focus:ring-purple-500"
+                    />
+                    <span>Unlocked for All Learners</span>
+                  </label>
+                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
                   <div className="md:col-span-4">
@@ -486,23 +505,62 @@ export default function ClassicalPassagesStudioPage() {
 
               {/* Active Question Form */}
               <div className="p-5 rounded-2xl bg-claude-bg/40 border border-claude-border space-y-4">
-                <div>
-                  <label className="text-[10px] font-bold uppercase text-claude-textMuted block mb-1">
-                    Question (Arabic Script)
-                  </label>
-                  <input
-                    type="text"
-                    value={questionsList[activeQTab]?.questionAr || ""}
-                    onChange={(e) => updateCurrentQuestion("questionAr", e.target.value)}
-                    className="w-full font-arabic text-lg font-bold text-slate-900 border-b border-claude-border focus:border-purple-600 focus:outline-none py-1 dir-rtl"
-                    dir="rtl"
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                  <div className="md:col-span-8">
+                    <label className="text-[10px] font-bold uppercase text-claude-textMuted block mb-1">
+                      Question (Arabic Script)
+                    </label>
+                    <input
+                      type="text"
+                      value={questionsList[activeQTab]?.questionAr || ""}
+                      onChange={(e) => updateCurrentQuestion("questionAr", e.target.value)}
+                      className="w-full font-arabic text-lg font-bold text-slate-900 border-b border-claude-border focus:border-purple-600 focus:outline-none py-1 dir-rtl"
+                      dir="rtl"
+                    />
+                  </div>
+
+                  <div className="md:col-span-4">
+                    <label className="text-[10px] font-bold uppercase text-claude-textMuted block mb-1">
+                      Exercise Form / Type
+                    </label>
+                    <select
+                      value={questionsList[activeQTab]?.exerciseType || "MULTIPLE_CHOICE"}
+                      onChange={(e) => updateCurrentQuestion("exerciseType", e.target.value)}
+                      className="w-full text-xs font-bold p-2.5 rounded-xl border border-slate-200 focus:outline-none bg-white"
+                    >
+                      <option value="TASHKEEL_PICKER">Harakah Challenge (Tashkeel Picker)</option>
+                      <option value="SENTENCE_REORDER">Sentence Unscrambler</option>
+                      <option value="TRANSLATION">Translation 1: Arabic → English</option>
+                      <option value="TRANSLATION_EN_AR">Translation 2: English → Arabic</option>
+                      <option value="IRAB_PARSING">I'rab 3-Step Syntactic Breakdown</option>
+                      <option value="SARF_PARSING">Sarf 3-Step Morphological Breakdown</option>
+                      <option value="MULTIPLE_CHOICE">Multiple Choice (Open MCQ)</option>
+                    </select>
+                  </div>
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-bold uppercase text-claude-textMuted block mb-1">
-                    Question (English Context)
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-[10px] font-bold uppercase text-claude-textMuted block">
+                      Question (English Context)
+                    </label>
+                    {questionsList[activeQTab]?.exerciseType === "SENTENCE_REORDER" && (
+                      <button
+                        onClick={() => {
+                          const currentQ = questionsList[activeQTab];
+                          if (currentQ?.questionAr) {
+                            const words = currentQ.questionAr.trim().split(/\s+/);
+                            const shuffled = [...words].sort(() => 0.5 - Math.random());
+                            updateCurrentQuestion("optionsCsv", shuffled.join(", "));
+                            updateCurrentQuestion("correctAnswer", words.join(","));
+                          }
+                        }}
+                        className="px-2 py-0.5 rounded bg-purple-100 text-purple-900 font-bold text-[10px] hover:bg-purple-200"
+                      >
+                        🔀 Auto-Scramble Word Tiles
+                      </button>
+                    )}
+                  </div>
                   <input
                     type="text"
                     value={questionsList[activeQTab]?.questionEn || ""}
