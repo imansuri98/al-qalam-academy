@@ -670,8 +670,7 @@ export default function Course1AdminPage() {
                               onChange={(e) => setLessonExercises(lessonExercises.map((ex, i) => i === activeExIdx ? { ...ex, exerciseType: e.target.value as any } : ex))}
                               className="w-full text-xs font-bold p-2 rounded-lg border border-slate-200 focus:outline-none"
                             >
-                              <option value="TASHKEEL_PICKER">Tashkeel 1: Quick Tap Harakah Picker</option>
-                              <option value="HARAKAH_DRAG_DRILL">Tashkeel 2: Physics Drag-to-Place Harakah Board</option>
+                              <option value="TASHKEEL_PICKER">Harakah Challenge (Tashkeel Picker)</option>
                               <option value="SENTENCE_REORDER">Sentence Unscrambler</option>
                               <option value="TRANSLATION">Translation 1: Arabic → English</option>
                               <option value="TRANSLATION_EN_AR">Translation 2: English → Arabic</option>

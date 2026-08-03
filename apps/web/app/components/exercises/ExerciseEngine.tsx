@@ -310,19 +310,6 @@ export default function ExerciseEngine({ exercises }: ExerciseEngineProps) {
                 ))}
               </div>
             </div>
-          ) : activeEx.exerciseType === "HARAKAH_DRAG_DRILL" ? (
-            /* DRILL TYPE: PHYSICS HARAKAH DRAG BOARD */
-            <div className="space-y-4 bg-white p-6 rounded-2xl border border-[#E2E8F0] shadow-xs">
-              <div className="text-center space-y-1">
-                <span className="text-xs font-bold text-[#C2410C] uppercase tracking-wider block">
-                  Interactive Physics Drag-to-Place Board
-                </span>
-                <p className="text-xs text-[#64748B]">
-                  Physically grab the floating vowel tokens below and snap them onto the missing letter position in the sentence.
-                </p>
-              </div>
-              <HarakahDragBoard />
-            </div>
           ) : activeEx.exerciseType === "IRAB_PARSING" ? (
             /* DRILL TYPE: 3-STEP I'RAB SYNTACTIC BREAKDOWN */
             <div className="space-y-6 bg-white p-6 rounded-2xl border border-[#E2E8F0] shadow-xs">
