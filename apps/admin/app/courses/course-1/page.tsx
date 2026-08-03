@@ -36,7 +36,7 @@ function CanvasLoader() {
 /* ─── Types ─────────────────────────────────────────── */
 
 type AdminView = "MAIN" | "LESSON_STUDIO";
-type LessonTab = "NOTES" | "CANVAS" | "WHITEBOARD" | "PARSE_TREE" | "MORPHOLOGY" | "FLOWCHART" | "EXERCISES" | "HARAKAH" | "INSIGHT";
+type LessonTab = "NOTES" | "EXERCISES" | "INSIGHT";
 
 interface InsightCard {
   id: string;
@@ -604,71 +604,6 @@ export default function Course1AdminPage() {
               </div>
             )}
 
-            {/* CONCEPT MAP */}
-            {lessonTab === "CANVAS" && (
-              <div className="claude-card rounded-2xl bg-white border border-claude-border shadow-sm p-5 space-y-3">
-                <div>
-                  <h2 className="font-bold text-claude-textMain text-sm">🎨 Grammar Concept Map</h2>
-                  <p className="text-xs text-claude-textMuted">
-                    Drag concept cards, example sentences, and rule boxes. Connect them with labeled arrows.
-                  </p>
-                </div>
-                <LessonConceptMap />
-              </div>
-            )}
-
-            {/* WHITEBOARD */}
-            {lessonTab === "WHITEBOARD" && (
-              <div className="claude-card rounded-2xl bg-white border border-claude-border shadow-sm p-5 space-y-3">
-                <div>
-                  <h2 className="font-bold text-claude-textMain text-sm">✏️ Freehand Whiteboard</h2>
-                  <p className="text-xs text-claude-textMuted">
-                    Sketch grammar diagrams, annotate Arabic words, draw arrows — just like a real whiteboard.
-                  </p>
-                </div>
-                <LessonWhiteboard />
-              </div>
-            )}
-
-            {/* I'RAB TREE */}
-            {lessonTab === "PARSE_TREE" && (
-              <div className="claude-card rounded-2xl bg-white border border-claude-border shadow-sm p-5 space-y-3">
-                <div>
-                  <h2 className="font-bold text-claude-textMain text-sm">🌿 I'rab Parse Tree</h2>
-                  <p className="text-xs text-claude-textMuted">
-                    Build an interactive syntactic parse tree. Add nodes with grammatical roles and case endings.
-                  </p>
-                </div>
-                <IrabParseTreeEditor />
-              </div>
-            )}
-
-            {/* MORPHOLOGY */}
-            {lessonTab === "MORPHOLOGY" && (
-              <div className="claude-card rounded-2xl bg-white border border-claude-border shadow-sm p-5 space-y-3">
-                <div>
-                  <h2 className="font-bold text-claude-textMain text-sm">📊 Morphological Root Chart</h2>
-                  <p className="text-xs text-claude-textMuted">
-                    Enter a 3-letter root and build a radial chart of all its derived word forms (Sarf patterns).
-                  </p>
-                </div>
-                <MorphologyRootChart />
-              </div>
-            )}
-
-            {/* GRAMMAR FLOWCHART */}
-            {lessonTab === "FLOWCHART" && (
-              <div className="claude-card rounded-2xl bg-white border border-claude-border shadow-sm p-5 space-y-3">
-                <div>
-                  <h2 className="font-bold text-claude-textMain text-sm">📋 Grammar Decision Flowchart</h2>
-                  <p className="text-xs text-claude-textMuted">
-                    Write Mermaid syntax to generate grammar decision trees and rule flowcharts.
-                  </p>
-                </div>
-                <GrammarFlowchart />
-              </div>
-            )}
-
             {/* EXERCISES */}
             {lessonTab === "EXERCISES" && (
               <div className="claude-card rounded-2xl bg-white border border-claude-border shadow-sm p-6 space-y-5">
@@ -735,7 +670,8 @@ export default function Course1AdminPage() {
                               onChange={(e) => setLessonExercises(lessonExercises.map((ex, i) => i === activeExIdx ? { ...ex, exerciseType: e.target.value as any } : ex))}
                               className="w-full text-xs font-bold p-2 rounded-lg border border-slate-200 focus:outline-none"
                             >
-                              <option value="TASHKEEL_PICKER">Harakah Challenge (Tashkeel Picker)</option>
+                              <option value="TASHKEEL_PICKER">Tashkeel 1: Quick Tap Harakah Picker</option>
+                              <option value="HARAKAH_DRAG_DRILL">Tashkeel 2: Physics Drag-to-Place Harakah Board</option>
                               <option value="SENTENCE_REORDER">Sentence Unscrambler</option>
                               <option value="TRANSLATION">Translation 1: Arabic → English</option>
                               <option value="TRANSLATION_EN_AR">Translation 2: English → Arabic</option>
@@ -843,19 +779,6 @@ export default function Course1AdminPage() {
                     <p className="text-xs mt-1">Click "+ Add Exercise Unit" to build the first quiz</p>
                   </div>
                 )}
-              </div>
-            )}
-
-            {/* HARAKAH DRAG */}
-            {lessonTab === "HARAKAH" && (
-              <div className="claude-card rounded-2xl bg-white border border-claude-border shadow-sm p-6 space-y-3">
-                <div>
-                  <h2 className="font-bold text-claude-textMain text-sm">🖐️ Harakah Drag-to-Place Exercise</h2>
-                  <p className="text-xs text-claude-textMuted">
-                    Drag the correct vowel mark (harakah) from the palette to the blank in the sentence. Uses spring physics.
-                  </p>
-                </div>
-                <HarakahDragBoard />
               </div>
             )}
           </div>
