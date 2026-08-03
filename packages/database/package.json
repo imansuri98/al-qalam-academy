@@ -6,15 +6,18 @@
   "scripts": {
     "build": "tsc",
     "db:generate": "drizzle-kit generate",
-    "db:push": "drizzle-kit push"
+    "db:push": "drizzle-kit push",
+    "seed": "tsx src/seed.ts"
   },
   "dependencies": {
+    "@alarabi/curriculum": "*",
     "@supabase/supabase-js": "^2.43.4",
     "drizzle-orm": "^0.30.0",
     "postgres": "^3.4.4"
   },
   "devDependencies": {
     "drizzle-kit": "^0.20.14",
+    "tsx": "^4.10.0",
     "typescript": "^5.4.5"
   }
 }
