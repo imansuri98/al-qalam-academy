@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("super@alarabi.com");
-  const [password, setPassword] = useState("superpass");
+  const [email, setEmail] = useState("ismail@alarabi.com");
+  const [password, setPassword] = useState("123456");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -25,31 +25,41 @@ export default function AdminLoginPage() {
     setTimeout(() => {
       setIsLoading(false);
 
-      // Authenticate against demo admin credentials & set role
-      if (email === "super@alarabi.com" && password === "superpass") {
+      const trimmedEmail = email.trim().toLowerCase();
+
+      // Super Admin: Ismail (ismail / ismail@alarabi.com, password: 123456)
+      if (
+        (trimmedEmail === "ismail" || trimmedEmail === "ismail@alarabi.com") &&
+        password === "123456"
+      ) {
         const session = {
-          email: "super@alarabi.com",
-          name: "Head Super Admin",
+          email: "ismail@alarabi.com",
+          name: "Ismail",
           role: "SUPER_ADMIN",
         };
         localStorage.setItem("alarabi_admin_session", JSON.stringify(session));
         router.push("/");
-      } else if (email === "admin@alarabi.com" && password === "adminpass") {
+      }
+      // Content Creator Admin: Farhan (farhan / farhan@alarabi.com, password: 123456)
+      else if (
+        (trimmedEmail === "farhan" || trimmedEmail === "farhan@alarabi.com") &&
+        password === "123456"
+      ) {
         const session = {
-          email: "admin@alarabi.com",
-          name: "Content Creator Admin",
+          email: "farhan@alarabi.com",
+          name: "Farhan",
           role: "ADMIN",
         };
         localStorage.setItem("alarabi_admin_session", JSON.stringify(session));
         router.push("/");
       } else {
-        setError("Invalid email or password. Use demo credentials below.");
+        setError("Invalid username/email or password. Use demo credentials below.");
       }
-    }, 600);
+    }, 500);
   };
 
-  const fillQuickCredentials = (demoEmail: string, demoPass: string) => {
-    setEmail(demoEmail);
+  const fillQuickCredentials = (demoUser: string, demoPass: string) => {
+    setEmail(demoUser);
     setPassword(demoPass);
   };
 
@@ -82,12 +92,12 @@ export default function AdminLoginPage() {
               Username / Email Address
             </label>
             <input
-              type="email"
+              type="text"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@alarabi.com"
-              className="w-full px-4 py-2.5 rounded-xl bg-claude-bg border border-claude-border text-xs focus:outline-none focus:border-claude-terracotta"
+              placeholder="ismail@alarabi.com or farhan"
+              className="w-full px-4 py-2.5 rounded-xl bg-claude-bg border border-claude-border text-xs focus:outline-none focus:border-claude-terracotta font-medium"
             />
           </div>
 
@@ -101,7 +111,7 @@ export default function AdminLoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-4 py-2.5 rounded-xl bg-claude-bg border border-claude-border text-xs focus:outline-none focus:border-claude-terracotta"
+              className="w-full px-4 py-2.5 rounded-xl bg-claude-bg border border-claude-border text-xs focus:outline-none focus:border-claude-terracotta font-medium"
             />
           </div>
 
@@ -117,33 +127,33 @@ export default function AdminLoginPage() {
         {/* Quick Credentials Sandbox Selector */}
         <div className="p-4 rounded-2xl bg-white border border-claude-border space-y-3 text-xs shadow-sm">
           <span className="font-bold text-claude-textMain block border-b border-claude-border pb-2">
-            🔑 Demo Role Credentials (Click to Autofill):
+            🔑 Admin Credentials (Click to Autofill):
           </span>
 
           <div className="space-y-2">
             <button
-              onClick={() => fillQuickCredentials("super@alarabi.com", "superpass")}
+              onClick={() => fillQuickCredentials("ismail@alarabi.com", "123456")}
               className="w-full p-2.5 rounded-xl bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-950 text-left transition-colors flex items-center justify-between"
             >
               <div>
-                <span className="font-bold block">👑 Super Admin</span>
-                <span className="text-[10px] text-purple-800">super@alarabi.com / superpass</span>
+                <span className="font-bold block">👑 Ismail (Super Admin)</span>
+                <span className="text-[10px] text-purple-800 font-mono">ismail@alarabi.com / 123456</span>
               </div>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-200 text-purple-900">
-                Full + Admin Management
+                Full Super Admin
               </span>
             </button>
 
             <button
-              onClick={() => fillQuickCredentials("admin@alarabi.com", "adminpass")}
+              onClick={() => fillQuickCredentials("farhan@alarabi.com", "123456")}
               className="w-full p-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-950 text-left transition-colors flex items-center justify-between"
             >
               <div>
-                <span className="font-bold block">👤 Standard Content Admin</span>
-                <span className="text-[10px] text-amber-800">admin@alarabi.com / adminpass</span>
+                <span className="font-bold block">📝 Farhan (Content Creator)</span>
+                <span className="text-[10px] text-amber-800 font-mono">farhan@alarabi.com / 123456</span>
               </div>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-200 text-amber-900">
-                Content Creation Only
+                Content Creator
               </span>
             </button>
           </div>

@@ -17,30 +17,21 @@ export default function AdminManagerPage() {
   const [admins, setAdmins] = useState<AdminUser[]>([
     {
       id: "adm-1",
-      name: "Super Admin",
-      email: "admin@alarabi.edu",
+      name: "Ismail",
+      email: "ismail@alarabi.com",
       role: "SUPER_ADMIN",
-      assignedCourses: ["Course 1: Grammar", "Course 2: Fusha", "Passages Studio"],
+      assignedCourses: ["All Courses", "Passages Studio", "RBAC"],
       status: "ACTIVE",
       lastActive: "Active Now",
     },
     {
       id: "adm-2",
-      name: "Dr. Tariq Al-Mansoor",
-      email: "tariq@alarabi.edu",
+      name: "Farhan",
+      email: "farhan@alarabi.com",
       role: "CONTENT_ADMIN",
-      assignedCourses: ["Course 1: Classical Grammar"],
+      assignedCourses: ["Course 1: Classical Grammar", "Course 2: Spoken Arabic"],
       status: "ACTIVE",
-      lastActive: "2 hours ago",
-    },
-    {
-      id: "adm-3",
-      name: "Fatima Al-Zahra",
-      email: "fatima@alarabi.edu",
-      role: "CONTENT_ADMIN",
-      assignedCourses: ["Course 2: Informal Fusha", "Vocab & Audio Studio"],
-      status: "INVITED",
-      lastActive: "Pending Invite",
+      lastActive: "Active Now",
     },
   ]);
 
