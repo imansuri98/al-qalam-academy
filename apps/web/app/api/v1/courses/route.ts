@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db, courses, modules, lessons } from "@alarabi/database";
-import { eq, ascii } from "drizzle-orm";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
