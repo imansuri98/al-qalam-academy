@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("ismail@alarabi.com");
-  const [password, setPassword] = useState("123456");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -17,50 +17,31 @@ export default function AdminLoginPage() {
     }
   }, [router]);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setIsLoading(true);
 
-    setTimeout(() => {
+    try {
+      const res = await fetch("/api/v1/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: email, password }),
+      });
+
+      const data = await res.json();
       setIsLoading(false);
 
-      const trimmedEmail = email.trim().toLowerCase();
-
-      // Super Admin: Ismail (ismail / ismail@alarabi.com, password: 123456)
-      if (
-        (trimmedEmail === "ismail" || trimmedEmail === "ismail@alarabi.com") &&
-        password === "123456"
-      ) {
-        const session = {
-          email: "ismail@alarabi.com",
-          name: "Ismail",
-          role: "SUPER_ADMIN",
-        };
-        localStorage.setItem("alarabi_admin_session", JSON.stringify(session));
-        router.push("/");
-      }
-      // Content Creator Admin: Farhan (farhan / farhan@alarabi.com, password: 123456)
-      else if (
-        (trimmedEmail === "farhan" || trimmedEmail === "farhan@alarabi.com") &&
-        password === "123456"
-      ) {
-        const session = {
-          email: "farhan@alarabi.com",
-          name: "Farhan",
-          role: "ADMIN",
-        };
-        localStorage.setItem("alarabi_admin_session", JSON.stringify(session));
+      if (data.success && data.session) {
+        localStorage.setItem("alarabi_admin_session", JSON.stringify(data.session));
         router.push("/");
       } else {
-        setError("Invalid username/email or password. Use demo credentials below.");
+        setError(data.error || "Invalid credentials.");
       }
-    }, 500);
-  };
-
-  const fillQuickCredentials = (demoUser: string, demoPass: string) => {
-    setEmail(demoUser);
-    setPassword(demoPass);
+    } catch (err: any) {
+      setIsLoading(false);
+      setError("Server error during login. Please try again.");
+    }
   };
 
   return (
@@ -79,7 +60,7 @@ export default function AdminLoginPage() {
           </p>
         </div>
 
-        {/* Login Form */}
+        {/* Clean Login Form (No Credentials Displayed) */}
         <form onSubmit={handleLogin} className="claude-card rounded-2xl p-6 space-y-5">
           {error && (
             <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-900 text-xs font-semibold">
@@ -96,7 +77,7 @@ export default function AdminLoginPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="ismail@alarabi.com or farhan"
+              placeholder="Username or Email"
               className="w-full px-4 py-2.5 rounded-xl bg-claude-bg border border-claude-border text-xs focus:outline-none focus:border-claude-terracotta font-medium"
             />
           </div>
@@ -123,41 +104,6 @@ export default function AdminLoginPage() {
             {isLoading ? "Authenticating..." : "Sign In to CMS Studio"}
           </button>
         </form>
-
-        {/* Quick Credentials Sandbox Selector */}
-        <div className="p-4 rounded-2xl bg-white border border-claude-border space-y-3 text-xs shadow-sm">
-          <span className="font-bold text-claude-textMain block border-b border-claude-border pb-2">
-            🔑 Admin Credentials (Click to Autofill):
-          </span>
-
-          <div className="space-y-2">
-            <button
-              onClick={() => fillQuickCredentials("ismail@alarabi.com", "123456")}
-              className="w-full p-2.5 rounded-xl bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-950 text-left transition-colors flex items-center justify-between"
-            >
-              <div>
-                <span className="font-bold block">👑 Ismail (Super Admin)</span>
-                <span className="text-[10px] text-purple-800 font-mono">ismail@alarabi.com / 123456</span>
-              </div>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-200 text-purple-900">
-                Full Super Admin
-              </span>
-            </button>
-
-            <button
-              onClick={() => fillQuickCredentials("farhan@alarabi.com", "123456")}
-              className="w-full p-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-950 text-left transition-colors flex items-center justify-between"
-            >
-              <div>
-                <span className="font-bold block">📝 Farhan (Content Creator)</span>
-                <span className="text-[10px] text-amber-800 font-mono">farhan@alarabi.com / 123456</span>
-              </div>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-200 text-amber-900">
-                Content Creator
-              </span>
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );
