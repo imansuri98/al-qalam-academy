@@ -209,7 +209,9 @@ export default function ExerciseEngine({ exercises }: ExerciseEngineProps) {
             )}
 
             <span className="font-arabic text-3xl font-bold text-[#090D16] block dir-rtl leading-relaxed" dir="rtl">
-              {activeQ.sentenceAr}
+              {activeEx.exerciseType === "TASHKEEL_PICKER" && selectedOption
+                ? activeQ.sentenceAr.replace("____", selectedOption)
+                : activeQ.sentenceAr}
             </span>
 
             <p className="text-xs text-[#475569] font-medium">
@@ -237,7 +239,7 @@ export default function ExerciseEngine({ exercises }: ExerciseEngineProps) {
                     <button
                       key={idx}
                       onClick={() => handleTapUnscrambledWord(word, idx)}
-                      className="px-3.5 py-1.5 rounded-lg bg-[#C2410C] text-white font-arabic text-base font-bold shadow-2xs dir-rtl"
+                      className="px-3.5 py-1.5 rounded-lg bg-[#C2410C] text-[#FFFFFF] font-arabic text-base font-bold shadow-2xs dir-rtl"
                       dir="rtl"
                     >
                       {word}
@@ -251,7 +253,7 @@ export default function ExerciseEngine({ exercises }: ExerciseEngineProps) {
                   <button
                     key={idx}
                     onClick={() => handleTapAvailableWord(word, idx)}
-                    className="px-3.5 py-1.5 rounded-lg bg-white border border-[#E2E8F0] hover:border-[#C2410C] text-[#090D16] font-arabic text-base font-bold shadow-2xs transition-colors dir-rtl"
+                    className="px-3.5 py-1.5 rounded-lg bg-[#FFFFFF] border border-[#E2E8F0] hover:border-[#C2410C] text-[#090D16] font-arabic text-base font-bold shadow-2xs transition-colors dir-rtl"
                     dir="rtl"
                   >
                     {word}
@@ -259,12 +261,49 @@ export default function ExerciseEngine({ exercises }: ExerciseEngineProps) {
                 ))}
               </div>
             </div>
+          ) : activeEx.exerciseType === "TASHKEEL_PICKER" ? (
+            /* DRILL TYPE 2: TASHKEEL HARAKAH PICKER (Damma, Fatha, Kasra, Tanween) */
+            <div className="space-y-4">
+              <div className="text-center">
+                <span className="text-xs font-bold text-[#C2410C] uppercase tracking-wider">
+                  Select the Correct Final Case Vowel Ending:
+                </span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {(activeQ.options.length > 0 ? activeQ.options : ["ـُ (Damma)", "ـَ (Fatha)", "ـِ (Kasra)", "ـٌ (Tanween Damma)"]).map((opt, idx) => {
+                  const isSelected = selectedOption === opt;
+                  let btnStyle = "bg-[#FFFFFF] border-[#E2E8F0] text-[#090D16] hover:border-[#C2410C]";
+
+                  if (isAnswered) {
+                    if (opt.trim() === activeQ.correctAnswer.trim()) {
+                      btnStyle = "bg-emerald-50 border-emerald-500 text-emerald-900 font-bold";
+                    } else if (isSelected && !isCorrect) {
+                      btnStyle = "bg-rose-50 border-rose-400 text-rose-900";
+                    }
+                  } else if (isSelected) {
+                    btnStyle = "bg-[#FFF7ED] border-[#C2410C] text-[#C2410C] font-black scale-105";
+                  }
+
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => handleSelectOption(opt)}
+                      className={`p-4 rounded-xl border text-center transition-all shadow-2xs ${btnStyle}`}
+                    >
+                      <span className="font-arabic text-2xl font-black block dir-rtl" dir="rtl">
+                        {opt.trim()}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           ) : (
-            /* DRILL TYPE 2: OPTIONS */
+            /* DRILL TYPE 3: STANDARD OPTIONS */
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {activeQ.options.map((opt, idx) => {
                 const isSelected = selectedOption === opt;
-                let btnStyle = "bg-white border-[#E2E8F0] text-[#090D16] hover:border-[#C2410C]";
+                let btnStyle = "bg-[#FFFFFF] border-[#E2E8F0] text-[#090D16] hover:border-[#C2410C]";
 
                 if (isAnswered) {
                   if (opt.trim() === activeQ.correctAnswer.trim()) {
