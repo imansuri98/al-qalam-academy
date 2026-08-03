@@ -41,6 +41,11 @@ export default function ExerciseEngine({ exercises }: ExerciseEngineProps) {
   const [unscrambledWords, setUnscrambledWords] = useState<string[]>([]);
   const [availableWords, setAvailableWords] = useState<string[]>([]);
 
+  /* 3-Step I'rab Parsing State */
+  const [irabCaseState, setIrabCaseState] = useState<string>("");
+  const [irabCaseSign, setIrabCaseSign]   = useState<string>("");
+  const [irabGrammarRole, setIrabGrammarRole] = useState<string>("");
+
   const [isAnswered, setIsAnswered] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [scoreCount, setScoreCount] = useState(0);
@@ -60,6 +65,9 @@ export default function ExerciseEngine({ exercises }: ExerciseEngineProps) {
       setUnscrambledWords([]);
     }
     setSelectedOption(null);
+    setIrabCaseState("");
+    setIrabCaseSign("");
+    setIrabGrammarRole("");
     setIsAnswered(false);
   }, [activeExIdx, activeQIdx, activeEx]);
 
@@ -103,6 +111,12 @@ export default function ExerciseEngine({ exercises }: ExerciseEngineProps) {
         userSentenceComma === targetCorrect ||
         userSentenceSpace === targetSentenceAr ||
         userSentenceComma === targetSentenceAr.split(/\s+/).join(",");
+    } else if (activeEx.exerciseType === "IRAB_PARSING") {
+      const targetCorrect = activeQ.correctAnswer.trim();
+      userCorrect =
+        (irabCaseState !== "" && targetCorrect.includes(irabCaseState)) ||
+        (irabGrammarRole !== "" && targetCorrect.includes(irabGrammarRole)) ||
+        (selectedOption !== null && selectedOption.trim() === targetCorrect);
     } else {
       userCorrect = selectedOption?.trim() === activeQ.correctAnswer.trim();
     }
@@ -266,6 +280,88 @@ export default function ExerciseEngine({ exercises }: ExerciseEngineProps) {
                     {word}
                   </button>
                 ))}
+              </div>
+            </div>
+          ) : activeEx.exerciseType === "IRAB_PARSING" ? (
+            /* DRILL TYPE: 3-STEP I'RAB SYNTACTIC BREAKDOWN */
+            <div className="space-y-6 bg-white p-6 rounded-2xl border border-[#E2E8F0] shadow-xs">
+              {/* Live I'rab Formula Preview */}
+              <div className="p-4 rounded-xl bg-[#FFF7ED] border border-[#FED7AA] text-center space-y-1">
+                <span className="text-[10px] font-bold text-[#C2410C] uppercase tracking-wider block">Live Syntactic Formula (الإِعْرَابُ)</span>
+                <p className="font-arabic text-2xl font-black text-[#090D16] dir-rtl leading-relaxed" dir="rtl">
+                  {irabCaseState || irabCaseSign || irabGrammarRole
+                    ? `${irabGrammarRole} ${irabCaseState} ${irabCaseSign ? `وَعَلاَمَةُ إِعْرَابِهِ ${irabCaseSign}` : ""}`
+                    : "Select Step 1, Step 2, and Step 3 below..."}
+                </p>
+              </div>
+
+              {/* STEP 1: Case State */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-extrabold text-[#0F172A]">Step 1: Grammatical Case State (حَالَةُ الإِعْرَابِ)</span>
+                  <span className="text-[10px] font-mono text-[#C2410C] font-bold">{irabCaseState || "Not selected"}</span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {["مَرْفُوعٌ (Marfoo')", "مَنْصُوبٌ (Mansoob')", "مَجْرُورٌ (Majroor')", "مَجْزُومٌ (Majzoom')"].map((item) => (
+                    <button
+                      key={item}
+                      onClick={() => setIrabCaseState(item.split(" ")[0])}
+                      className={`p-3 rounded-xl border text-xs font-bold transition-all ${
+                        irabCaseState === item.split(" ")[0]
+                          ? "bg-[#C2410C] text-white border-[#C2410C] shadow-2xs"
+                          : "bg-white border-[#E2E8F0] text-[#0F172A] hover:border-[#C2410C]"
+                      }`}
+                    >
+                      <span className="font-arabic text-base font-bold block dir-rtl" dir="rtl">{item}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* STEP 2: Case Sign */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-extrabold text-[#0F172A]">Step 2: Sign of Case (عَلاَمَةُ الإِعْرَابِ)</span>
+                  <span className="text-[10px] font-mono text-[#C2410C] font-bold">{irabCaseSign || "Not selected"}</span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {["الضَّمَّةُ (Damma)", "الْفَتْحَةُ (Fatha)", "الْكَسْرَةُ (Kasra)", "السُّكُونُ (Sukoon)", "الْوَاوُ (Waw)", "الْيَاءُ (Ya')", "الْأَلِيفُ (Alif)", "النُّونُ (Nun)"].map((item) => (
+                    <button
+                      key={item}
+                      onClick={() => setIrabCaseSign(item.split(" ")[0])}
+                      className={`p-3 rounded-xl border text-xs font-bold transition-all ${
+                        irabCaseSign === item.split(" ")[0]
+                          ? "bg-[#C2410C] text-white border-[#C2410C] shadow-2xs"
+                          : "bg-white border-[#E2E8F0] text-[#0F172A] hover:border-[#C2410C]"
+                      }`}
+                    >
+                      <span className="font-arabic text-base font-bold block dir-rtl" dir="rtl">{item}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* STEP 3: Grammatical Role / Reason */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-extrabold text-[#0F172A]">Step 3: Grammatical Role / Reason (الْمَوْقِعُ الأَعْرَابِيُّ)</span>
+                  <span className="text-[10px] font-mono text-[#C2410C] font-bold">{irabGrammarRole || "Not selected"}</span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {["مُبْتَدَأٌ (Mubtada')", "خَبَرٌ (Khabar)", "فَاعِلٌ (Fa'il)", "مَفْعُولٌ بِهِ (Ma'ful Bihi)", "اسْمُ إِنَّ (Ism Inna)", "خَبَرُ كَانَ (Khabar Kana)", "اسْمٌ مَجْرُورٌ (Genitive Noun)", "ظَرْفٌ (Adverb)"].map((item) => (
+                    <button
+                      key={item}
+                      onClick={() => setIrabGrammarRole(item.split(" ")[0])}
+                      className={`p-3 rounded-xl border text-xs font-bold transition-all ${
+                        irabGrammarRole === item.split(" ")[0]
+                          ? "bg-[#C2410C] text-white border-[#C2410C] shadow-2xs"
+                          : "bg-white border-[#E2E8F0] text-[#0F172A] hover:border-[#C2410C]"
+                      }`}
+                    >
+                      <span className="font-arabic text-base font-bold block dir-rtl" dir="rtl">{item}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           ) : activeEx.exerciseType === "TASHKEEL_PICKER" ? (
