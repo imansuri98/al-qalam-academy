@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 import { Excalidraw } from "@excalidraw/excalidraw";
 import "@excalidraw/excalidraw/index.css";
 
@@ -11,6 +11,14 @@ interface LessonWhiteboardProps {
 
 export default function LessonWhiteboard({ initialData, onChange }: LessonWhiteboardProps) {
   const apiRef = useRef<any>(null);
+  const isMountedRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      isMountedRef.current = true;
+    }, 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <div className="rounded-2xl border border-slate-200 overflow-hidden" style={{ height: 520 }}>
@@ -24,7 +32,7 @@ export default function LessonWhiteboard({ initialData, onChange }: LessonWhiteb
           elements: [],
         }}
         onChange={(elements, appState) => {
-          if (onChange) {
+          if (isMountedRef.current && onChange) {
             onChange({ elements, appState });
           }
         }}

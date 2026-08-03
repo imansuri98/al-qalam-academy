@@ -579,9 +579,10 @@ export default function Course1AdminPage() {
             {lessonTab === "NOTES" && (
               <div className="space-y-6">
                 <LessonBlockBuilder
+                  key={activeLesson.id}
                   blocks={activeLesson.blocks}
                   onChange={(updatedBlocks) => {
-                    setActiveLesson({ ...activeLesson, blocks: updatedBlocks });
+                    setActiveLesson((prev) => (prev ? { ...prev, blocks: updatedBlocks } : null));
                   }}
                 />
               </div>
