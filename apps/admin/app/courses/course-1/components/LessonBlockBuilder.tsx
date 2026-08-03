@@ -44,7 +44,7 @@ interface LessonBlockBuilderProps {
   onChange?: (blocks: LessonBlock[]) => void;
 }
 
-/* ─── Sample Default Initial Blocks ─────────────────── */
+/* ─── Sample Default Initial Blocks (All 11 Block Types) ── */
 
 const DEFAULT_SAMPLE_BLOCKS: LessonBlock[] = [
   {
@@ -94,6 +94,85 @@ const DEFAULT_SAMPLE_BLOCKS: LessonBlock[] = [
         { wordAr: "فِي", roleAr: "حَرْفُ جَرٍّ", caseAr: "مَبْنِيٌّ عَلَى السُّكُونِ", meaningEn: "In (Preposition)" },
         { wordAr: "الْحَيَاةِ", roleAr: "اسْمٌ مَجْرُورٌ", caseAr: "مَجْرُورٌ بِالْكَسْرَةِ", meaningEn: "Life (Genitive noun)" },
       ],
+    },
+  },
+  {
+    id: "blk-5",
+    type: "AUDIO_CALLOUT",
+    orderIndex: 4,
+    data: {
+      arabicText: "الْعِلْمُ نُورٌ وَالْجَهْلُ ظَلاَمٌ",
+      audioUrl: "",
+    },
+  },
+  {
+    id: "blk-6",
+    type: "CONCEPT_MAP",
+    orderIndex: 5,
+    data: {
+      nodes: [
+        { id: "n1", type: "conceptCard", position: { x: 80, y: 60 }, data: { label: "Subject", arabic: "الْمُبْتَدَأُ", english: "Mubtada' (Subject)" } },
+        { id: "n2", type: "conceptCard", position: { x: 360, y: 60 }, data: { label: "Predicate", arabic: "الْخَبَرُ", english: "Khabar (Predicate)" } },
+      ],
+      edges: [
+        { id: "e1-2", source: "n1", target: "n2", label: "paired with" },
+      ],
+    },
+  },
+  {
+    id: "blk-7",
+    type: "PARSE_TREE",
+    orderIndex: 6,
+    data: {
+      tree: {
+        name: "الْجُمْلَةُ",
+        role: "ROOT",
+        children: [
+          { name: "الْعِلْمُ", role: "مُبْتَدَأٌ" },
+          { name: "نُورٌ", role: "خَبَرٌ" },
+        ],
+      },
+    },
+  },
+  {
+    id: "blk-8",
+    type: "MORPHOLOGY_CHART",
+    orderIndex: 7,
+    data: {
+      root: "ك-ت-ب",
+      forms: [
+        { id: "1", arabic: "كَتَبَ", pattern: "فَعَلَ", patternEn: "Past verb", color: "#C2410C" },
+        { id: "2", arabic: "يَكْتُبُ", pattern: "يَفْعُلُ", patternEn: "Present verb", color: "#2563EB" },
+        { id: "3", arabic: "كِتَابٌ", pattern: "فِعَالٌ", patternEn: "Verbal noun", color: "#16A34A" },
+        { id: "4", arabic: "كَاتِبٌ", pattern: "فَاعِلٌ", patternEn: "Active participle", color: "#9333EA" },
+      ],
+    },
+  },
+  {
+    id: "blk-9",
+    type: "FLOWCHART",
+    orderIndex: 8,
+    data: {
+      code: `flowchart TD
+  A[Arabic Sentence] --> B{Starts with verb?}
+  B -- Yes --> C[Verbal Sentence الجُمْلَةُ الفِعْلِيَّة]
+  B -- No --> D[Nominal Sentence الجُمْلَةُ الاسْمِيَّة]`,
+    },
+  },
+  {
+    id: "blk-10",
+    type: "WHITEBOARD",
+    orderIndex: 9,
+    data: {},
+  },
+  {
+    id: "blk-11",
+    type: "INTERACTIVE_DRILL",
+    orderIndex: 10,
+    data: {
+      sentenceAr: "____ نُورٌ",
+      baseWordAr: "الْعِلْم",
+      correctTokenId: "damma",
     },
   },
 ];
@@ -150,13 +229,22 @@ export default function LessonBlockBuilder({ blocks: initialBlocks, onChange }: 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
 
-      {/* Header */}
+      {/* Header Bar Actions */}
       <div className="flex items-center justify-between border-b border-slate-200 pb-3">
         <div>
           <h2 className="text-base font-extrabold text-slate-900">Notion-Style Lesson Block Stream</h2>
-          <p className="text-xs text-slate-500">Mix and match text, visual tools, pre-exercise vocab cards, and I'rab tables into a fluid lesson story.</p>
+          <p className="text-xs text-slate-500">All 11 block types pre-populated. Edit, reorder (▲/▼), or delete (✕) any block for this lesson.</p>
         </div>
-        <span className="text-xs font-mono text-slate-400">{blocks.length} Blocks</span>
+        <button
+          onClick={() => {
+            if (confirm("Reset blocks and load all 11 template block types?")) {
+              notifyChange(DEFAULT_SAMPLE_BLOCKS);
+            }
+          }}
+          className="px-3.5 py-1.5 rounded-xl border border-slate-300 hover:border-slate-400 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all shadow-2xs flex items-center gap-1.5"
+        >
+          <span>🔄 Load All 11 Template Blocks</span>
+        </button>
       </div>
 
       {/* Blocks Stream */}
