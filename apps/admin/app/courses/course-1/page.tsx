@@ -23,6 +23,7 @@ const IrabParseTreeEditor  = dynamic(() => import("./components/IrabParseTreeEdi
 const MorphologyRootChart  = dynamic(() => import("./components/MorphologyRootChart"),  { ssr: false, loading: () => <CanvasLoader /> });
 const HarakahDragBoard     = dynamic(() => import("./components/HarakahDragBoard"),     { ssr: false, loading: () => <CanvasLoader /> });
 const GrammarFlowchart     = dynamic(() => import("./components/GrammarFlowchart"),     { ssr: false, loading: () => <CanvasLoader /> });
+const LessonBlockBuilder   = dynamic(() => import("./components/LessonBlockBuilder"),   { ssr: false, loading: () => <CanvasLoader /> });
 
 function CanvasLoader() {
   return (
@@ -420,15 +421,16 @@ export default function Course1AdminPage() {
           {/* Tab Content */}
           <div className="min-h-[500px]">
 
-            {/* NOTES */}
+            {/* BLOCK STREAM / NOTES */}
             {lessonTab === "NOTES" && (
-              <RichMediumEditor
-                titleAr={editorTitleAr} setTitleAr={setEditorTitleAr}
-                titleEn={editorTitleEn} setTitleEn={setEditorTitleEn}
-                content={editorContent}   setContent={setEditorContent}
-                audioUrl={editorAudioUrl} setAudioUrl={setEditorAudioUrl}
-                onSave={handleSaveLesson} isSaved={isSaved}
-              />
+              <div className="space-y-6">
+                <LessonBlockBuilder
+                  blocks={activeLesson.blocks}
+                  onChange={(updatedBlocks) => {
+                    setActiveLesson({ ...activeLesson, blocks: updatedBlocks });
+                  }}
+                />
+              </div>
             )}
 
             {/* CONCEPT MAP */}

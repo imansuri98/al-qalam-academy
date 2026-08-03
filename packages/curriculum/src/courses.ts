@@ -24,6 +24,26 @@ export interface ExerciseUnit {
   questions: QuestionItem[];
 }
 
+export type BlockType =
+  | "TEXT"
+  | "VOCABULARY_CARD"
+  | "BEFORE_AFTER_COMPARISON"
+  | "IRAB_TABLE"
+  | "AUDIO_CALLOUT"
+  | "CONCEPT_MAP"
+  | "PARSE_TREE"
+  | "INTERACTIVE_DRILL"
+  | "MORPHOLOGY_CHART"
+  | "FLOWCHART"
+  | "WHITEBOARD";
+
+export interface LessonBlock {
+  id: string;
+  type: BlockType;
+  orderIndex: number;
+  data: Record<string, any>;
+}
+
 export interface LessonNode {
   id: string;
   titleAr: string;
@@ -35,6 +55,7 @@ export interface LessonNode {
   exercisesCount?: number;
   exercises?: ExerciseUnit[];
   canvasData?: Record<string, any>;
+  blocks?: LessonBlock[];
 }
 
 export interface ModuleNode {

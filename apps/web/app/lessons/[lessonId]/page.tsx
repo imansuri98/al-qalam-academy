@@ -23,6 +23,10 @@ const LearnerCanvasViewer = dynamic(() => import("../../components/LearnerCanvas
   ),
 });
 
+const LearnerBlockStream = dynamic(() => import("../../components/LearnerBlockStream"), {
+  ssr: false,
+});
+
 interface LessonContext {
   lesson: LessonNode;
   module: ModuleNode;
@@ -401,9 +405,13 @@ export default function FullLessonPage() {
               <span className="text-xs font-mono text-[#64748B]">{lesson.id}</span>
             </div>
 
-            {/* Markdown Content */}
-            <div className="prose max-w-none">
-              <FormattedText text={lesson.contentBodyEn} />
+            {/* Markdown & Block Stream Content */}
+            <div className="prose max-w-none space-y-6">
+              {lesson.blocks && lesson.blocks.length > 0 ? (
+                <LearnerBlockStream blocks={lesson.blocks} />
+              ) : (
+                <FormattedText text={lesson.contentBodyEn} />
+              )}
             </div>
 
             {/* PREVIOUS & NEXT LESSON FOOTER */}
