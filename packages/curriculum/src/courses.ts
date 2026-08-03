@@ -44,6 +44,15 @@ export interface LessonBlock {
   data: Record<string, any>;
 }
 
+export interface InsightCard {
+  id: string;
+  titleEn: string;
+  arabicExample: string;
+  insightBodyEn: string;
+  category: "RHETORIC" | "GRAMMAR" | "WISDOM";
+  sourceEn?: string;
+}
+
 export interface LessonNode {
   id: string;
   titleAr: string;
@@ -56,6 +65,7 @@ export interface LessonNode {
   exercises?: ExerciseUnit[];
   canvasData?: Record<string, any>;
   blocks?: LessonBlock[];
+  insightCard?: InsightCard;
 }
 
 export interface ModuleNode {

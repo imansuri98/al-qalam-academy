@@ -11,7 +11,8 @@ import {
   LevelNode,
 } from "@alarabi/curriculum";
 import ExerciseEngine, { ExerciseData } from "../../components/exercises/ExerciseEngine";
-import { Play, Pause, ArrowRight, ArrowLeft, BookOpen, CheckCircle2, AlertCircle, LayoutGrid } from "lucide-react";
+import { Play, Pause, ArrowRight, ArrowLeft, BookOpen, CheckCircle2, AlertCircle, LayoutGrid, Sparkles, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
 
 const LearnerCanvasViewer = dynamic(() => import("../../components/LearnerCanvasViewer"), {
@@ -28,7 +29,7 @@ const LearnerBlockStream = dynamic(() => import("../../components/LearnerBlockSt
 });
 
 interface LessonContext {
-  lesson: LessonNode;
+  lesson: LessonNode & { insightCard?: any };
   module: ModuleNode;
   level: LevelNode;
   courseTitle: string;
@@ -261,6 +262,7 @@ export default function FullLessonPage() {
 
   const [activeTab, setActiveTab] = useState<"NOTES" | "EXERCISES" | "CANVAS">("NOTES");
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [activeInsightModal, setActiveInsightModal] = useState<any | null>(null);
 
   if (!context) {
     return (
@@ -494,6 +496,106 @@ export default function FullLessonPage() {
           </div>
         </main>
       )}
+
+      {/* 💡 LESSON RHETORICAL INSIGHT (Did You Know?) TAKEAWAY CARD */}
+      {lesson.insightCard && (
+        <section className="max-w-5xl mx-auto px-6 pt-10 pb-6">
+          <div className="pro-card rounded-2xl bg-gradient-to-r from-amber-50/90 to-orange-50/90 border-2 border-amber-200 p-7 space-y-4 shadow-xs">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-extrabold text-[#C2410C] uppercase tracking-wider flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4" /> Lesson Takeaway • {lesson.insightCard.category || "RHETORIC"}
+              </span>
+              <button
+                onClick={() => setActiveInsightModal(lesson.insightCard)}
+                className="px-4 py-2 rounded-xl bg-[#C2410C] hover:bg-[#B85C3C] text-white font-extrabold text-xs shadow-2xs transition-colors flex items-center gap-1"
+              >
+                <span>💡 Open "Did You Know?" Insight</span>
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="text-xl font-extrabold text-[#0F172A]">
+                Did You Know? {lesson.insightCard.titleEn}
+              </h3>
+              <p className="font-arabic text-2xl font-black text-[#090D16] dir-rtl" dir="rtl">
+                {lesson.insightCard.arabicExample}
+              </p>
+              <p className="text-xs text-[#64748B] line-clamp-2 leading-relaxed">
+                {lesson.insightCard.insightBodyEn}
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* RHETORICAL INSIGHT POPUP MODAL */}
+      <AnimatePresence>
+        {activeInsightModal && (
+          <motion.div
+            className="fixed inset-0 z-50 bg-[#0F172A]/50 backdrop-blur-xs flex items-center justify-center p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setActiveInsightModal(null)}
+          >
+            <motion.div
+              className="bg-white border border-[#E2E8F0] rounded-3xl max-w-md w-full p-7 space-y-5 shadow-2xl"
+              initial={{ scale: 0.85, opacity: 0, y: 24 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 16 }}
+              transition={{ type: "spring", stiffness: 380, damping: 30 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-[#C2410C]" />
+                  <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-300">
+                    {activeInsightModal.category || "RHETORIC"}
+                  </span>
+                </div>
+                <button
+                  onClick={() => setActiveInsightModal(null)}
+                  className="p-2 rounded-full hover:bg-[#F8FAF6] text-[#64748B] transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <h2 className="text-xl font-extrabold text-[#0F172A] leading-snug">
+                💡 {activeInsightModal.titleEn}
+              </h2>
+
+              <motion.div
+                className="p-5 rounded-2xl bg-[#FFF7ED] border border-[#FED7AA] text-center"
+                initial={{ scale: 0.95 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.1, type: "spring", stiffness: 300 }}
+              >
+                <p className="font-arabic text-3xl font-black text-[#090D16] leading-loose dir-rtl" dir="rtl">
+                  {activeInsightModal.arabicExample}
+                </p>
+              </motion.div>
+
+              <p className="text-sm text-[#475569] leading-relaxed">
+                {activeInsightModal.insightBodyEn}
+              </p>
+
+              {activeInsightModal.sourceEn && (
+                <p className="text-[11px] text-[#94A3B8] font-mono border-t border-[#E2E8F0] pt-3">
+                  📚 {activeInsightModal.sourceEn}
+                </p>
+              )}
+
+              <button
+                onClick={() => setActiveInsightModal(null)}
+                className="w-full py-2.5 rounded-xl brand-button font-bold text-xs"
+              >
+                Got it!
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

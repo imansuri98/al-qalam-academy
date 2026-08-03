@@ -36,7 +36,7 @@ function CanvasLoader() {
 /* ─── Types ─────────────────────────────────────────── */
 
 type AdminView = "MAIN" | "LESSON_STUDIO";
-type LessonTab = "NOTES" | "CANVAS" | "WHITEBOARD" | "PARSE_TREE" | "MORPHOLOGY" | "FLOWCHART" | "EXERCISES" | "HARAKAH";
+type LessonTab = "NOTES" | "CANVAS" | "WHITEBOARD" | "PARSE_TREE" | "MORPHOLOGY" | "FLOWCHART" | "EXERCISES" | "HARAKAH" | "INSIGHT";
 
 interface InsightCard {
   id: string;
@@ -91,7 +91,8 @@ const DEFAULT_INSIGHTS: InsightCard[] = [
 /* ─── Lesson Tab Config ──────────────────────────────── */
 
 const LESSON_TABS: { id: LessonTab; label: string; emoji: string; desc: string }[] = [
-  { id: "NOTES",      emoji: "🎙️", label: "Notes & Audio",    desc: "Vowelled Medium text + native audio" },
+  { id: "NOTES",      emoji: "🎙️", label: "Notes & Blocks",   desc: "Notion-style block stream & notes" },
+  { id: "INSIGHT",    emoji: "💡", label: "Did You Know?",    desc: "Lesson's custom rhetorical insight pop-up" },
   { id: "CANVAS",     emoji: "🎨", label: "Concept Map",      desc: "React Flow grammar node canvas" },
   { id: "WHITEBOARD", emoji: "✏️", label: "Whiteboard",       desc: "Freehand Excalidraw sketch" },
   { id: "PARSE_TREE", emoji: "🌿", label: "I'rab Tree",        desc: "Syntactic parse tree builder" },
@@ -132,6 +133,7 @@ export default function Course1AdminPage() {
   const [editorContent, setEditorContent]     = useState("");
   const [editorAudioUrl, setEditorAudioUrl]   = useState("");
   const [lessonExercises, setLessonExercises] = useState<ExerciseUnit[]>([]);
+  const [lessonInsightForm, setLessonInsightForm] = useState<Partial<InsightCard>>({});
   const [isSaved, setIsSaved] = useState(false);
 
   /* ── Exercise builder (inside lesson) ── */
@@ -238,6 +240,14 @@ export default function Course1AdminPage() {
     setEditorContent(les.contentBodyEn || "");
     setEditorAudioUrl(les.audioUrl || "");
     setLessonExercises([...(les.exercises || [])]);
+    setLessonInsightForm(les.insightCard ? { ...les.insightCard } : {
+      id: `insight-${les.id}`,
+      titleEn: `Insight for ${les.titleEn}`,
+      arabicExample: les.titleAr || "الْعِلْمُ نُورٌ",
+      insightBodyEn: "Rhetorical or grammatical insight for this lesson unit.",
+      category: "RHETORIC",
+      sourceEn: "",
+    });
     setActiveExIdx(0);
     setActiveQIdx(0);
     setLessonTab("NOTES");
@@ -248,13 +258,14 @@ export default function Course1AdminPage() {
   const handleSaveLesson = () => {
     if (!activeLesson) return;
     setIsSaved(true);
+    const updatedInsight = lessonInsightForm.titleEn ? (lessonInsightForm as InsightCard) : undefined;
     setLevels(levels.map((l) => ({
       ...l,
       modules: l.modules.map((m) => ({
         ...m,
         lessons: m.lessons.map((les) =>
           les.id === activeLesson.id
-            ? { ...les, titleAr: editorTitleAr, titleEn: editorTitleEn, contentBodyEn: editorContent, audioUrl: editorAudioUrl, exercises: lessonExercises }
+            ? { ...les, titleAr: editorTitleAr, titleEn: editorTitleEn, contentBodyEn: editorContent, audioUrl: editorAudioUrl, exercises: lessonExercises, insightCard: updatedInsight, blocks: activeLesson.blocks }
             : les
         ),
       })),
@@ -430,6 +441,80 @@ export default function Course1AdminPage() {
                     setActiveLesson({ ...activeLesson, blocks: updatedBlocks });
                   }}
                 />
+              </div>
+            )}
+
+            {/* RHETORIC INSIGHT FOR THIS LESSON */}
+            {lessonTab === "INSIGHT" && (
+              <div className="claude-card rounded-2xl bg-white border border-claude-border shadow-sm p-6 space-y-5">
+                <div className="flex items-center justify-between border-b border-claude-border pb-4">
+                  <div>
+                    <h2 className="font-bold text-claude-textMain">💡 Lesson Rhetorical Insight (Did You Know?)</h2>
+                    <p className="text-xs text-claude-textMuted">Author a custom pop-up takeaway for this specific lesson</p>
+                  </div>
+                  <button
+                    onClick={() => setInsightModal(lessonInsightForm as any)}
+                    className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-2xs"
+                  >
+                    <span>👁️ Preview Popup</span>
+                  </button>
+                </div>
+
+                <div className="space-y-4 max-w-2xl">
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Category</label>
+                    <select
+                      value={lessonInsightForm.category || "RHETORIC"}
+                      onChange={(e) => setLessonInsightForm({ ...lessonInsightForm, category: e.target.value as any })}
+                      className="text-xs font-bold p-2.5 rounded-xl border border-slate-200 focus:outline-none"
+                    >
+                      <option value="RHETORIC">RHETORIC (Balaagha)</option>
+                      <option value="GRAMMAR">GRAMMAR (Nahw)</option>
+                      <option value="WISDOM">WISDOM (Hikmah)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Title / Hook (English)</label>
+                    <input
+                      value={lessonInsightForm.titleEn || ""}
+                      onChange={(e) => setLessonInsightForm({ ...lessonInsightForm, titleEn: e.target.value })}
+                      className="w-full text-sm font-bold p-3 rounded-xl border border-slate-200 focus:outline-none"
+                      placeholder="e.g. Why Arabic Puts the Predicate Last"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Arabic Example (Vowelled)</label>
+                    <input
+                      value={lessonInsightForm.arabicExample || ""}
+                      onChange={(e) => setLessonInsightForm({ ...lessonInsightForm, arabicExample: e.target.value })}
+                      className="w-full font-arabic text-2xl font-bold p-3 rounded-xl border border-slate-200 text-right dir-rtl focus:outline-none"
+                      dir="rtl" placeholder="الْعِلْمُ نُورٌ"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Insight Body Explanation (Paragraph)</label>
+                    <textarea
+                      value={lessonInsightForm.insightBodyEn || ""}
+                      onChange={(e) => setLessonInsightForm({ ...lessonInsightForm, insightBodyEn: e.target.value })}
+                      rows={5}
+                      className="w-full text-xs p-3 rounded-xl border border-slate-200 focus:outline-none leading-relaxed"
+                      placeholder="Explain the rhetorical or grammatical insight for this lesson..."
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Source Citation (Optional)</label>
+                    <input
+                      value={lessonInsightForm.sourceEn || ""}
+                      onChange={(e) => setLessonInsightForm({ ...lessonInsightForm, sourceEn: e.target.value })}
+                      className="w-full text-xs p-3 rounded-xl border border-slate-200 focus:outline-none font-mono"
+                      placeholder="e.g. Ibn Hisham, Mughni al-Labib"
+                    />
+                  </div>
+                </div>
               </div>
             )}
 
