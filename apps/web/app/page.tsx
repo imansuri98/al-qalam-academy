@@ -2,7 +2,6 @@ import React from "react";
 import Link from "next/link";
 import { Metadata } from "next";
 import LearnerNavbar from "./components/LearnerNavbar";
-import HeroAudioButton from "./HeroAudioButton";
 import {
   BookOpen,
   MessageSquare,
@@ -68,9 +67,6 @@ export default function LearnerHomePage() {
               <span>View Learner Dashboard</span>
             </Link>
           </div>
-
-          {/* Audio Recitation Demonstration Card */}
-          <HeroAudioButton />
         </div>
       </section>
 
