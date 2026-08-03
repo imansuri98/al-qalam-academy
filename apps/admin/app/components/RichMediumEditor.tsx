@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   Bold,
   Italic,
@@ -58,8 +58,47 @@ export default function RichMediumEditor({
   const [editorLanguage, setEditorLanguage] = useState<"en" | "ar" | "bilingual">("en");
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  const insertText = (prefix: string, suffix: string = "") => {
-    setContent(`${content}\n${prefix}${suffix}`);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  /**
+   * Selection-Aware Rich Formatting Engine
+   * Applies formatting specifically to highlighted/selected text in the textarea,
+   * preserving cursor position and document structure.
+   */
+  const applyFormatting = (prefix: string, suffix: string = "", isBlock: boolean = false) => {
+    const textarea = textareaRef.current;
+    if (!textarea) {
+      setContent(`${content}\n${prefix}${suffix}`);
+      return;
+    }
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = content.substring(start, end);
+
+    let replacement = "";
+    if (selectedText.length > 0) {
+      // If user highlighted specific text, wrap or prepend ONLY that selection!
+      replacement = isBlock ? `\n${prefix}${selectedText}${suffix}` : `${prefix}${selectedText}${suffix}`;
+    } else {
+      // If no text selected, insert formatting with clear text placeholder
+      const placeholder = isBlock ? "New item" : "text";
+      replacement = isBlock ? `\n${prefix}${placeholder}${suffix}` : `${prefix}${placeholder}${suffix}`;
+    }
+
+    const before = content.substring(0, start);
+    const after = content.substring(end);
+    const newContent = `${before}${replacement}${after}`;
+
+    setContent(newContent);
+
+    // Re-focus and set selection around the formatted text
+    setTimeout(() => {
+      textarea.focus();
+      const selectionPosStart = start + (isBlock ? prefix.length + 1 : prefix.length);
+      const selectionPosEnd = selectedText.length > 0 ? selectionPosStart + selectedText.length : selectionPosStart + (isBlock ? 8 : 4);
+      textarea.setSelectionRange(selectionPosStart, selectionPosEnd);
+    }, 0);
   };
 
   const handleAudioFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -158,43 +197,43 @@ export default function RichMediumEditor({
 
             <div className="h-4 w-px bg-claude-border mx-1" />
 
-            {/* ICON-ONLY TOOLBAR BUTTONS WITH HOVER TEXT */}
+            {/* SELECTION-AWARE ICON TOOLBAR BUTTONS WITH HOVER TEXT */}
             <button
-              onClick={() => insertText("**", "**")}
+              onClick={() => applyFormatting("**", "**")}
               className="p-2 rounded-xl bg-white border border-claude-border hover:bg-claude-terracottaLight hover:text-claude-terracotta transition-colors shadow-2xs"
-              title="Bold (**text**)"
+              title="Bold selected text (**selection**)"
             >
               <Bold className="w-4 h-4" />
             </button>
 
             <button
-              onClick={() => insertText("*", "*")}
+              onClick={() => applyFormatting("*", "*")}
               className="p-2 rounded-xl bg-white border border-claude-border hover:bg-claude-terracottaLight hover:text-claude-terracotta transition-colors shadow-2xs"
-              title="Italic (*text*)"
+              title="Italic selected text (*selection*)"
             >
               <Italic className="w-4 h-4" />
             </button>
 
             <button
-              onClick={() => insertText("<u>", "</u>")}
+              onClick={() => applyFormatting("<u>", "</u>")}
               className="p-2 rounded-xl bg-white border border-claude-border hover:bg-claude-terracottaLight hover:text-claude-terracotta transition-colors shadow-2xs"
-              title="Underline (<u>text</u>)"
+              title="Underline selected text (<u>selection</u>)"
             >
               <Underline className="w-4 h-4" />
             </button>
 
             <button
-              onClick={() => insertText("~~", "~~")}
+              onClick={() => applyFormatting("~~", "~~")}
               className="p-2 rounded-xl bg-white border border-claude-border hover:bg-claude-terracottaLight hover:text-claude-terracotta transition-colors shadow-2xs"
-              title="Strikethrough (~~text~~)"
+              title="Strikethrough selected text (~~selection~~)"
             >
               <Strikethrough className="w-4 h-4" />
             </button>
 
             <button
-              onClick={() => insertText("`", "`")}
+              onClick={() => applyFormatting("`", "`")}
               className="p-2 rounded-xl bg-white border border-claude-border hover:bg-claude-terracottaLight hover:text-claude-terracotta transition-colors shadow-2xs"
-              title="Inline Code (`code`)"
+              title="Inline Code (`selection`)"
             >
               <Code className="w-4 h-4" />
             </button>
@@ -202,25 +241,25 @@ export default function RichMediumEditor({
             <div className="h-4 w-px bg-claude-border mx-1" />
 
             <button
-              onClick={() => insertText("# ")}
+              onClick={() => applyFormatting("# ", "", true)}
               className="p-2 rounded-xl bg-white border border-claude-border hover:bg-claude-terracottaLight hover:text-claude-terracotta transition-colors shadow-2xs"
-              title="Heading 1 (# Title)"
+              title="Make Heading 1 (# Selection)"
             >
               <Heading1 className="w-4 h-4" />
             </button>
 
             <button
-              onClick={() => insertText("## ")}
+              onClick={() => applyFormatting("## ", "", true)}
               className="p-2 rounded-xl bg-white border border-claude-border hover:bg-claude-terracottaLight hover:text-claude-terracotta transition-colors shadow-2xs"
-              title="Heading 2 (## Subtitle)"
+              title="Make Heading 2 (## Selection)"
             >
               <Heading2 className="w-4 h-4" />
             </button>
 
             <button
-              onClick={() => insertText("### ")}
+              onClick={() => applyFormatting("### ", "", true)}
               className="p-2 rounded-xl bg-white border border-claude-border hover:bg-claude-terracottaLight hover:text-claude-terracotta transition-colors shadow-2xs"
-              title="Heading 3 (### Section)"
+              title="Make Heading 3 (### Selection)"
             >
               <Heading3 className="w-4 h-4" />
             </button>
@@ -228,57 +267,57 @@ export default function RichMediumEditor({
             <div className="h-4 w-px bg-claude-border mx-1" />
 
             <button
-              onClick={() => insertText("- ")}
+              onClick={() => applyFormatting("- ", "", true)}
               className="p-2 rounded-xl bg-white border border-claude-border hover:bg-claude-terracottaLight hover:text-claude-terracotta transition-colors shadow-2xs"
-              title="Bullet List (- Item)"
+              title="Format selection as Bullet List (- Selection)"
             >
               <List className="w-4 h-4" />
             </button>
 
             <button
-              onClick={() => insertText("1. ")}
+              onClick={() => applyFormatting("1. ", "", true)}
               className="p-2 rounded-xl bg-white border border-claude-border hover:bg-claude-terracottaLight hover:text-claude-terracotta transition-colors shadow-2xs"
-              title="Numbered List (1. Item)"
+              title="Format selection as Numbered List (1. Selection)"
             >
               <ListOrdered className="w-4 h-4" />
             </button>
 
             <button
-              onClick={() => insertText("> ")}
+              onClick={() => applyFormatting("> ", "", true)}
               className="p-2 rounded-xl bg-white border border-claude-border hover:bg-claude-terracottaLight hover:text-claude-terracotta transition-colors shadow-2xs"
-              title="Blockquote (> Quote)"
+              title="Format selection as Blockquote (> Selection)"
             >
               <Quote className="w-4 h-4" />
             </button>
 
             <button
-              onClick={() => insertText("💡 **Grammar Rule**: ")}
+              onClick={() => applyFormatting("💡 **Grammar Rule**: ", "", true)}
               className="p-2 rounded-xl bg-white border border-claude-border hover:bg-amber-100 hover:text-amber-800 transition-colors shadow-2xs"
-              title="Callout Note (💡 Rule)"
+              title="Format selection as Callout Note (💡 Rule)"
             >
               <Lightbulb className="w-4 h-4 text-amber-600" />
             </button>
 
             <button
-              onClick={() => insertText("\n\nالْجُمْلَةُ النَّحْوِيَّةُ: ")}
+              onClick={() => applyFormatting("\n\nالْجُمْلَةُ النَّحْوِيَّةُ: ", "", true)}
               className="p-2 rounded-xl bg-purple-50 text-purple-900 border border-purple-200 hover:bg-purple-600 hover:text-white transition-colors shadow-2xs"
-              title="Insert Pure Vowelled Arabic Block"
+              title="Format selection as Pure Vowelled Arabic Block"
             >
               <Languages className="w-4 h-4" />
             </button>
 
             <button
-              onClick={() => insertText("\n| Arabic | Meaning | Rule |\n|---|---|---|\n| **كِتَابٌ** | Book | Marfoo' |\n")}
+              onClick={() => applyFormatting("\n| Arabic | Meaning | Rule |\n|---|---|---|\n| ", " | Item | Marfoo' |\n", true)}
               className="p-2 rounded-xl bg-white border border-claude-border hover:bg-claude-terracottaLight hover:text-claude-terracotta transition-colors shadow-2xs"
-              title="Insert Grammar Table"
+              title="Insert Grammar Table around selection"
             >
               <Table className="w-4 h-4" />
             </button>
 
             <button
-              onClick={() => insertText("[", "](https://)")}
+              onClick={() => applyFormatting("[", "](https://)")}
               className="p-2 rounded-xl bg-white border border-claude-border hover:bg-claude-terracottaLight hover:text-claude-terracotta transition-colors shadow-2xs"
-              title="Insert Link ([Text](URL))"
+              title="Format selection as Link ([Selection](URL))"
             >
               <LinkIcon className="w-4 h-4" />
             </button>
@@ -412,6 +451,7 @@ export default function RichMediumEditor({
             </span>
           </div>
           <textarea
+            ref={textareaRef}
             rows={24}
             value={content}
             onChange={(e) => setContent(e.target.value)}
