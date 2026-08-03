@@ -3,46 +3,14 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import RichMediumEditor from "../../components/RichMediumEditor";
-
-interface QuestionItem {
-  id: string;
-  sentenceAr: string;
-  sentenceEn: string;
-  optionsCsv: string;
-  correctAnswer: string;
-  grammaticalRuleEn: string;
-}
-
-interface ExerciseUnit {
-  id: string;
-  titleAr: string;
-  titleEn: string;
-  exerciseType: "TASHKEEL_PICKER" | "SENTENCE_REORDER" | "TRANSLATION" | "IRAB_ANALYSIS";
-  questions: QuestionItem[];
-}
-
-interface LessonNode {
-  id: string;
-  titleAr: string;
-  titleEn: string;
-  contentBodyEn: string;
-  audioUrl?: string; // Full Lesson Native Speaker Audio
-  exercises: ExerciseUnit[];
-}
-
-interface ModuleNode {
-  id: string;
-  titleAr: string;
-  titleEn: string;
-  lessons: LessonNode[];
-}
-
-interface LevelNode {
-  id: string;
-  titleAr: string;
-  titleEn: string;
-  modules: ModuleNode[];
-}
+import {
+  COURSE_1_LEVELS,
+  LevelNode,
+  ModuleNode,
+  LessonNode,
+  ExerciseUnit,
+  QuestionItem,
+} from "@alarabi/curriculum";
 
 export default function Course1CurriculumPage() {
   const courseTitle = "Course 1: Classical Arabic Grammar (Nahw & Sarf)";
@@ -81,31 +49,7 @@ export default function Course1CurriculumPage() {
     ],
   };
 
-  const [levels, setLevels] = useState<LevelNode[]>([
-    {
-      id: "lvl-1",
-      titleAr: "الْمُسْتَوَى الأَوَّلُ: الْمُبْتَدِئُ",
-      titleEn: "Level 1: Beginner Classical Grammar",
-      modules: [
-        {
-          id: "mod-101",
-          titleAr: "الْجُمْلَةُ الِاسْمِيَّةُ (الْمُبْتَدَأُ وَالْخَبَرُ)",
-          titleEn: "Module 1: The Nominal Sentence",
-          lessons: [
-            {
-              id: "les-101a",
-              titleAr: "تَعْرِيفُ الْمُبْتَدَأِ وَالْخَبَرِ",
-              titleEn: "Introduction to Subject & Predicate",
-              contentBodyEn:
-                "In Classical Arabic, a nominal sentence (Jumla Ismiyya) begins with a noun. The Subject (Mubtada) introduces the topic, and the Predicate (Khabar) completes the statement.\n\n💡 **Grammar Rule**: The Mubtada' is usually definite (معرفة) and Khabar is usually indefinite (نكرة).\n\nالْجُمْلَةُ النَّحْوِيَّةُ: الْعِلْمُ نُورٌ",
-              audioUrl: "/audio/full_lesson_mubtada.mp3",
-              exercises: [defaultEx1],
-            },
-          ],
-        },
-      ],
-    },
-  ]);
+  const [levels, setLevels] = useState<LevelNode[]>(COURSE_1_LEVELS);
 
   const [activeLesson, setActiveLesson] = useState<LessonNode | null>(null);
   const [lessonTab, setLessonTab] = useState<"NOTES" | "EXERCISES">("NOTES");
@@ -123,9 +67,9 @@ export default function Course1CurriculumPage() {
     setActiveLesson(les);
     setEditorTitleAr(les.titleAr);
     setEditorTitleEn(les.titleEn);
-    setEditorContent(les.contentBodyEn);
+    setEditorContent(les.contentBodyEn || "");
     setEditorAudioUrl(les.audioUrl || "");
-    setLessonExercises([...les.exercises]);
+    setLessonExercises([...(les.exercises || [])]);
     setActiveExIdx(0);
     setActiveQIdx(0);
     setLessonTab("NOTES");

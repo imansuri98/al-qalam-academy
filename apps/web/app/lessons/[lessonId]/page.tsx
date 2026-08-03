@@ -2,69 +2,306 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
+import {
+  COURSE_1_LEVELS,
+  COURSE_2_LEVELS,
+  LessonNode,
+  ModuleNode,
+  LevelNode,
+} from "@alarabi/curriculum";
 import ExerciseEngine, { ExerciseData } from "../../components/exercises/ExerciseEngine";
-import { Play, Pause, Volume2, ArrowRight } from "lucide-react";
+import { Play, Pause, ArrowRight, ArrowLeft, BookOpen, CheckCircle2, AlertCircle } from "lucide-react";
 
+interface LessonContext {
+  lesson: LessonNode;
+  module: ModuleNode;
+  level: LevelNode;
+  courseTitle: string;
+  courseId: string;
+  prevLessonId: string | null;
+  nextLessonId: string | null;
+  lessonIndexInCourse: number;
+  totalLessonsInCourse: number;
+}
+
+function findLessonAndContext(lessonId: string): LessonContext | null {
+  const allCourses = [
+    { id: "course-1", title: "Classical Arabic Grammar", levels: COURSE_1_LEVELS },
+    { id: "course-2", title: "Spoken Conversational Fusha", levels: COURSE_2_LEVELS },
+  ];
+
+  for (const course of allCourses) {
+    const flatLessons: { lesson: LessonNode; module: ModuleNode; level: LevelNode }[] = [];
+
+    for (const level of course.levels) {
+      for (const module of level.modules) {
+        for (const lesson of module.lessons) {
+          flatLessons.push({ lesson: lesson as LessonNode, module, level });
+        }
+      }
+    }
+
+    const targetIdx = flatLessons.findIndex((item) => item.lesson.id === lessonId);
+    if (targetIdx !== -1) {
+      const current = flatLessons[targetIdx];
+      const prevLessonId = targetIdx > 0 ? flatLessons[targetIdx - 1].lesson.id : null;
+      const nextLessonId = targetIdx < flatLessons.length - 1 ? flatLessons[targetIdx + 1].lesson.id : null;
+
+      return {
+        lesson: current.lesson,
+        module: current.module,
+        level: current.level,
+        courseTitle: course.title,
+        courseId: course.id,
+        prevLessonId,
+        nextLessonId,
+        lessonIndexInCourse: targetIdx + 1,
+        totalLessonsInCourse: flatLessons.length,
+      };
+    }
+  }
+
+  return null;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RICH MARKDOWN RENDERER FOR LESSON BODY
+// ─────────────────────────────────────────────────────────────────────────────
+function FormattedText({ text }: { text: string }) {
+  if (!text) return null;
+
+  // Helper to highlight Arabic text in bold or inline
+  const renderInline = (str: string) => {
+    // Regex matches **bold** or inline code or plain text
+    const parts = str.split(/(\*\*.*?\*\*|`.*?`|\$[^\$]+\$)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith("**") && part.endsWith("**")) {
+        const content = part.slice(2, -2);
+        const isArabic = /[\u0600-\u06FF]/.test(content);
+        return (
+          <strong
+            key={i}
+            className={`font-bold text-[#0F172A] ${isArabic ? "font-arabic text-base px-1 py-0.5 bg-amber-50 rounded border border-amber-200/60 inline-block dir-rtl" : ""}`}
+            dir={isArabic ? "rtl" : undefined}
+          >
+            {content}
+          </strong>
+        );
+      }
+      if (part.startsWith("`") && part.endsWith("`")) {
+        return (
+          <code key={i} className="px-1.5 py-0.5 rounded bg-[#F1F5F9] font-mono text-[11px] text-[#C2410C] border border-[#E2E8F0]">
+            {part.slice(1, -1)}
+          </code>
+        );
+      }
+      // Check if pure Arabic segment
+      const isArabicText = /[\u0600-\u06FF]/.test(part) && !/[a-zA-Z]/.test(part);
+      if (isArabicText && part.trim().length > 1) {
+        return (
+          <span key={i} className="font-arabic font-bold text-base text-[#090D16] px-1 dir-rtl" dir="rtl">
+            {part}
+          </span>
+        );
+      }
+      return <React.Fragment key={i}>{part}</React.Fragment>;
+    });
+  };
+
+  // Split into lines/blocks
+  const lines = text.split("\n");
+  const blocks: React.ReactNode[] = [];
+  let inTable = false;
+  let tableHeader: string[] = [];
+  let tableRows: string[][] = [];
+
+  const flushTable = (key: number) => {
+    if (tableHeader.length > 0) {
+      blocks.push(
+        <div key={`table-${key}`} className="my-5 overflow-x-auto rounded-xl border border-[#E2E8F0] shadow-2xs">
+          <table className="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr className="bg-[#F8FAF6] border-b border-[#E2E8F0]">
+                {tableHeader.map((h, i) => (
+                  <th key={i} className="p-3 font-extrabold text-[#0F172A] border-r border-[#E2E8F0] last:border-r-0">
+                    {renderInline(h.trim())}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {tableRows.map((row, rIdx) => (
+                <tr key={rIdx} className="border-b border-[#E2E8F0] last:border-b-0 hover:bg-[#F8FAF6]/50">
+                  {row.map((cell, cIdx) => (
+                    <td key={cIdx} className="p-3 border-r border-[#E2E8F0] last:border-r-0 text-[#334155]">
+                      {renderInline(cell.trim())}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+    }
+    tableHeader = [];
+    tableRows = [];
+    inTable = false;
+  };
+
+  lines.forEach((line, idx) => {
+    const trimmed = line.trim();
+
+    // Table Detection
+    if (trimmed.startsWith("|") && trimmed.endsWith("|")) {
+      const cells = trimmed.split("|").slice(1, -1);
+      if (cells.every((c) => /^[\s\-:]+$/.test(c))) {
+        // Divider line |---|---|
+        return;
+      }
+      if (!inTable) {
+        inTable = true;
+        tableHeader = cells;
+      } else {
+        tableRows.push(cells);
+      }
+      return;
+    } else if (inTable) {
+      flushTable(idx);
+    }
+
+    if (!trimmed) {
+      return;
+    }
+
+    // Headings
+    if (trimmed.startsWith("# ")) {
+      blocks.push(
+        <h1 key={idx} className="text-2xl font-extrabold text-[#0F172A] mt-6 mb-3 border-b border-[#E2E8F0] pb-2">
+          {renderInline(trimmed.slice(2))}
+        </h1>
+      );
+      return;
+    }
+    if (trimmed.startsWith("## ")) {
+      blocks.push(
+        <h2 key={idx} className="text-xl font-bold text-[#0F172A] mt-6 mb-2">
+          {renderInline(trimmed.slice(3))}
+        </h2>
+      );
+      return;
+    }
+    if (trimmed.startsWith("### ") || trimmed.startsWith("#### ")) {
+      const headingText = trimmed.replace(/^#{3,4}\s+/, "");
+      blocks.push(
+        <h3 key={idx} className="text-base font-bold text-[#0F172A] mt-4 mb-2">
+          {renderInline(headingText)}
+        </h3>
+      );
+      return;
+    }
+
+    // Blockquotes / Rules Callouts
+    if (trimmed.startsWith("> ")) {
+      blocks.push(
+        <div key={idx} className="my-3 p-4 rounded-xl bg-orange-50/70 border-l-4 border-[#C2410C] text-xs text-[#7C2D12] space-y-1">
+          {renderInline(trimmed.slice(2))}
+        </div>
+      );
+      return;
+    }
+
+    // Bullet Lists
+    if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
+      blocks.push(
+        <li key={idx} className="ml-4 list-disc text-xs text-[#334155] leading-relaxed my-1">
+          {renderInline(trimmed.slice(2))}
+        </li>
+      );
+      return;
+    }
+
+    // Paragraph
+    blocks.push(
+      <p key={idx} className="text-xs text-[#334155] leading-relaxed my-2">
+        {renderInline(trimmed)}
+      </p>
+    );
+  });
+
+  if (inTable) {
+    flushTable(lines.length);
+  }
+
+  return <div className="space-y-1">{blocks}</div>;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FULL DYNAMIC LESSON PAGE COMPONENT
+// ─────────────────────────────────────────────────────────────────────────────
 export default function FullLessonPage() {
+  const params = useParams();
+  const lessonId = (params?.lessonId as string) || "";
+  const context = findLessonAndContext(lessonId);
+
   const [activeTab, setActiveTab] = useState<"NOTES" | "EXERCISES">("NOTES");
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
 
-  const sampleExercises: ExerciseData[] = [
-    {
-      id: "ex-unit-1",
-      exerciseType: "TASHKEEL_PICKER",
-      titleAr: "تَمْرِينُ التَّشْكِيلِ (اخْتِيَارُ الْحَرَكَةِ الصَّحِيحَةِ)",
-      titleEn: "Tashkeel Picker: Select Harakah Ending",
-      instructionAr: "اخْتَرِ التَّشْكِيلَ الصَّحِيحَ لِكَلِمَةِ (الْمُبْتَدَأِ) فِي الْجُمْلَةِ",
-      instructionEn: "Select the correct vowelled ending for the Subject (Mubtada')",
-      questions: [
-        {
-          id: "q-1",
-          sentenceAr: "الْكِتَابُ مَفْتُوحٌ",
-          sentenceEn: "The book is open",
-          options: ["الْكِتَابُ", "الْكِتَابَ", "الْكِتَابِ", "كِتَابًا"],
-          correctAnswer: "الْكِتَابُ",
-          grammaticalRuleEn: "Subject (Mubtada') is always Nominative (Marfoo' with Dammah ُ).",
-        },
-        {
-          id: "q-2",
-          sentenceAr: "الْمُدَرِّسُ حَاضِرٌ",
-          sentenceEn: "The teacher is present",
-          options: ["حَاضِرٌ", "حَاضِرًا", "حَاضِرٍ", "الْحَاضِرِ"],
-          correctAnswer: "حَاضِرٌ",
-          grammaticalRuleEn: "Predicate (Khabar) is Nominative (Marfoo' with Tanween Dammah ٌ).",
-        },
-      ],
-    },
-    {
-      id: "ex-unit-2",
-      exerciseType: "SENTENCE_REORDER",
-      titleAr: "تَمْرِينُ تَرْتِيبِ الْجُمْلَةِ الِاسْمِيَّةِ",
-      titleEn: "Sentence Unscrambler: Reorder Scrambled Words",
-      instructionAr: "رَتِّبِ الْكَلِمَاتِ التَّالِيَةَ لِتَكْوِينِ جُمْلَةٍ اسْمِيَّةٍ صَحِيحَةٍ",
-      instructionEn: "Tap the word bubbles in correct grammatical order to form a valid Nominal Sentence",
-      questions: [
-        {
-          id: "q-3",
-          sentenceAr: "الْعِلْمُ نُورٌ فِي الْحَيَاةِ",
-          sentenceEn: "Knowledge is light in life",
-          options: ["الْعِلْمُ", "نُورٌ", "فِي", "الْحَيَاةِ"],
-          correctAnswer: "الْعِلْمُ,نُورٌ,فِي,الْحَيَاةِ",
-          grammaticalRuleEn: "Nominal Sentence begins with Mubtada' (الْعِلْمُ) followed by Khabar (نُورٌ) and Harf Jarr phrase.",
-        },
-      ],
-    },
-  ];
+  if (!context) {
+    return (
+      <div className="min-h-screen bg-[#F8FAF6] text-[#0F172A] flex flex-col items-center justify-center p-6 text-center space-y-4">
+        <AlertCircle className="w-12 h-12 text-[#C2410C]" />
+        <h1 className="text-2xl font-extrabold">Lesson Not Found</h1>
+        <p className="text-xs text-[#64748B] max-w-md">
+          The requested lesson ID (<code className="font-mono font-bold text-[#0F172A]">{lessonId}</code>) could not be located in the curriculum tree.
+        </p>
+        <Link href="/courses/course-1" className="px-6 py-2.5 rounded-xl brand-button text-xs font-bold shadow-2xs">
+          Return to Course Catalog
+        </Link>
+      </div>
+    );
+  }
+
+  const { lesson, module, level, courseTitle, courseId, prevLessonId, nextLessonId, lessonIndexInCourse, totalLessonsInCourse } = context;
+
+  const exerciseDataUnits: ExerciseData[] = (lesson.exercises || []).map((unit, uIdx) => {
+    let exType: ExerciseData["exerciseType"] = "TASHKEEL_PICKER";
+    if (unit.exerciseType === "SENTENCE_REORDER") exType = "SENTENCE_REORDER";
+    else if (unit.exerciseType === "IRAB_ANALYSIS") exType = "IRAB_PARSING";
+
+    return {
+      id: unit.id || `ex-${uIdx}`,
+      exerciseType: exType,
+      titleAr: unit.titleAr || "تَمْرِينٌ",
+      titleEn: unit.titleEn || "Practice Unit",
+      instructionAr: "اخْتَرِ الإِجَابَةَ الصَّحِيحَةَ",
+      instructionEn: "Select the correct option based on the lesson rule",
+      questions: (unit.questions || []).map((q, qIdx) => ({
+        id: q.id || `q-${qIdx}`,
+        sentenceAr: q.sentenceAr,
+        sentenceEn: q.sentenceEn,
+        options: q.optionsCsv ? q.optionsCsv.split(",").map((s) => s.trim()) : [],
+        correctAnswer: q.correctAnswer,
+        grammaticalRuleEn: q.grammaticalRuleEn,
+      })),
+    };
+  });
 
   return (
     <div className="min-h-screen bg-[#F8FAF6] text-[#0F172A] font-sans antialiased pb-24">
-      {/* Top Bar */}
+      {/* Top Navigation Bar */}
       <header className="bg-white border-b border-[#E2E8F0] px-6 py-4 sticky top-0 z-30 shadow-xs">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <Link href="/courses/course-1" className="flex items-center gap-2 text-xs font-bold text-[#C2410C] hover:underline">
-            ← Back to Course 1 Hierarchy
+          <Link
+            href={`/courses/${courseId}`}
+            className="flex items-center gap-2 text-xs font-bold text-[#C2410C] hover:underline"
+          >
+            ← Back to {courseTitle} Hierarchy
           </Link>
-          <span className="text-xs font-mono text-[#64748B]">Lesson Screen Studio</span>
+          <span className="text-xs font-mono text-[#64748B]">
+            Lesson {lessonIndexInCourse} of {totalLessonsInCourse}
+          </span>
         </div>
       </header>
 
@@ -73,21 +310,25 @@ export default function FullLessonPage() {
         <div className="pro-card rounded-2xl p-8 space-y-6 shadow-xs">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-[#E2E8F0] pb-6">
             <div className="space-y-2">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="text-[10px] font-bold px-2.5 py-0.5 rounded bg-[#F8FAF6] text-[#0F172A] border border-[#E2E8F0]">
-                  Course 1 • Level 1 • Module 1
+                  {level.titleEn} • {module.titleEn}
                 </span>
-                <span className="text-xs font-mono text-[#64748B]">Lesson 1 of 18</span>
+                <span className="text-xs font-mono text-[#64748B]">
+                  {lesson.durationMins || 15} mins read
+                </span>
               </div>
+
               <h1 className="text-3xl font-extrabold text-[#0F172A]">
-                Introduction to Subject & Predicate (Mubtada' & Khabar)
+                {lesson.titleEn}
               </h1>
+
               <span className="font-arabic text-2xl font-bold text-[#090D16] block dir-rtl" dir="rtl">
-                تَعْرِيفُ الْمُبْتَدَأِ وَالْخَبَرِ فِي الْجُمْلَةِ الِاسْمِيَّةِ
+                {lesson.titleAr}
               </span>
             </div>
 
-            {/* FULL LESSON NATIVE SPEAKER AUDIO RECITATION PLAYER */}
+            {/* AUDIO PLAYER */}
             <button
               onClick={() => setIsPlayingAudio(!isPlayingAudio)}
               className={`px-5 py-3 rounded-xl font-bold text-xs shadow-2xs transition-all flex items-center justify-center gap-2 shrink-0 ${
@@ -101,7 +342,7 @@ export default function FullLessonPage() {
             </button>
           </div>
 
-          {/* 2 Main Studio Tabs: Notes & Practice Drills */}
+          {/* 2 Main Tabs: Lesson Notes & Practice Drills */}
           <div className="flex items-center justify-center bg-[#F8FAF6] p-1.5 rounded-xl border border-[#E2E8F0]">
             <button
               onClick={() => setActiveTab("NOTES")}
@@ -121,7 +362,7 @@ export default function FullLessonPage() {
                   : "text-[#64748B] hover:text-[#0F172A]"
               }`}
             >
-              2. Practice Drills (5 Qs)
+              2. Practice Drills ({exerciseDataUnits.reduce((acc, u) => acc + u.questions.length, 0)} Qs)
             </button>
           </div>
         </div>
@@ -130,55 +371,51 @@ export default function FullLessonPage() {
       {/* TAB 1: VOWELLED LESSON NOTES */}
       {activeTab === "NOTES" && (
         <main className="max-w-5xl mx-auto px-6 space-y-6">
-          <div className="pro-card rounded-2xl p-8 space-y-6 shadow-xs">
-            <h2 className="text-xl font-extrabold text-[#0F172A] border-b border-[#E2E8F0] pb-4">
-              Vowelled Grammar Rules (Nahw & Sarf)
-            </h2>
-
-            <div className="prose max-w-none text-xs text-[#0F172A] space-y-4">
-              <p className="leading-relaxed text-[#475569]">
-                In Classical Arabic grammar, the <strong>Nominal Sentence (الْجُمْلَةُ الِاسْمِيَّةُ)</strong> is composed of two essential parts:
-              </p>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-5 bg-[#F8FAF6] border border-[#E2E8F0] rounded-xl space-y-2">
-                  <span className="font-arabic text-xl font-bold text-[#090D16] block dir-rtl" dir="rtl">
-                    1. الْمُبْتَدَأُ (The Subject)
-                  </span>
-                  <p className="text-[#475569]">
-                    The noun that begins the sentence. It is always <strong>Marfoo' (مَرْفُوعٌ)</strong> with Dammah (ُ).
-                  </p>
-                </div>
-
-                <div className="p-5 bg-[#F8FAF6] border border-[#E2E8F0] rounded-xl space-y-2">
-                  <span className="font-arabic text-xl font-bold text-[#090D16] block dir-rtl" dir="rtl">
-                    2. الْخَبَرُ (The Predicate)
-                  </span>
-                  <p className="text-[#475569]">
-                    The information that completes the sentence's meaning. It is also <strong>Marfoo' (مَرْفُوعٌ)</strong>.
-                  </p>
-                </div>
-              </div>
-
-              <div className="p-6 bg-[#F8FAF6] border border-[#E2E8F0] rounded-xl space-y-3">
-                <span className="font-bold text-[#0F172A] block">Vowelled Example Sentence:</span>
-                <span className="font-arabic text-3xl font-bold text-[#090D16] block text-center dir-rtl leading-relaxed" dir="rtl">
-                  "الْكِتَابُ مَفْتُوحٌ"
-                </span>
-                <p className="text-center text-[#475569] font-semibold">
-                  "The book is open" — [الْكِتَابُ = Mubtada' Marfoo'] & [مَفْتُوحٌ = Khabar Marfoo']
-                </p>
-              </div>
+          <div className="pro-card rounded-2xl p-8 space-y-6 shadow-xs bg-white border border-[#E2E8F0]">
+            <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-4">
+              <h2 className="text-xl font-extrabold text-[#0F172A] flex items-center gap-2">
+                <BookOpen className="w-5 h-5 text-[#C2410C]" />
+                <span>Lesson Material & Grammar Rules</span>
+              </h2>
+              <span className="text-xs font-mono text-[#64748B]">{lesson.id}</span>
             </div>
 
-            <div className="pt-4 border-t border-[#E2E8F0] flex justify-end">
-              <button
-                onClick={() => setActiveTab("EXERCISES")}
-                className="px-5 py-2.5 rounded-xl brand-button font-bold text-xs shadow-2xs flex items-center gap-1.5"
-              >
-                <span>Proceed to Practice Drills</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
+            {/* Markdown Content */}
+            <div className="prose max-w-none">
+              <FormattedText text={lesson.contentBodyEn} />
+            </div>
+
+            {/* PREVIOUS & NEXT LESSON FOOTER */}
+            <div className="pt-6 border-t border-[#E2E8F0] flex items-center justify-between gap-4">
+              {prevLessonId ? (
+                <Link
+                  href={`/lessons/${prevLessonId}`}
+                  className="px-4 py-2.5 rounded-xl border border-[#E2E8F0] hover:bg-[#F8FAF6] text-xs font-bold text-[#0F172A] flex items-center gap-2 transition-colors"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  <span>Previous Lesson</span>
+                </Link>
+              ) : (
+                <div />
+              )}
+
+              {nextLessonId ? (
+                <Link
+                  href={`/lessons/${nextLessonId}`}
+                  className="px-5 py-2.5 rounded-xl brand-button font-bold text-xs shadow-2xs flex items-center gap-2"
+                >
+                  <span>Next Lesson</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              ) : (
+                <Link
+                  href={`/courses/${courseId}`}
+                  className="px-5 py-2.5 rounded-xl brand-button font-bold text-xs shadow-2xs flex items-center gap-2"
+                >
+                  <span>Course Complete — View Catalog</span>
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                </Link>
+              )}
             </div>
           </div>
         </main>
@@ -187,7 +424,27 @@ export default function FullLessonPage() {
       {/* TAB 2: INTERACTIVE PRACTICE DRILLS ENGINE */}
       {activeTab === "EXERCISES" && (
         <main className="max-w-5xl mx-auto px-6">
-          <ExerciseEngine exercises={sampleExercises} />
+          {exerciseDataUnits.length > 0 ? (
+            <ExerciseEngine exercises={exerciseDataUnits} />
+          ) : (
+            <div className="pro-card rounded-2xl p-12 text-center space-y-4 bg-white border border-[#E2E8F0]">
+              <CheckCircle2 className="w-12 h-12 text-[#C2410C] mx-auto opacity-80" />
+              <div className="space-y-1">
+                <h3 className="text-xl font-extrabold text-[#0F172A]">
+                  Exercises for {lesson.titleEn}
+                </h3>
+                <p className="text-xs text-[#64748B] max-w-md mx-auto">
+                  Practice questions for this lesson unit are currently being authored. Master the vowelled lesson notes in Tab 1!
+                </p>
+              </div>
+              <button
+                onClick={() => setActiveTab("NOTES")}
+                className="px-6 py-2.5 rounded-xl brand-button font-bold text-xs shadow-2xs"
+              >
+                Back to Lesson Notes
+              </button>
+            </div>
+          )}
         </main>
       )}
     </div>

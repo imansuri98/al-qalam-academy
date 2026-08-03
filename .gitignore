@@ -9,6 +9,9 @@ out/
 build/
 dist/
 
+# TypeScript build caches
+*.tsbuildinfo
+
 # Environment Variables
 .env
 .env.local
@@ -24,3 +27,10 @@ Thumbs.db
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Test coverage output
+coverage/
+
+# Editor / IDE
+.vscode/
+.idea/

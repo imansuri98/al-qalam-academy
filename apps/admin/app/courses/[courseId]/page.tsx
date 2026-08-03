@@ -3,28 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-
-interface LessonNode {
-  id: string;
-  titleAr: string;
-  titleEn: string;
-  contentBodyEn: string;
-  exercisesCount: number;
-}
-
-interface ModuleNode {
-  id: string;
-  titleAr: string;
-  titleEn: string;
-  lessons: LessonNode[];
-}
-
-interface LevelNode {
-  id: string;
-  titleAr: string;
-  titleEn: string;
-  modules: ModuleNode[];
-}
+import { COURSE_1_LEVELS, LevelNode, ModuleNode, LessonNode } from "@alarabi/curriculum";
 
 export default function CourseCurriculumEditorPage() {
   const params = useParams();
@@ -34,80 +13,12 @@ export default function CourseCurriculumEditorPage() {
       ? "Course 2: Informal Conversational Fusha"
       : "Course 1: Classical Arabic Grammar (Nahw & Sarf)";
 
-  // Nested Curriculum Hierarchy State: Level -> Module -> Lesson
-  const [levels, setLevels] = useState<LevelNode[]>([
-    {
-      id: "lvl-1",
-      titleAr: "الْمُسْتَوَى الأَوَّلُ: الْمُبْتَدِئُ",
-      titleEn: "Level 1: Beginner Classical Grammar",
-      modules: [
-        {
-          id: "mod-101",
-          titleAr: "الْجُمْلَةُ الِاسْمِيَّةُ (الْمُبْتَدَأُ وَالْخَبَرُ)",
-          titleEn: "Module 1: The Nominal Sentence",
-          lessons: [
-            {
-              id: "les-101a",
-              titleAr: "تَعْرِيفُ الْمُبْتَدَأِ وَالْخَبَرِ",
-              titleEn: "Introduction to Subject & Predicate",
-              contentBodyEn:
-                "In Classical Arabic, a nominal sentence (Jumla Ismiyya) begins with a noun. The Subject (Mubtada) introduces the topic, and the Predicate (Khabar) completes the statement. Both take a Dammah (ُ) in the Nominative case (Marfoo').",
-              exercisesCount: 5,
-            },
-            {
-              id: "les-101b",
-              titleAr: "إِعْرَابُ الْمُبْتَدَأِ وَالْخَبَرِ",
-              titleEn: "Case Endings (I'rab) of Nominal Sentences",
-              contentBodyEn:
-                "When parsing nominal sentences: 1. Mubtada' is Marfoo' (Nominative) marked by Dammah. 2. Khabar is Marfoo' marked by Tanween Dammah.",
-              exercisesCount: 5,
-            },
-          ],
-        },
-        {
-          id: "mod-102",
-          titleAr: "حُرُوفُ الْجَرِّ وَالْإِضَافَةُ",
-          titleEn: "Module 2: Prepositions & Possessives",
-          lessons: [
-            {
-              id: "les-102a",
-              titleAr: "حُرُوفُ الْجَرِّ وَأَحْكَامُهَا",
-              titleEn: "Prepositions (Harf Jarr) & Genitive Nouns",
-              contentBodyEn:
-                "Prepositions such as (فِي, عَلَى, إِلَى, مِنْ) place the following noun into the Genitive case (Majroor), marked by Kasrah (ِ).",
-              exercisesCount: 5,
-            },
-          ],
-        },
-      ],
-    },
-    {
-      id: "lvl-2",
-      titleAr: "الْمُسْتَوَى الثَّانِي: الْمُتَوَسِّطُ",
-      titleEn: "Level 2: Intermediate Grammar & Sarf",
-      modules: [
-        {
-          id: "mod-201",
-          titleAr: "الْجُمْلَةُ الْفِعْلِيَّةُ (الْفِعْلُ وَالْفَاعِلُ)",
-          titleEn: "Module 1: The Verbal Sentence (Verb & Subject)",
-          lessons: [
-            {
-              id: "les-201a",
-              titleAr: "أَنْوَاعُ الأَفْعَالِ (المَاضِي وَالْمُضَارِعُ)",
-              titleEn: "Verb Tenses: Madi & Mudari'",
-              contentBodyEn:
-                "Verbal sentences begin with a verb. Past tense verbs (Fi'l Madi) are usually fixed (Mabni) with Fatha.",
-              exercisesCount: 5,
-            },
-          ],
-        },
-      ],
-    },
-  ]);
+  // Nested Curriculum Hierarchy State: Level -> Module -> Lesson from shared package
+  const [levels, setLevels] = useState<LevelNode[]>(COURSE_1_LEVELS);
 
   // Selected lesson for Medium-style Rich Editor
   const [selectedLesson, setSelectedLesson] = useState<LessonNode | null>(levels[0].modules[0].lessons[0]);
-  const [editorContent, setEditorContent] = useState<string>(levels[0].modules[0].lessons[0].contentBodyEn);
+  const [editorContent, setEditorContent] = useState<string>(levels[0].modules[0].lessons[0].contentBodyEn || "");
   const [editorTitleAr, setEditorTitleAr] = useState<string>(levels[0].modules[0].lessons[0].titleAr);
   const [editorTitleEn, setEditorTitleEn] = useState<string>(levels[0].modules[0].lessons[0].titleEn);
   const [isSaved, setIsSaved] = useState(false);
@@ -183,7 +94,7 @@ export default function CourseCurriculumEditorPage() {
     setSelectedLesson(newLes);
     setEditorTitleAr(newLes.titleAr);
     setEditorTitleEn(newLes.titleEn);
-    setEditorContent(newLes.contentBodyEn);
+    setEditorContent(newLes.contentBodyEn || "");
   };
 
   const handleDeleteLesson = (lvlId: string, modId: string, lesId: string) => {
@@ -210,7 +121,7 @@ export default function CourseCurriculumEditorPage() {
     setSelectedLesson(les);
     setEditorTitleAr(les.titleAr);
     setEditorTitleEn(les.titleEn);
-    setEditorContent(les.contentBodyEn);
+    setEditorContent(les.contentBodyEn || "");
   };
 
   const handleSaveLesson = () => {

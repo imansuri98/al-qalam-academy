@@ -239,7 +239,7 @@ export default function VocabularyStudioPage() {
     setLevels(
       levels.map((lvl) => (lvl.id === lvlId ? { ...lvl, modules: [...lvl.modules, newMod] } : lvl))
     );
-    setExpandedLevels((prev) => ({ ...prev, [newLvlId]: true }));
+    setExpandedLevels((prev) => ({ ...prev, [lvlId]: true }));
     setExpandedModules((prev) => ({ ...prev, [newModId]: true }));
   };
 

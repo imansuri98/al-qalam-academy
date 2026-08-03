@@ -1,9 +1,19 @@
-"use client";
-
 import React from "react";
 import Link from "next/link";
+import { Metadata } from "next";
 import LearnerNavbar from "../components/LearnerNavbar";
 import { BookOpen, MessageSquare, ArrowRight, CheckCircle2 } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Curriculum Catalog | Al-Arabi Academy",
+  description:
+    "Explore our 2 dedicated Arabic learning tracks: Classical Arabic Grammar (Nahw & Sarf) and Spoken Conversational Fusha.",
+  openGraph: {
+    title: "Curriculum Catalog | Al-Arabi Academy",
+    description:
+      "Explore 2 dedicated learning tracks: Classical Grammar and Spoken Fusha.",
+  },
+};
 
 export default function CourseCatalogPage() {
   return (

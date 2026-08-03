@@ -2,57 +2,15 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-
-interface VocabItem {
-  id: string;
-  wordAr: string;
-  wordEn: string;
-  imageUrl: string;
-  audioUrl: string;
-}
-
-interface DialogueLine {
-  id: string;
-  speakerNameAr: string;
-  speakerNameEn: string;
-  avatarColor: string;
-  textAr: string;
-  textEn: string;
-  audioUrl: string;
-}
-
-interface ExerciseQuestion {
-  id: string;
-  sentenceAr: string;
-  sentenceEn: string;
-  optionsCsv: string;
-  correctAnswer: string;
-  grammaticalRuleEn: string;
-}
-
-interface Course2LessonNode {
-  id: string;
-  titleAr: string;
-  titleEn: string;
-  vocabularies: VocabItem[];
-  fullDialogueAudioUrl: string;
-  dialogueLines: DialogueLine[];
-  exercises: ExerciseQuestion[];
-}
-
-interface ModuleNode {
-  id: string;
-  titleAr: string;
-  titleEn: string;
-  lessons: Course2LessonNode[];
-}
-
-interface LevelNode {
-  id: string;
-  titleAr: string;
-  titleEn: string;
-  modules: ModuleNode[];
-}
+import {
+  COURSE_2_LEVELS,
+  Course2LevelNode as LevelNode,
+  Course2ModuleNode as ModuleNode,
+  Course2LessonNode,
+  VocabItem,
+  DialogueLine,
+  QuestionItem as ExerciseQuestion,
+} from "@alarabi/curriculum";
 
 export default function Course2CurriculumPage() {
   const [viewMode, setViewMode] = useState<"TREE" | "LESSON_STUDIO">("TREE");
@@ -72,83 +30,17 @@ export default function Course2CurriculumPage() {
     setExpandedModules((prev) => ({ ...prev, [modId]: !prev[modId] }));
   };
 
-  const defaultLesson: Course2LessonNode = {
+  const defaultLesson: Course2LessonNode = (COURSE_2_LEVELS[0]?.modules[0]?.lessons[0] as Course2LessonNode) || {
     id: "les-fusha-101a",
     titleAr: "التَّحِيَّاتُ الْيَوْمِيَّةُ وَالتَّعَارُفُ",
     titleEn: "Daily Greetings & Self Introduction",
-    vocabularies: [
-      {
-        id: "v-1",
-        wordAr: "مَرْحَبًا",
-        wordEn: "Hello / Welcome",
-        imageUrl: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80",
-        audioUrl: "/audio/marhaban.mp3",
-      },
-      {
-        id: "v-2",
-        wordAr: "كَيْفَ حَالُكَ؟",
-        wordEn: "How are you?",
-        imageUrl: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=400&q=80",
-        audioUrl: "/audio/kayfa_haluk.mp3",
-      },
-    ],
-    fullDialogueAudioUrl: "/audio/full_dialogue_greetings.mp3",
-    dialogueLines: [
-      {
-        id: "dl-1",
-        speakerNameAr: "أَحْمَدُ",
-        speakerNameEn: "Ahmad",
-        avatarColor: "bg-blue-600",
-        textAr: "السَّلَامُ عَلَيْكُمْ يَا فَاطِمَةُ! كَيْفَ حَالُكِ الْيَوْمَ؟",
-        textEn: "Peace be upon you, Fatima! How are you today?",
-        audioUrl: "/audio/ahmad_line1.mp3",
-      },
-      {
-        id: "dl-2",
-        speakerNameAr: "فَاطِمَةُ",
-        speakerNameEn: "Fatima",
-        avatarColor: "bg-emerald-600",
-        textAr: "وَعَلَيْكُمُ السَّلَامُ يَا أَحْمَدُ! أَنَا بِخَيْرٍ وَالْحَمْدُ لِلَّهِ. وَأَنْتَ؟",
-        textEn: "And upon you be peace, Ahmad! I am fine, thank God. And you?",
-        audioUrl: "/audio/fatima_line1.mp3",
-      },
-      {
-        id: "dl-3",
-        speakerNameAr: "سَارَةُ",
-        speakerNameEn: "Sarah",
-        avatarColor: "bg-[#CC6B49]",
-        textAr: "أَهْلًا بِكُمَا جَمِيعًا! مَرْحَبًا بِكُمَا فِي الْمَدِينَةِ.",
-        textEn: "Welcome to both of you! Welcome to the city.",
-        audioUrl: "/audio/sarah_line1.mp3",
-      },
-    ],
-    exercises: [
-      {
-        id: "q-fusha-1",
-        sentenceAr: "كَيْفَ حَالُكَ الْيَوْمَ؟",
-        sentenceEn: "How are you today?",
-        optionsCsv: "أَنَا بِخَيْرٍ, شُكْرًا جَزِيلًا, مَعَ السَّلَامَةِ, أَهْلًا وَسَهْلًا",
-        correctAnswer: "أَنَا بِخَيْرٍ",
-        grammaticalRuleEn: "Standard polite response to greeting",
-      },
-    ],
+    vocabularies: [],
+    fullDialogueAudioUrl: "",
+    dialogueLines: [],
+    exercises: [],
   };
 
-  const [levels, setLevels] = useState<LevelNode[]>([
-    {
-      id: "lvl-fusha-1",
-      titleAr: "الْمُسْتَوَى الأَوَّلُ: التَّحِيَّاتُ وَالْحَيَاةُ الْيَوْمِيَّةُ",
-      titleEn: "Level 1: Daily Greetings & Spoken Dialogues",
-      modules: [
-        {
-          id: "mod-fusha-101",
-          titleAr: "الـتَّعَارُفُ فِي الْأَمَاكِنِ الْعَامَّةِ",
-          titleEn: "Module 1: Introductions in Public Places",
-          lessons: [defaultLesson],
-        },
-      ],
-    },
-  ]);
+  const [levels, setLevels] = useState<LevelNode[]>(COURSE_2_LEVELS);
 
   const [activeLesson, setActiveLesson] = useState<Course2LessonNode | null>(null);
   const [lessonTab, setLessonTab] = useState<"VOCAB" | "DIALOGUE" | "PRACTICE">("DIALOGUE");
@@ -301,10 +193,10 @@ export default function Course2CurriculumPage() {
     setActiveLesson(les);
     setTitleAr(les.titleAr);
     setTitleEn(les.titleEn);
-    setVocabList([...les.vocabularies]);
+    setVocabList([...(les.vocabularies || [])]);
     setFullDialogueAudioUrl(les.fullDialogueAudioUrl || "");
-    setDialogueLines([...les.dialogueLines]);
-    setExercisesList([...les.exercises]);
+    setDialogueLines([...(les.dialogueLines || [])]);
+    setExercisesList([...(les.exercises || [])]);
     setLessonTab("DIALOGUE");
     setViewMode("LESSON_STUDIO");
   };
@@ -541,10 +433,10 @@ export default function Course2CurriculumPage() {
                                     </span>
                                     <div className="flex flex-wrap items-center gap-2 pt-1">
                                       <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-900 border border-amber-200">
-                                        🖼️ Vocab + Image Uploader ({les.vocabularies.length} Words)
+                                        🖼️ Vocab + Image Uploader ({les.vocabularies?.length || 0} Words)
                                       </span>
                                       <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-900 border border-emerald-200">
-                                        💬 Spoken Dialogue ({les.dialogueLines.length} Lines)
+                                        💬 Spoken Dialogue ({les.dialogueLines?.length || 0} Lines)
                                       </span>
                                     </div>
                                   </div>

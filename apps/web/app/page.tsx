@@ -1,14 +1,12 @@
-"use client";
-
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
+import { Metadata } from "next";
 import LearnerNavbar from "./components/LearnerNavbar";
+import HeroAudioButton from "./HeroAudioButton";
 import {
   BookOpen,
   MessageSquare,
   Volume2,
-  Play,
-  Pause,
   ArrowRight,
   GraduationCap,
   FileText,
@@ -16,9 +14,19 @@ import {
   CheckCircle2,
 } from "lucide-react";
 
-export default function LearnerHomePage() {
-  const [isPlayingHeroAudio, setIsPlayingHeroAudio] = useState(false);
+export const metadata: Metadata = {
+  title: "Al-Arabi Academy | Master Classical Grammar & Spoken Arabic",
+  description:
+    "Learn pure vowelled Arabic script (Tashkeel) with native speaker audio recitations, structured Classical Nahw & Sarf rules, and spoken conversational dialogues.",
+  openGraph: {
+    title: "Al-Arabi Academy | Master Classical Grammar & Spoken Arabic",
+    description:
+      "Vowelled Tashkeel script, native recitations, and structured Classical Arabic & Spoken Fusha curriculum tracks.",
+    type: "website",
+  },
+};
 
+export default function LearnerHomePage() {
   return (
     <div className="min-h-screen bg-[#F8FAF6] text-[#0F172A] font-sans antialiased pb-32">
       <LearnerNavbar />
@@ -61,206 +69,169 @@ export default function LearnerHomePage() {
             </Link>
           </div>
 
-          {/* HERO NATIVE AUDIO PREVIEW WIDGET */}
-          <div className="max-w-lg mx-auto mt-8 bg-white border border-[#E2E8F0] rounded-2xl p-6 shadow-xs text-left space-y-3">
-            <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
-              <span className="text-[11px] font-extrabold text-[#C2410C] uppercase tracking-wider flex items-center gap-1.5">
-                <Volume2 className="w-3.5 h-3.5" />
-                <span>Native Speaker Recitation Audio</span>
-              </span>
-              <span className="text-xs font-mono text-[#64748B]">Fusha Clip</span>
-            </div>
-
-            <div className="flex items-center justify-between gap-4 pt-1">
-              <div>
-                <span className="font-arabic text-2xl font-bold text-[#090D16] block dir-rtl" dir="rtl">
-                  الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ
-                </span>
-                <span className="text-xs text-[#475569] italic font-medium">
-                  "All praise is due to Allah, Lord of the worlds"
-                </span>
-              </div>
-
-              <button
-                onClick={() => setIsPlayingHeroAudio(!isPlayingHeroAudio)}
-                className={`w-11 h-11 rounded-xl flex items-center justify-center font-bold text-white shadow-xs transition-all shrink-0 ${
-                  isPlayingHeroAudio ? "bg-[#C2410C] animate-pulse" : "bg-[#0F172A] hover:bg-[#C2410C]"
-                }`}
-              >
-                {isPlayingHeroAudio ? (
-                  <Pause className="w-4 h-4" />
-                ) : (
-                  <Play className="w-4 h-4 ml-0.5" />
-                )}
-              </button>
-            </div>
-          </div>
+          {/* Audio Recitation Demonstration Card */}
+          <HeroAudioButton />
         </div>
       </section>
 
-      {/* PEDAGOGY HIGHLIGHTS RIBBON */}
-      <section className="max-w-5xl mx-auto px-6 py-4">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="pro-card rounded-2xl p-5 text-center space-y-2">
-            <FileText className="w-5 h-5 text-[#C2410C] mx-auto" />
-            <h4 className="font-bold text-xs text-[#0F172A]">Vowelled Tashkeel</h4>
-            <p className="text-[11px] text-[#64748B]">Authentic vowelled script</p>
-          </div>
-
-          <div className="pro-card rounded-2xl p-5 text-center space-y-2">
-            <BookOpen className="w-5 h-5 text-[#C2410C] mx-auto" />
-            <h4 className="font-bold text-xs text-[#0F172A]">Classical Nahw & Sarf</h4>
-            <p className="text-[11px] text-[#64748B]">Structured grammar rules</p>
-          </div>
-
-          <div className="pro-card rounded-2xl p-5 text-center space-y-2">
-            <MessageSquare className="w-5 h-5 text-[#C2410C] mx-auto" />
-            <h4 className="font-bold text-xs text-[#0F172A]">Spoken Arabic</h4>
-            <p className="text-[11px] text-[#64748B]">Multi-person dialogues</p>
-          </div>
-
-          <div className="pro-card rounded-2xl p-5 text-center space-y-2">
-            <Headphones className="w-5 h-5 text-[#C2410C] mx-auto" />
-            <h4 className="font-bold text-xs text-[#0F172A]">Native Recitation</h4>
-            <p className="text-[11px] text-[#64748B]">Studio audio clips</p>
-          </div>
-        </div>
-      </section>
-
-      {/* DUAL LEARNING TRACKS SECTION */}
-      <section className="max-w-5xl mx-auto px-6 py-10 space-y-8">
-        <div className="text-center space-y-2 border-b border-[#E2E8F0] pb-6">
-          <span className="text-xs font-bold text-[#C2410C] uppercase tracking-wider">
-            Curriculum Structure
+      {/* SECTION 2: 2 INDEPENDENT LEARNING TRACKS */}
+      <section className="max-w-5xl mx-auto px-6 py-8 space-y-8">
+        <div className="text-center space-y-2">
+          <span className="text-xs font-extrabold text-[#C2410C] uppercase tracking-wider block">
+            Structured Learning Pathways
           </span>
-          <h2 className="text-2xl md:text-3xl font-extrabold text-[#0F172A]">
-            2 Independent Learning Tracks
+          <h2 className="text-3xl font-extrabold text-[#0F172A]">
+            Two Dedicated Arabic Learning Tracks
           </h2>
-          <p className="text-xs text-[#475569] max-w-lg mx-auto">
-            Choose between Classical Grammar or Spoken Arabic dialogue practice.
+          <p className="text-sm text-[#475569] max-w-lg mx-auto">
+            Choose the track that fits your learning goals: Classical Grammar for Quran/Hadith comprehension or Spoken Fusha for conversation.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* COURSE 1 CARD */}
-          <div className="pro-card rounded-2xl p-7 flex flex-col justify-between space-y-6">
+          {/* TRACK 1 CARD */}
+          <div className="pro-card p-8 rounded-2xl border border-[#E2E8F0] space-y-6 flex flex-col justify-between shadow-xs">
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold px-2.5 py-1 rounded bg-[#F8FAF6] text-[#0F172A] border border-[#E2E8F0]">
+              <div className="w-12 h-12 rounded-xl bg-[#FFF7ED] text-[#C2410C] border border-[#C2410C]/20 flex items-center justify-center">
+                <BookOpen className="w-6 h-6" />
+              </div>
+
+              <div>
+                <span className="text-[10px] font-bold text-[#C2410C] uppercase tracking-wider block">
                   Course 1 Track
                 </span>
-                <span className="font-arabic text-2xl font-bold text-[#090D16] dir-rtl" dir="rtl">
-                  النَّحْوُ وَالصَّرْفُ
+                <h3 className="text-2xl font-extrabold text-[#0F172A]">
+                  Classical Arabic Grammar
+                </h3>
+                <span className="font-arabic text-xl font-bold text-[#090D16] block dir-rtl" dir="rtl">
+                  النَّحْوُ وَالصَّرْفُ الْكَلَاسِيكِيُّ
                 </span>
               </div>
 
-              <h3 className="text-xl font-extrabold text-[#0F172A]">Classical Arabic Grammar</h3>
               <p className="text-xs text-[#475569] leading-relaxed">
-                Master nominal & verbal sentence rules (Nahw), case endings (I'rab), 3-letter verb root patterns (Sarf), and vowelled Quranic/classical texts.
+                Comprehensive foundation in classical syntax (Nahw), nominal & verbal sentence case parsing (I'rab), 3-letter verb root patterns (Sarf), and classical capstone texts.
               </p>
 
-              <div className="bg-[#F8FAF6] p-4 rounded-xl border border-[#E2E8F0] space-y-2 text-xs">
-                <span className="font-bold text-[#0F172A] block">Course 1 Included Features:</span>
+              <div className="space-y-2 pt-2 text-xs">
+                <span className="font-bold text-[#0F172A] block">Includes:</span>
                 <ul className="space-y-1.5 text-[#475569]">
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#C2410C] shrink-0" />
-                    <span>Level → Module → Lesson nested hierarchy</span>
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#C2410C]" />
+                    <span>Level → Module → Lesson curriculum hierarchy</span>
                   </li>
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#C2410C] shrink-0" />
-                    <span>Tashkeel Picker Harakah Challenges (5 Qs per unit)</span>
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#C2410C]" />
+                    <span>Tashkeel Harakah exercises (5 questions per unit)</span>
                   </li>
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#C2410C] shrink-0" />
-                    <span>Milestone Capstone Passages (Quran, Hadith, Literature)</span>
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#C2410C]" />
+                    <span>Quran & Hadith milestone capstone drills</span>
                   </li>
                 </ul>
               </div>
             </div>
 
-            <div className="pt-4 border-t border-[#E2E8F0] flex items-center justify-between">
-              <span className="text-xs font-mono font-bold text-[#64748B]">18 Modules • 5-Q Drills</span>
-              <Link
-                href="/courses/course-1"
-                className="px-5 py-2.5 rounded-xl brand-button font-bold text-xs flex items-center gap-1.5 shadow-2xs"
-              >
-                <span>Start Course 1</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
+            <Link
+              href="/courses/course-1"
+              className="w-full py-3 rounded-xl brand-button font-bold text-xs shadow-2xs flex items-center justify-center gap-2"
+            >
+              <span>Explore Course 1 Curriculum</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
 
-          {/* COURSE 2 CARD */}
-          <div className="pro-card rounded-2xl p-7 flex flex-col justify-between space-y-6">
+          {/* TRACK 2 CARD */}
+          <div className="pro-card p-8 rounded-2xl border border-[#E2E8F0] space-y-6 flex flex-col justify-between shadow-xs">
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold px-2.5 py-1 rounded bg-[#F8FAF6] text-[#0F172A] border border-[#E2E8F0]">
+              <div className="w-12 h-12 rounded-xl bg-[#FFF7ED] text-[#C2410C] border border-[#C2410C]/20 flex items-center justify-center">
+                <MessageSquare className="w-6 h-6" />
+              </div>
+
+              <div>
+                <span className="text-[10px] font-bold text-[#C2410C] uppercase tracking-wider block">
                   Course 2 Track
                 </span>
-                <span className="font-arabic text-2xl font-bold text-[#090D16] dir-rtl" dir="rtl">
-                  الْعَرَبِيَّةُ الْمُعَاصِرَةُ
+                <h3 className="text-2xl font-extrabold text-[#0F172A]">
+                  Spoken Arabic
+                </h3>
+                <span className="font-arabic text-xl font-bold text-[#090D16] block dir-rtl" dir="rtl">
+                  الْعَرَبِيَّةُ الْمُعَاصِرَةُ لِلْحَيَاةِ الْيَوْمِيَّةِ
                 </span>
               </div>
 
-              <h3 className="text-xl font-extrabold text-[#0F172A]">Spoken Arabic</h3>
               <p className="text-xs text-[#475569] leading-relaxed">
-                Practical daily communication in Modern Standard Arabic with native speaker audio clips, social politeness, and real-life dialogues.
+                Practical everyday dialogue in Modern Standard Arabic (Fusha). Learn self-introductions, greetings, public conversation, and visual vocabulary.
               </p>
 
-              <div className="bg-[#F8FAF6] p-4 rounded-xl border border-[#E2E8F0] space-y-2 text-xs">
-                <span className="font-bold text-[#0F172A] block">Course 2 Included Features:</span>
+              <div className="space-y-2 pt-2 text-xs">
+                <span className="font-bold text-[#0F172A] block">Includes:</span>
                 <ul className="space-y-1.5 text-[#475569]">
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#C2410C] shrink-0" />
-                    <span>Multi-Person Dialogues (Ahmad, Fatima, Sarah)</span>
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#C2410C]" />
+                    <span>Multi-speaker dialogues (Ahmad, Fatima, Sarah)</span>
                   </li>
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#C2410C] shrink-0" />
-                    <span>Lesson Vocabulary with Image Visual File Uploader</span>
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#C2410C]" />
+                    <span>Vocabulary cards with image visual uploader</span>
                   </li>
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#C2410C] shrink-0" />
-                    <span>Role-play dialogue response drills</span>
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#C2410C]" />
+                    <span>Native audio listening comprehension clips</span>
                   </li>
                 </ul>
               </div>
             </div>
 
-            <div className="pt-4 border-t border-[#E2E8F0] flex items-center justify-between">
-              <span className="text-xs font-mono font-bold text-[#64748B]">24 Dialogues • Native Audio</span>
-              <Link
-                href="/courses/course-2"
-                className="px-5 py-2.5 rounded-xl brand-button font-bold text-xs flex items-center gap-1.5 shadow-2xs"
-              >
-                <span>Start Course 2</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
+            <Link
+              href="/courses/course-2"
+              className="w-full py-3 rounded-xl brand-button font-bold text-xs shadow-2xs flex items-center justify-center gap-2"
+            >
+              <span>Explore Course 2 Curriculum</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="max-w-5xl mx-auto px-6 pt-12 border-t border-[#E2E8F0] flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs text-[#64748B]">
-        <div>
-          <span className="font-bold text-[#0F172A]">Al-Arabi Academy</span> • Classical & Spoken Arabic Platform.
-        </div>
+      {/* SECTION 3: KEY METHODOLOGY FEATURES */}
+      <section className="max-w-5xl mx-auto px-6 py-8">
+        <div className="pro-card p-8 rounded-2xl border border-[#E2E8F0] space-y-6 shadow-xs">
+          <div className="text-center space-y-2">
+            <h2 className="text-2xl font-extrabold text-[#0F172A]">
+              Why Al-Arabi Learning Engine Works
+            </h2>
+            <p className="text-xs text-[#475569] max-w-lg mx-auto">
+              Built specifically for serious Arabic students who want clear grammar rules and authentic pronunciation.
+            </p>
+          </div>
 
-        <div className="flex items-center gap-6 font-bold">
-          <Link href="/courses" className="hover:text-[#0F172A]">
-            Course Catalog
-          </Link>
-          <Link href="/dashboard" className="hover:text-[#0F172A]">
-            Learner Dashboard
-          </Link>
-          <Link href="/contact" className="text-[#C2410C] hover:underline">
-            Contact Support
-          </Link>
-          <a href="http://localhost:3001" target="_blank" rel="noreferrer" className="hover:text-[#0F172A]">
-            CMS Studio Login ↗
-          </a>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+            <div className="space-y-2 text-center p-4 rounded-xl bg-[#F8FAF6] border border-[#E2E8F0]">
+              <FileText className="w-5 h-5 text-[#C2410C] mx-auto" />
+              <h3 className="text-sm font-extrabold text-[#0F172A]">Zero Transliteration</h3>
+              <p className="text-xs text-[#64748B]">
+                Learn directly from vowelled Arabic script with full Tashkeel diacritics from Day 1.
+              </p>
+            </div>
+
+            <div className="space-y-2 text-center p-4 rounded-xl bg-[#F8FAF6] border border-[#E2E8F0]">
+              <Headphones className="w-5 h-5 text-[#C2410C] mx-auto" />
+              <h3 className="text-sm font-extrabold text-[#0F172A]">Native Audio Included</h3>
+              <p className="text-xs text-[#64748B]">
+                Listen to clear native speaker audio for every single vocabulary word, dialogue line, and lesson.
+              </p>
+            </div>
+
+            <div className="space-y-2 text-center p-4 rounded-xl bg-[#F8FAF6] border border-[#E2E8F0]">
+              <GraduationCap className="w-5 h-5 text-[#C2410C] mx-auto" />
+              <h3 className="text-sm font-extrabold text-[#0F172A]">Authentic Capstones</h3>
+              <p className="text-xs text-[#64748B]">
+                Apply your grammar knowledge on real Quranic verses, Sahih Hadiths, and classical poetry.
+              </p>
+            </div>
+          </div>
         </div>
-      </footer>
+      </section>
     </div>
   );
 }

@@ -2,99 +2,14 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-
-interface PassageQuestion {
-  id: string;
-  questionAr: string;
-  questionEn: string;
-  optionsCsv: string;
-  correctAnswer: string;
-  grammaticalRuleEn: string;
-}
-
-interface PassageItem {
-  id: string;
-  category: "QURAN" | "HADITH" | "LITERATURE";
-  titleAr: string;
-  titleEn: string;
-  citationEn: string;
-  arabicText: string;
-  englishTranslation: string;
-  unlockScope: "MODULE" | "LEVEL";
-  unlockedAfterMilestoneTitle: string;
-  questions: PassageQuestion[];
-}
+import { DEFAULT_PASSAGES, PassageItem, PassageQuestion } from "@alarabi/curriculum";
 
 export default function ClassicalPassagesStudioPage() {
   const [activeCategory, setActiveCategory] = useState<"ALL" | "QURAN" | "HADITH" | "LITERATURE">("ALL");
   const [viewMode, setViewMode] = useState<"LIST" | "EDITOR">("LIST");
 
-  // Sample Passages Unlocked After Module & Level Completion
-  const [passages, setPassages] = useState<PassageItem[]>([
-    {
-      id: "pas-101",
-      category: "QURAN",
-      titleAr: "سُورَةُ الْفَاتِحَةِ (تَطْبِيقُ الْجُمْلَةِ الِاسْمِيَّةِ)",
-      titleEn: "Surah Al-Fatiha Capstone Passage",
-      citationEn: "Holy Quran • Surah Al-Fatiha 1:1-7",
-      arabicText: "الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ ۝ الرَّحْمَنِ الرَّحِيمِ ۝ مَالِكِ يَوْمِ الدِّينِ",
-      englishTranslation: "[All] praise is [due] to Allah, Lord of the worlds - The Entirely Merciful, the Especially Merciful, Sovereign of the Day of Recompense.",
-      unlockScope: "MODULE",
-      unlockedAfterMilestoneTitle: "Module 1 Capstone: Nominal Sentence Drills (Level 1)",
-      questions: [
-        {
-          id: "pq-1",
-          questionAr: "مَا هُوَ إِعْرَابُ كَلِمَةِ (الْحَمْدُ) فِي الآيَةِ؟",
-          questionEn: "What is the grammatical case (I'rab) of the word (الْحَمْدُ)?",
-          optionsCsv: "مُبْتَدَأٌ مَرْفُوعٌ بِالضَّمَّةِ, خَبَرٌ مَرْفُوعٌ, اسْمٌ مَجْرُورٌ, فاعِلٌ مَرْفُوعٌ",
-          correctAnswer: "مُبْتَدَأٌ مَرْفُوعٌ بِالضَّمَّةِ",
-          grammaticalRuleEn: "Subject (Mubtada') starting the nominal sentence, Marfoo' with Dammah.",
-        },
-      ],
-    },
-    {
-      id: "pas-102",
-      category: "HADITH",
-      titleAr: "حَدِيثُ النِّيَّةِ (صَحِيحُ الْبُخَارِيِّ #1)",
-      titleEn: "Hadith of Intentions Module Capstone",
-      citationEn: "Prophetic Hadith • Sahih Al-Bukhari #1",
-      arabicText: "إِنَّمَا الْأَعْمَالُ بِالنِّيَّاتِ وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى",
-      englishTranslation: "Actions are but by intentions, and every person will have only what they intended.",
-      unlockScope: "MODULE",
-      unlockedAfterMilestoneTitle: "Module 2 Capstone: Prepositions & Genitive Annexation (Level 1)",
-      questions: [
-        {
-          id: "pq-3",
-          questionAr: "مَا هُوَ إِعْرَابُ كَلِمَةِ (الْأَعْمَالُ)؟",
-          questionEn: "What is the parsing of (الْأَعْمَالُ)?",
-          optionsCsv: "مُبْتَدَأٌ مَرْفُوعٌ بِالضَّمَّةِ, خَبَرٌ, حَرْفُ جَرٍّ, فاعِلٌ",
-          correctAnswer: "مُبْتَدَأٌ مَرْفُوعٌ بِالضَّمَّةِ",
-          grammaticalRuleEn: "Mubtada' following Innama.",
-        },
-      ],
-    },
-    {
-      id: "pas-103",
-      category: "LITERATURE",
-      titleAr: "مُعَلَّقَةُ امْرِئِ الْقَيْسِ وَحِكَمُ الْمُتَنَبِّي",
-      titleEn: "Level 1 Graduation Literature Capstone",
-      citationEn: "Classical Arabic Literature • Mu'allaqat & Diwan Al-Mutanabbi",
-      arabicText: "أَعَزُّ مَكَانٍ فِي الدُّنَى زِينُ سَابِحٍ وَخَيْرُ جَلِيسٍ فِي الزَّمَانِ كِتَابُ",
-      englishTranslation: "The most honorable place in the world is the saddle of a swimming horse, and the best companion in time is a book.",
-      unlockScope: "LEVEL",
-      unlockedAfterMilestoneTitle: "Level 1 Graduation: Complete Beginner Classical Grammar",
-      questions: [
-        {
-          id: "pq-4",
-          questionAr: "مَا هُوَ إِعْرَابُ كَلِمَةِ (كِتَابُ) فِي بَيْتِ الشِّعْرِ؟",
-          questionEn: "What is the parsing of (كِتَابُ) in the poem?",
-          optionsCsv: "خَبَرُ الْمُبْتَدَأِ مَرْفُوعٌ, مُبْتَدَأٌ, مَفْعُولٌ بِهِ, مَجْرُورٌ",
-          correctAnswer: "خَبَرُ الْمُبْتَدَأِ مَرْفُوعٌ",
-          grammaticalRuleEn: "Khabar for (خَيْرُ جَلِيسٍ).",
-        },
-      ],
-    },
-  ]);
+  // Sample Passages Unlocked After Module & Level Completion from shared package
+  const [passages, setPassages] = useState<PassageItem[]>(DEFAULT_PASSAGES);
 
   // Active Passage for Editor Mode
   const [activePassage, setActivePassage] = useState<PassageItem | null>(null);
@@ -123,8 +38,8 @@ export default function ClassicalPassagesStudioPage() {
       setCitationEn(passage.citationEn);
       setArabicText(passage.arabicText);
       setEnglishTranslation(passage.englishTranslation);
-      setUnlockScope(passage.unlockScope);
-      setUnlockedAfterMilestoneTitle(passage.unlockedAfterMilestoneTitle);
+      setUnlockScope(passage.unlockScope || "MODULE");
+      setUnlockedAfterMilestoneTitle(passage.unlockedAfterMilestoneTitle || "");
       setQuestionsList([...passage.questions]);
     } else {
       setActivePassage(null);
