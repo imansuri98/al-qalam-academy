@@ -88,18 +88,12 @@ const DEFAULT_INSIGHTS: InsightCard[] = [
   },
 ];
 
-/* ─── Lesson Tab Config ──────────────────────────────── */
+/* ─── Lesson Tab Config (Simplified 3 Focused Tabs) ── */
 
 const LESSON_TABS: { id: LessonTab; label: string; emoji: string; desc: string }[] = [
-  { id: "NOTES",      emoji: "🎙️", label: "Notes & Blocks",   desc: "Notion-style block stream & notes" },
-  { id: "INSIGHT",    emoji: "💡", label: "Did You Know?",    desc: "Lesson's custom rhetorical insight pop-up" },
-  { id: "CANVAS",     emoji: "🎨", label: "Concept Map",      desc: "React Flow grammar node canvas" },
-  { id: "WHITEBOARD", emoji: "✏️", label: "Whiteboard",       desc: "Freehand Excalidraw sketch" },
-  { id: "PARSE_TREE", emoji: "🌿", label: "I'rab Tree",        desc: "Syntactic parse tree builder" },
-  { id: "MORPHOLOGY", emoji: "📊", label: "Morphology",        desc: "Root word radial chart" },
-  { id: "FLOWCHART",  emoji: "📋", label: "Grammar Flow",      desc: "Mermaid decision flowchart" },
-  { id: "EXERCISES",  emoji: "🎯", label: "Exercises",         desc: "Question builder" },
-  { id: "HARAKAH",    emoji: "🖐️", label: "Harakah Drag",     desc: "Drag-to-place vowel exercise" },
+  { id: "NOTES",     emoji: "📝", label: "Lesson Story Canvas", desc: "Notion-style interactive block stream" },
+  { id: "EXERCISES", emoji: "🎯", label: "Quiz Unit",           desc: "End-of-lesson practice questions" },
+  { id: "INSIGHT",   emoji: "💡", label: "Did You Know?",       desc: "Lesson's custom rhetorical insight pop-up" },
 ];
 
 /* ─── Category colour helper ─────────────────────────── */
@@ -230,6 +224,98 @@ export default function Course1AdminPage() {
       }));
       if (activeLesson?.id === lesId) { setView("MAIN"); setActiveLesson(null); }
     }
+  };
+
+  /* ── RENAME & REORDER HANDLERS FOR LEVELS, MODULES & LESSONS ── */
+
+  const handleRenameLevel = (lvlId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const lvl = levels.find((l) => l.id === lvlId);
+    if (!lvl) return;
+    const newEn = prompt("Level title (English):", lvl.titleEn);
+    if (!newEn) return;
+    const newAr = prompt("Level title (Arabic):", lvl.titleAr);
+    if (!newAr) return;
+    setLevels(levels.map((l) => (l.id === lvlId ? { ...l, titleEn: newEn, titleAr: newAr } : l)));
+  };
+
+  const handleMoveLevel = (idx: number, dir: -1 | 1, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const targetIdx = idx + dir;
+    if (targetIdx < 0 || targetIdx >= levels.length) return;
+    const updated = [...levels];
+    const temp = updated[idx];
+    updated[idx] = updated[targetIdx];
+    updated[targetIdx] = temp;
+    setLevels(updated);
+  };
+
+  const handleRenameModule = (lvlId: string, modId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const lvl = levels.find((l) => l.id === lvlId);
+    const mod = lvl?.modules.find((m) => m.id === modId);
+    if (!mod) return;
+    const newEn = prompt("Module title (English):", mod.titleEn);
+    if (!newEn) return;
+    const newAr = prompt("Module title (Arabic):", mod.titleAr);
+    if (!newAr) return;
+    setLevels(levels.map((l) => (l.id === lvlId ? {
+      ...l,
+      modules: l.modules.map((m) => (m.id === modId ? { ...m, titleEn: newEn, titleAr: newAr } : m)),
+    } : l)));
+  };
+
+  const handleMoveModule = (lvlId: string, modIdx: number, dir: -1 | 1, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setLevels(levels.map((l) => {
+      if (l.id !== lvlId) return l;
+      const targetIdx = modIdx + dir;
+      if (targetIdx < 0 || targetIdx >= l.modules.length) return l;
+      const updatedMods = [...l.modules];
+      const temp = updatedMods[modIdx];
+      updatedMods[modIdx] = updatedMods[targetIdx];
+      updatedMods[targetIdx] = temp;
+      return { ...l, modules: updatedMods };
+    }));
+  };
+
+  const handleRenameLesson = (lvlId: string, modId: string, lesId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const lvl = levels.find((l) => l.id === lvlId);
+    const mod = lvl?.modules.find((m) => m.id === modId);
+    const les = mod?.lessons.find((les) => les.id === lesId);
+    if (!les) return;
+    const newEn = prompt("Lesson title (English):", les.titleEn);
+    if (!newEn) return;
+    const newAr = prompt("Lesson title (Arabic):", les.titleAr);
+    if (!newAr) return;
+    setLevels(levels.map((l) => (l.id === lvlId ? {
+      ...l,
+      modules: l.modules.map((m) => (m.id === modId ? {
+        ...m,
+        lessons: m.lessons.map((les) => (les.id === lesId ? { ...les, titleEn: newEn, titleAr: newAr } : les)),
+      } : m)),
+    } : l)));
+  };
+
+  const handleMoveLesson = (lvlId: string, modId: string, lesIdx: number, dir: -1 | 1, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setLevels(levels.map((l) => {
+      if (l.id !== lvlId) return l;
+      return {
+        ...l,
+        modules: l.modules.map((m) => {
+          if (m.id !== modId) return m;
+          const targetIdx = lesIdx + dir;
+          if (targetIdx < 0 || targetIdx >= m.lessons.length) return m;
+          const updatedLessons = [...m.lessons];
+          const temp = updatedLessons[lesIdx];
+          updatedLessons[lesIdx] = updatedLessons[targetIdx];
+          updatedLessons[targetIdx] = temp;
+          return { ...m, lessons: updatedLessons };
+        }),
+      };
+    }));
   };
 
   /* Open lesson studio */
@@ -815,6 +901,13 @@ export default function Course1AdminPage() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
+                        {/* Reorder Level */}
+                        <button onClick={(e) => handleMoveLevel(lvlIdx, -1, e)} disabled={lvlIdx === 0} className="p-1 text-indigo-300 hover:text-white disabled:opacity-30 text-xs">▲</button>
+                        <button onClick={(e) => handleMoveLevel(lvlIdx, 1, e)} disabled={lvlIdx === levels.length - 1} className="p-1 text-indigo-300 hover:text-white disabled:opacity-30 text-xs">▼</button>
+                        {/* Rename Level */}
+                        <button onClick={(e) => handleRenameLevel(lvl.id, e)} className="px-2.5 py-1 text-xs font-bold text-indigo-200 bg-indigo-800/80 border border-indigo-700 rounded-xl hover:bg-indigo-800">
+                          ✏️ Rename
+                        </button>
                         <button onClick={(e) => handleAddModule(lvl.id, e)}
                           className="px-3.5 py-1.5 text-xs font-bold text-amber-900 bg-amber-300 border border-amber-400 rounded-xl hover:bg-amber-400 transition-colors shadow-2xs">
                           + Add Module
@@ -853,6 +946,13 @@ export default function Course1AdminPage() {
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-2">
+                                  {/* Reorder Module */}
+                                  <button onClick={(e) => handleMoveModule(lvl.id, modIdx, -1, e)} disabled={modIdx === 0} className="p-1 text-amber-800 hover:text-amber-950 disabled:opacity-30 text-xs">▲</button>
+                                  <button onClick={(e) => handleMoveModule(lvl.id, modIdx, 1, e)} disabled={modIdx === lvl.modules.length - 1} className="p-1 text-amber-800 hover:text-amber-950 disabled:opacity-30 text-xs">▼</button>
+                                  {/* Rename Module */}
+                                  <button onClick={(e) => handleRenameModule(lvl.id, mod.id, e)} className="px-2.5 py-1 text-xs font-bold text-amber-900 bg-amber-200/80 border border-amber-300 rounded-xl hover:bg-amber-200">
+                                    ✏️ Rename
+                                  </button>
                                   <button onClick={(e) => handleAddLesson(lvl.id, mod.id, e)}
                                     className="px-3 py-1.5 text-xs font-bold bg-emerald-700 text-white border border-emerald-800 rounded-xl hover:bg-emerald-800 shadow-2xs">
                                     + Add Lesson
@@ -880,8 +980,15 @@ export default function Course1AdminPage() {
                                         </div>
                                       </div>
                                       <div className="flex items-center gap-2 shrink-0">
+                                        {/* Reorder Lesson */}
+                                        <button onClick={(e) => handleMoveLesson(lvl.id, mod.id, lesIdx, -1, e)} disabled={lesIdx === 0} className="p-1 text-emerald-800 hover:text-emerald-950 disabled:opacity-30 text-xs font-bold">▲</button>
+                                        <button onClick={(e) => handleMoveLesson(lvl.id, mod.id, lesIdx, 1, e)} disabled={lesIdx === mod.lessons.length - 1} className="p-1 text-emerald-800 hover:text-emerald-950 disabled:opacity-30 text-xs font-bold">▼</button>
+                                        {/* Rename Lesson */}
+                                        <button onClick={(e) => handleRenameLesson(lvl.id, mod.id, les.id, e)} className="px-2.5 py-1 text-xs font-bold text-emerald-900 bg-emerald-100 border border-emerald-300 rounded-xl hover:bg-emerald-200">
+                                          ✏️ Rename
+                                        </button>
                                         <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-purple-100 text-purple-800 border border-purple-200">
-                                          🎯 {(les.exercises || []).length} Exercises
+                                          🎯 {(les.exercises || []).length} Qs
                                         </span>
                                         <button
                                           onClick={() => handleOpenLessonStudio(les)}
