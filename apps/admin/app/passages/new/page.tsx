@@ -84,42 +84,49 @@ export default function ClassicalPassagesStudioPage() {
     setViewMode("EDITOR");
   };
 
-  const handleSavePassage = () => {
+  const handleSavePassage = async () => {
     setIsSaved(true);
 
+    const targetP: PassageItem = activePassage
+      ? {
+          ...activePassage,
+          titleAr,
+          titleEn,
+          category,
+          citationEn,
+          arabicText,
+          englishTranslation,
+          unlockScope,
+          unlockedAfterMilestoneTitle,
+          questions: questionsList,
+        }
+      : {
+          id: `pas-${Date.now()}`,
+          category,
+          titleAr,
+          titleEn,
+          citationEn,
+          arabicText,
+          englishTranslation,
+          unlockScope,
+          unlockedAfterMilestoneTitle,
+          questions: questionsList,
+        };
+
     if (activePassage) {
-      setPassages(
-        passages.map((p) =>
-          p.id === activePassage.id
-            ? {
-                ...p,
-                titleAr,
-                titleEn,
-                category,
-                citationEn,
-                arabicText,
-                englishTranslation,
-                unlockScope,
-                unlockedAfterMilestoneTitle,
-                questions: questionsList,
-              }
-            : p
-        )
-      );
+      setPassages(passages.map((p) => (p.id === activePassage.id ? targetP : p)));
     } else {
-      const newP: PassageItem = {
-        id: `pas-${Date.now()}`,
-        category,
-        titleAr,
-        titleEn,
-        citationEn,
-        arabicText,
-        englishTranslation,
-        unlockScope,
-        unlockedAfterMilestoneTitle,
-        questions: questionsList,
-      };
-      setPassages([...passages, newP]);
+      setPassages([...passages, targetP]);
+    }
+
+    try {
+      await fetch("/api/v1/passages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ passage: targetP }),
+      });
+    } catch (e) {
+      console.error("API POST failed:", e);
     }
 
     setTimeout(() => {
@@ -127,9 +134,14 @@ export default function ClassicalPassagesStudioPage() {
     }, 2000);
   };
 
-  const handleDeletePassage = (id: string) => {
+  const handleDeletePassage = async (id: string) => {
     if (confirm("Delete this milestone classical passage?")) {
       setPassages(passages.filter((p) => p.id !== id));
+      try {
+        await fetch(`/api/v1/passages?id=${id}`, { method: "DELETE" });
+      } catch (e) {
+        console.error("API DELETE failed:", e);
+      }
     }
   };
 

@@ -126,3 +126,18 @@ export const userProgress = pgTable("user_progress", {
   scorePercentage: integer("score_percentage").notNull().default(0),
   completedAt: timestamp("completed_at").defaultNow().notNull(),
 });
+
+// Classical Capstone Passages Table (Quran, Hadith, Literature)
+export const passages = pgTable("passages", {
+  id: text("id").primaryKey(),
+  category: text("category").notNull(), // QURAN | HADITH | LITERATURE
+  titleAr: text("title_ar").notNull(),
+  titleEn: text("title_en").notNull(),
+  citationEn: text("citation_en").notNull(),
+  arabicText: text("arabic_text").notNull(),
+  englishTranslation: text("english_translation").notNull(),
+  unlockScope: text("unlock_scope").default("MODULE"),
+  unlockedAfterMilestoneTitle: text("unlocked_after_milestone_title"),
+  questionsJson: jsonb("questions_json").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});

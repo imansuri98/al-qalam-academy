@@ -32,6 +32,20 @@ export default function LearnerPassagesClient() {
   });
 
   useEffect(() => {
+    const fetchApiPassages = async () => {
+      try {
+        const res = await fetch("/api/v1/passages");
+        const data = await res.json();
+        if (data.success && data.passages) {
+          setPassages(data.passages);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    fetchApiPassages();
+
     const syncPassages = () => {
       if (typeof window !== "undefined") {
         const saved = localStorage.getItem("alarabi_passages_v1");
