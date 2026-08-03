@@ -336,11 +336,51 @@ export default function Course1AdminPage() {
   /* Open lesson studio */
   const handleOpenLessonStudio = (les: LessonNode) => {
     setActiveLesson(les);
-    setEditorTitleAr(les.titleAr);
-    setEditorTitleEn(les.titleEn);
+    setEditorTitleAr(les.titleAr || "");
+    setEditorTitleEn(les.titleEn || "");
     setEditorContent(les.contentBodyEn || "");
     setEditorAudioUrl(les.audioUrl || "");
-    setLessonExercises([...(les.exercises || [])]);
+
+    const rawExercises = les.exercises || [];
+    const normalizedExercises: ExerciseUnit[] = rawExercises.map((ex: any, idx: number) => {
+      if (ex && Array.isArray(ex.questions)) {
+        return {
+          ...ex,
+          id: ex.id || `ex-${Date.now()}-${idx}`,
+          titleAr: ex.titleAr || "",
+          titleEn: ex.titleEn || `Exercise ${idx + 1}`,
+          exerciseType: ex.exerciseType || "TASHKEEL_PICKER",
+          questions: ex.questions.map((q: any, qidx: number) => ({
+            ...q,
+            id: q.id || `q-${Date.now()}-${idx}-${qidx}`,
+            sentenceAr: q.sentenceAr || "",
+            sentenceEn: q.sentenceEn || "",
+            optionsCsv: q.optionsCsv || (Array.isArray(q.options) ? q.options.join(", ") : ""),
+            correctAnswer: q.correctAnswer || "",
+            grammaticalRuleEn: q.grammaticalRuleEn || "",
+          })),
+        };
+      }
+
+      return {
+        id: ex.id || `ex-${Date.now()}-${idx}`,
+        titleAr: ex.titleAr || "",
+        titleEn: ex.titleEn || `Exercise ${idx + 1}`,
+        exerciseType: ex.exerciseType || "TASHKEEL_PICKER",
+        questions: [
+          {
+            id: ex.id || `q-${Date.now()}-${idx}`,
+            sentenceAr: ex.sentenceAr || "",
+            sentenceEn: ex.sentenceEn || "",
+            optionsCsv: ex.optionsCsv || (Array.isArray(ex.options) ? ex.options.join(", ") : ""),
+            correctAnswer: ex.correctAnswer || "",
+            grammaticalRuleEn: ex.grammaticalRuleEn || "",
+          },
+        ],
+      };
+    });
+
+    setLessonExercises(normalizedExercises);
     setLessonInsightForm(les.insightCard ? { ...les.insightCard } : {
       id: `insight-${les.id}`,
       titleEn: `Insight for ${les.titleEn}`,
@@ -701,7 +741,7 @@ export default function Course1AdminPage() {
                         {/* Question Tabs */}
                         <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3">
                           <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Questions:</span>
-                          {activeEx.questions.map((_, qi) => (
+                          {(activeEx.questions || []).map((_, qi) => (
                             <button
                               key={qi}
                               onClick={() => setActiveQIdx(qi)}
@@ -722,8 +762,8 @@ export default function Course1AdminPage() {
                                 correctAnswer: "",
                                 grammaticalRuleEn: "",
                               };
-                              setLessonExercises(lessonExercises.map((ex, i) => i === activeExIdx ? { ...ex, questions: [...ex.questions, newQ] } : ex));
-                              setActiveQIdx(activeEx.questions.length);
+                              setLessonExercises(lessonExercises.map((ex, i) => i === activeExIdx ? { ...ex, questions: [...(ex.questions || []), newQ] } : ex));
+                              setActiveQIdx((activeEx.questions || []).length);
                             }}
                             className="px-2.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold hover:bg-emerald-100"
                           >
