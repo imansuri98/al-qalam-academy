@@ -780,23 +780,46 @@ export default function Course1AdminPage() {
                         {activeQ && (
                           <div className="space-y-3">
                             <div>
-                              <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Arabic Sentence (with blank __)</label>
+                              <div className="flex items-center justify-between mb-1">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase">
+                                  {activeEx.exerciseType === "SENTENCE_REORDER" ? "Full Correct Arabic Sentence" : "Arabic Sentence (with blank __)"}
+                                </label>
+                                {activeEx.exerciseType === "SENTENCE_REORDER" && (
+                                  <button
+                                    onClick={() => {
+                                      const words = activeQ.sentenceAr.trim().split(/\s+/);
+                                      const shuffled = [...words].sort(() => 0.5 - Math.random());
+                                      updateQ("optionsCsv", shuffled.join(", "));
+                                      updateQ("correctAnswer", words.join(","));
+                                    }}
+                                    className="px-2 py-0.5 rounded bg-purple-100 text-purple-800 font-bold text-[10px] hover:bg-purple-200"
+                                  >
+                                    🔀 Auto-Scramble Word Tiles
+                                  </button>
+                                )}
+                              </div>
                               <input value={activeQ.sentenceAr} onChange={(e) => updateQ("sentenceAr", e.target.value)}
                                 className="w-full font-arabic text-xl font-bold p-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-purple-400 text-right" dir="rtl" />
                             </div>
                             <div>
-                              <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">English Prompt</label>
+                              <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">
+                                {activeEx.exerciseType === "SENTENCE_REORDER" ? "English Sentence Translation" : "English Prompt"}
+                              </label>
                               <input value={activeQ.sentenceEn} onChange={(e) => updateQ("sentenceEn", e.target.value)}
                                 className="w-full text-sm p-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-purple-400" />
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                               <div>
-                                <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Options (comma-separated)</label>
+                                <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">
+                                  {activeEx.exerciseType === "SENTENCE_REORDER" ? "Scrambled Word Tiles (comma-separated)" : "Options (comma-separated)"}
+                                </label>
                                 <input value={activeQ.optionsCsv} onChange={(e) => updateQ("optionsCsv", e.target.value)}
                                   className="w-full font-arabic text-sm font-bold p-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none text-right" dir="rtl" />
                               </div>
                               <div>
-                                <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Correct Answer</label>
+                                <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">
+                                  {activeEx.exerciseType === "SENTENCE_REORDER" ? "Correct Word Sequence (comma-separated)" : "Correct Answer"}
+                                </label>
                                 <input value={activeQ.correctAnswer} onChange={(e) => updateQ("correctAnswer", e.target.value)}
                                   className="w-full font-arabic text-sm font-bold p-3 rounded-xl bg-emerald-50 border border-emerald-300 focus:outline-none text-right" dir="rtl" />
                               </div>

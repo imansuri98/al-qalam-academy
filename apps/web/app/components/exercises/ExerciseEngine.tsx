@@ -94,8 +94,15 @@ export default function ExerciseEngine({ exercises }: ExerciseEngineProps) {
     let userCorrect = false;
 
     if (activeEx.exerciseType === "SENTENCE_REORDER") {
-      const userSentence = unscrambledWords.join(",");
-      userCorrect = userSentence.trim() === activeQ.correctAnswer.trim();
+      const userSentenceComma = unscrambledWords.join(",").trim();
+      const userSentenceSpace = unscrambledWords.join(" ").trim();
+      const targetCorrect = activeQ.correctAnswer.trim();
+      const targetSentenceAr = activeQ.sentenceAr.trim();
+
+      userCorrect =
+        userSentenceComma === targetCorrect ||
+        userSentenceSpace === targetSentenceAr ||
+        userSentenceComma === targetSentenceAr.split(/\s+/).join(",");
     } else {
       userCorrect = selectedOption?.trim() === activeQ.correctAnswer.trim();
     }
