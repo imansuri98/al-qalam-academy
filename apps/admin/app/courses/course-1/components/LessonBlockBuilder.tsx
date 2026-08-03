@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { LessonBlock, BlockType } from "@alarabi/curriculum";
 
@@ -177,11 +177,26 @@ const DEFAULT_SAMPLE_BLOCKS: LessonBlock[] = [
   },
 ];
 
+const DEFAULT_INITIAL_BLOCK: LessonBlock[] = [
+  {
+    id: `blk-init-${Date.now()}`,
+    type: "TEXT",
+    orderIndex: 0,
+    data: { text: "" },
+  },
+];
+
 export default function LessonBlockBuilder({ blocks: initialBlocks, onChange }: LessonBlockBuilderProps) {
   const [blocks, setBlocks] = useState<LessonBlock[]>(
-    initialBlocks && initialBlocks.length > 0 ? initialBlocks : DEFAULT_SAMPLE_BLOCKS
+    initialBlocks && initialBlocks.length > 0 ? initialBlocks : DEFAULT_INITIAL_BLOCK
   );
   const [showCatalog, setShowCatalog] = useState(false);
+
+  useEffect(() => {
+    if (initialBlocks && initialBlocks.length > 0) {
+      setBlocks(initialBlocks);
+    }
+  }, [initialBlocks]);
 
   const notifyChange = (updated: LessonBlock[]) => {
     setBlocks(updated);
