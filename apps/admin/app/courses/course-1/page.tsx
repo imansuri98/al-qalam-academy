@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import {
@@ -135,7 +135,22 @@ export default function Course1AdminPage() {
   const [activeQIdx, setActiveQIdx]   = useState(0);
 
   /* ── Passages ── */
-  const [passages, setPassages]                   = useState<PassageItem[]>(DEFAULT_PASSAGES);
+  const [passages, setPassages]                   = useState<PassageItem[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("alarabi_passages_v1");
+      if (saved) {
+        try { return JSON.parse(saved); } catch (e) { console.error(e); }
+      }
+    }
+    return DEFAULT_PASSAGES;
+  });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("alarabi_passages_v1", JSON.stringify(passages));
+    }
+  }, [passages]);
+
   const [editingPassageId, setEditingPassageId]   = useState<string | null>(null);
   const [passageCategory, setPassageCategory]     = useState<"ALL"|"QURAN"|"HADITH"|"LITERATURE">("ALL");
   const [editPassageForm, setEditPassageForm]     = useState<Partial<PassageItem>>({});

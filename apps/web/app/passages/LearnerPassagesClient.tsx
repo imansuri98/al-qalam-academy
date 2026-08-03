@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import LearnerNavbar from "../components/LearnerNavbar";
 import { DEFAULT_PASSAGES, PassageItem } from "@alarabi/curriculum";
 
@@ -16,8 +16,38 @@ export default function LearnerPassagesClient() {
   const [score, setScore] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
 
-  // Capstone Passages Data from shared package
-  const passages = DEFAULT_PASSAGES;
+  // Capstone Passages Data with localStorage sync
+  const [passages, setPassages] = useState<PassageItem[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("alarabi_passages_v1");
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+    return DEFAULT_PASSAGES;
+  });
+
+  useEffect(() => {
+    const syncPassages = () => {
+      if (typeof window !== "undefined") {
+        const saved = localStorage.getItem("alarabi_passages_v1");
+        if (saved) {
+          try {
+            setPassages(JSON.parse(saved));
+          } catch (e) {
+            console.error(e);
+          }
+        }
+      }
+    };
+
+    window.addEventListener("storage", syncPassages);
+    return () => window.removeEventListener("storage", syncPassages);
+  }, []);
 
   const filteredPassages = activeCategory === "ALL"
     ? passages

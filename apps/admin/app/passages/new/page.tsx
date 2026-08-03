@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { DEFAULT_PASSAGES, PassageItem, PassageQuestion } from "@alarabi/curriculum";
 
@@ -8,8 +8,26 @@ export default function ClassicalPassagesStudioPage() {
   const [activeCategory, setActiveCategory] = useState<"ALL" | "QURAN" | "HADITH" | "LITERATURE">("ALL");
   const [viewMode, setViewMode] = useState<"LIST" | "EDITOR">("LIST");
 
-  // Sample Passages Unlocked After Module & Level Completion from shared package
-  const [passages, setPassages] = useState<PassageItem[]>(DEFAULT_PASSAGES);
+  // Sample Passages Unlocked After Module & Level Completion with localStorage persistence
+  const [passages, setPassages] = useState<PassageItem[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("alarabi_passages_v1");
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+    return DEFAULT_PASSAGES;
+  });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("alarabi_passages_v1", JSON.stringify(passages));
+    }
+  }, [passages]);
 
   // Active Passage for Editor Mode
   const [activePassage, setActivePassage] = useState<PassageItem | null>(null);
@@ -159,12 +177,24 @@ export default function ClassicalPassagesStudioPage() {
               ← Back to Passages Catalog
             </button>
           ) : (
-            <button
-              onClick={() => handleOpenEditor()}
-              className="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl shadow-sm transition-colors"
-            >
-              + Create Module/Level Capstone Passage
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  if (confirm("Reset passages catalog back to original default capstones?")) {
+                    setPassages(DEFAULT_PASSAGES);
+                  }
+                }}
+                className="px-3.5 py-2 bg-slate-100 border border-slate-200 text-slate-700 font-bold text-xs rounded-xl hover:bg-slate-200 transition-colors"
+              >
+                🔄 Reset Default Passages
+              </button>
+              <button
+                onClick={() => handleOpenEditor()}
+                className="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl shadow-sm transition-colors"
+              >
+                + Create Module/Level Capstone Passage
+              </button>
+            </div>
           )}
         </div>
       </div>
