@@ -229,15 +229,19 @@ export default function ExerciseEngine({ exercises }: ExerciseEngineProps) {
               </span>
             )}
 
-            <span className="font-arabic text-3xl font-bold text-[#090D16] block dir-rtl leading-relaxed" dir="rtl">
-              {activeEx.exerciseType === "TASHKEEL_PICKER" && selectedOption
-                ? activeQ.sentenceAr.replace("____", selectedOption)
-                : activeQ.sentenceAr}
-            </span>
+            {activeQ.sentenceAr && activeQ.sentenceAr.trim() !== "" && (
+              <span className="font-arabic text-3xl font-bold text-[#090D16] block dir-rtl leading-relaxed" dir="rtl">
+                {activeEx.exerciseType === "TASHKEEL_PICKER" && selectedOption
+                  ? activeQ.sentenceAr.replace("____", selectedOption)
+                  : activeQ.sentenceAr}
+              </span>
+            )}
 
-            <p className="text-xs text-[#475569] font-medium">
-              {activeQ.sentenceEn}
-            </p>
+            {activeQ.sentenceEn && activeQ.sentenceEn.trim() !== "" && (
+              <p className="text-sm font-semibold text-[#0F172A] leading-relaxed">
+                {activeQ.sentenceEn}
+              </p>
+            )}
 
             {activeQ.audioUrl && (
               <button className="px-3 py-1 rounded-md bg-white border border-[#E2E8F0] text-[#0F172A] text-xs font-bold flex items-center justify-center gap-1.5 mx-auto">
@@ -422,9 +426,12 @@ export default function ExerciseEngine({ exercises }: ExerciseEngineProps) {
                   <button
                     key={idx}
                     onClick={() => handleSelectOption(opt)}
-                    className={`p-3.5 rounded-xl border text-center transition-all shadow-2xs ${btnStyle}`}
+                    className={`p-4 rounded-xl border text-center transition-all shadow-2xs ${btnStyle}`}
                   >
-                    <span className="font-arabic text-lg font-bold block dir-rtl" dir="rtl">
+                    <span
+                      className={/[\u0600-\u06FF]/.test(opt) ? "font-arabic text-xl font-bold block dir-rtl" : "font-sans text-sm font-bold block text-center"}
+                      dir={/[\u0600-\u06FF]/.test(opt) ? "rtl" : "ltr"}
+                    >
                       {opt.trim()}
                     </span>
                   </button>
