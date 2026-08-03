@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { COURSE_1_LEVELS } from "@alarabi/curriculum";
 
 interface QuestionItem {
   id: string;
@@ -45,16 +46,12 @@ export default function ExerciseStudioPage() {
   const [targetCourse, setTargetCourse] = useState<"course-1" | "course-2">("course-1");
   const [viewMode, setViewMode] = useState<"TREE" | "BIG_QUESTION_STUDIO">("TREE");
 
-  // Accordion Expand/Collapse States for Levels, Modules, Lessons
+  // Accordion Expand/Collapse States
   const [expandedLevels, setExpandedLevels] = useState<Record<string, boolean>>({
-    "ex-lvl-1": true,
+    "lvl-1": true,
   });
-  const [expandedModules, setExpandedModules] = useState<Record<string, boolean>>({
-    "ex-mod-101": true,
-  });
-  const [expandedLessons, setExpandedLessons] = useState<Record<string, boolean>>({
-    "ex-les-101a": true,
-  });
+  const [expandedModules, setExpandedModules] = useState<Record<string, boolean>>({});
+  const [expandedLessons, setExpandedLessons] = useState<Record<string, boolean>>({});
 
   const toggleLevel = (lvlId: string) => {
     setExpandedLevels((prev) => ({ ...prev, [lvlId]: !prev[lvlId] }));
@@ -68,7 +65,7 @@ export default function ExerciseStudioPage() {
     setExpandedLessons((prev) => ({ ...prev, [lesId]: !prev[lesId] }));
   };
 
-  // Sample Exercise Data
+  // Sample default exercise unit template
   const defaultEx1: ExerciseUnit = {
     id: "ex-101a",
     titleAr: "تَحَدِّي تَشْكِيلِ الْمُبْتَدَأِ وَالْخَبَرِ",
@@ -118,45 +115,68 @@ export default function ExerciseStudioPage() {
     ],
   };
 
-  const defaultEx2: ExerciseUnit = {
-    id: "ex-101b",
-    titleAr: "إِعَادَةُ تَرْتِيبِ الْجُمَلِ النَّحْوِيَّةِ",
-    titleEn: "Sentence Unscrambler: Nominal Order",
-    exerciseType: "SENTENCE_REORDER",
-    questions: [
-      {
-        id: "q-201",
-        sentenceAr: "الْكِتَابُ مُفِيدٌ جِدًّا لِلطَّالِبِ",
-        sentenceEn: "The book is very useful for the student.",
-        optionsCsv: "الْكِتَابُ, مُفِيدٌ, جِدًّا, لِلطَّالِبِ",
-        correctAnswer: "الْكِتَابُ,مُفِيدٌ,جِدًّا,لِلطَّالِبِ",
-        grammaticalRuleEn: "Subject opens the nominal sentence.",
-      },
-    ],
-  };
+  // Populate Tree with Course 1 Levels & Lessons from shared package
+  const initialTree: LevelNode[] = COURSE_1_LEVELS.map((lvl) => ({
+    id: lvl.id,
+    titleAr: lvl.titleAr,
+    titleEn: lvl.titleEn,
+    modules: lvl.modules.map((mod) => ({
+      id: mod.id,
+      titleAr: mod.titleAr,
+      titleEn: mod.titleEn,
+      lessons: mod.lessons.map((les, i) => ({
+        id: les.id,
+        titleAr: les.titleAr,
+        titleEn: les.titleEn,
+        exercises: i === 0 ? [defaultEx1] : [],
+      })),
+    })),
+  }));
 
-  const [levels, setLevels] = useState<LevelNode[]>([
-    {
-      id: "ex-lvl-1",
-      titleAr: "الْمُسْتَوَى الأَوَّلُ: مَهَارَاتُ التَّشْكِيلِ وَالْإِعْرَابِ",
-      titleEn: "Level 1: Beginner Exercise Suite",
-      modules: [
-        {
-          id: "ex-mod-101",
-          titleAr: "تَطْبِيقَاتُ الْجُمْلَةِ الِاسْمِيَّةِ",
-          titleEn: "Module 1: Nominal Sentence Drills",
-          lessons: [
-            {
-              id: "ex-les-101a",
-              titleAr: "تَعْرِيفُ الْمُبْتَدَأِ وَالْخَبَرِ",
-              titleEn: "Lesson 1: Introduction to Subject & Predicate",
-              exercises: [defaultEx1, defaultEx2],
-            },
-          ],
-        },
-      ],
-    },
-  ]);
+  const [levels, setLevels] = useState<LevelNode[]>(initialTree);
+  const [isDbSynced, setIsDbSynced] = useState(false);
+
+  // Sync exercises with PostgreSQL database on load
+  useEffect(() => {
+    async function loadDbExercises() {
+      try {
+        const res = await fetch("/api/v1/exercises");
+        const json = await res.json();
+
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          const dbExercises = json.data;
+
+          setLevels((prevLevels) =>
+            prevLevels.map((lvl) => ({
+              ...lvl,
+              modules: lvl.modules.map((mod) => ({
+                ...mod,
+                lessons: mod.lessons.map((les) => {
+                  const matchingDbEx = dbExercises.filter((ex: any) => ex.lessonId === les.id);
+                  if (matchingDbEx.length > 0) {
+                    const mappedEx: ExerciseUnit[] = matchingDbEx.map((ex: any) => ({
+                      id: ex.id,
+                      titleAr: ex.payloadJson?.titleAr || "تَمْرِينٌ جَدِيدٌ",
+                      titleEn: ex.promptEn || ex.payloadJson?.titleEn || "Exercise Unit",
+                      exerciseType: ex.type || "TASHKEEL_PICKER",
+                      questions: ex.payloadJson?.questions || [],
+                    }));
+                    return { ...les, exercises: mappedEx };
+                  }
+                  return les;
+                }),
+              })),
+            }))
+          );
+        }
+        setIsDbSynced(true);
+      } catch (e) {
+        console.error("Failed to load exercises from PostgreSQL", e);
+      }
+    }
+
+    loadDbExercises();
+  }, []);
 
   // Active Selected Exercise for Big View Question Studio
   const [activeLevelId, setActiveLevelId] = useState<string>("");
@@ -192,10 +212,30 @@ export default function ExerciseStudioPage() {
     setViewMode("BIG_QUESTION_STUDIO");
   };
 
-  // Save changes from Big View back to the Tree and Publish OTA
-  const handleSaveBigStudio = () => {
+  // Save changes from Big View back to PostgreSQL DB & update Tree
+  const handleSaveBigStudio = async () => {
     if (!activeExercise) return;
     setIsSaved(true);
+
+    try {
+      await fetch("/api/v1/exercises", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: activeExercise.id.startsWith("ex-") ? undefined : activeExercise.id,
+          lessonId: activeLessonId,
+          type: exType,
+          promptEn: exTitleEn,
+          payloadJson: {
+            titleAr: exTitleAr,
+            titleEn: exTitleEn,
+            questions: questionsList,
+          },
+        }),
+      });
+    } catch (e) {
+      console.error("Failed to persist exercise to PostgreSQL", e);
+    }
 
     setLevels(
       levels.map((lvl) => {
@@ -406,9 +446,23 @@ export default function ExerciseStudioPage() {
     setExpandedLessons((prev) => ({ ...prev, [lesId]: true }));
   };
 
-  const handleDeleteExerciseUnit = (lvlId: string, modId: string, lesId: string, exId: string, e: React.MouseEvent) => {
+  const handleDeleteExerciseUnit = async (
+    lvlId: string,
+    modId: string,
+    lesId: string,
+    exId: string,
+    e: React.MouseEvent
+  ) => {
     e.stopPropagation();
     if (confirm("Delete this exercise unit?")) {
+      if (!exId.startsWith("ex-")) {
+        try {
+          await fetch(`/api/v1/exercises?id=${exId}`, { method: "DELETE" });
+        } catch (e) {
+          console.error("Failed to delete exercise from DB", e);
+        }
+      }
+
       setLevels(
         levels.map((lvl) => {
           if (lvl.id !== lvlId) return lvl;
@@ -452,7 +506,7 @@ export default function ExerciseStudioPage() {
           </h1>
           <p className="text-xs text-claude-textMuted mt-0.5">
             {viewMode === "TREE"
-              ? "Nested Tree: Level → Module → Lesson → Exercise Bars. Click ✏️ Edit Questions on any exercise bar to open Big View."
+              ? "Course 1 & 2 Live Hierarchy: Level → Module → Lesson → Exercise Units. Connected to PostgreSQL DB."
               : `Big View Question Studio for Exercise: "${exTitleEn}"`}
           </p>
         </div>
@@ -635,7 +689,7 @@ export default function ExerciseStudioPage() {
                                       </div>
                                     </div>
 
-                                    {/* EXERCISE UNITS LIST BARS WITH PROMINENT EDIT BUTTON FOR BIG VIEW */}
+                                    {/* EXERCISE UNITS LIST BARS */}
                                     {isLesExpanded && (
                                       <div className="p-3.5 space-y-2 bg-claude-bg/20">
                                         {les.exercises.map((ex, exIdx) => (
@@ -663,13 +717,11 @@ export default function ExerciseStudioPage() {
                                                 {ex.exerciseType.replace("_", " ")} • {ex.questions.length} Questions
                                               </span>
 
-                                              {/* PROMINENT EDIT PEN BUTTON FOR BIG VIEW QUESTION STUDIO */}
                                               <button
                                                 onClick={() => handleOpenBigQuestionStudio(lvl.id, mod.id, les.id, ex)}
                                                 className="px-4 py-2 rounded-xl bg-purple-600 text-white font-bold text-xs hover:bg-purple-700 transition-colors shadow-sm flex items-center gap-1.5"
-                                                title="Click to Open Big View Question Studio"
                                               >
-                                                ✏️ Build / Edit 5 Questions
+                                                ✏️ Build / Edit Questions
                                               </button>
 
                                               <button
@@ -709,7 +761,7 @@ export default function ExerciseStudioPage() {
             >
               ← Return to Full Screen Exercise Tree
             </button>
-            <span className="text-xs font-mono text-claude-textMuted">Big View Question Studio Canvas</span>
+            <span className="text-xs font-mono text-claude-textMuted">PostgreSQL Connected Studio Canvas</span>
           </div>
 
           <div className="claude-card rounded-2xl bg-white border border-claude-border shadow-sm p-6 space-y-6">
@@ -802,50 +854,46 @@ export default function ExerciseStudioPage() {
                   type="text"
                   value={currentQ.sentenceAr}
                   onChange={(e) => updateCurrentQuestion("sentenceAr", e.target.value)}
-                  placeholder="الْعِلْمُ ____ فِي الْحَيَاةِ"
-                  className="w-full font-arabic text-2xl font-bold text-slate-900 border-b border-claude-border focus:border-purple-600 focus:outline-none py-2 dir-rtl"
+                  className="w-full font-arabic text-2xl font-bold text-slate-900 p-3 rounded-xl bg-claude-bg border border-claude-border focus:outline-none focus:border-purple-600 dir-rtl"
                   dir="rtl"
                 />
               </div>
 
               <div>
                 <label className="text-[10px] font-bold uppercase tracking-wider text-claude-textMuted block mb-1">
-                  English Context / Translation
+                  Question Sentence Translation (English Prompt)
                 </label>
                 <input
                   type="text"
                   value={currentQ.sentenceEn}
                   onChange={(e) => updateCurrentQuestion("sentenceEn", e.target.value)}
-                  placeholder="Knowledge is light in life."
-                  className="w-full text-sm font-semibold text-claude-textMain border-b border-claude-border focus:border-purple-600 focus:outline-none py-1"
+                  className="w-full text-sm font-semibold text-claude-textMain p-3 rounded-xl bg-claude-bg border border-claude-border focus:outline-none focus:border-purple-600"
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="text-[10px] font-bold uppercase tracking-wider text-claude-textMuted block mb-1">
-                    Multiple Choice Options (Comma-Separated)
+                    Multiple Choice Options (Comma Separated CSV)
                   </label>
                   <input
                     type="text"
                     value={currentQ.optionsCsv}
                     onChange={(e) => updateCurrentQuestion("optionsCsv", e.target.value)}
-                    placeholder="نُورٌ, نُورًا, نُورٍ, نُورَ"
-                    className="w-full p-2.5 rounded-xl bg-claude-bg border border-claude-border text-xs font-arabic font-bold text-slate-900 focus:outline-none focus:border-purple-600 dir-rtl"
+                    className="w-full font-arabic text-sm font-bold text-slate-900 p-3 rounded-xl bg-claude-bg border border-claude-border focus:outline-none focus:border-purple-600 dir-rtl"
                     dir="rtl"
                   />
                 </div>
 
                 <div>
                   <label className="text-[10px] font-bold uppercase tracking-wider text-claude-textMuted block mb-1">
-                    Correct Answer Choice
+                    Exact Correct Answer (Must Match Option)
                   </label>
                   <input
                     type="text"
                     value={currentQ.correctAnswer}
                     onChange={(e) => updateCurrentQuestion("correctAnswer", e.target.value)}
-                    placeholder="نُورٌ"
-                    className="w-full p-2.5 rounded-xl bg-emerald-50 border border-emerald-300 text-xs font-arabic font-bold text-emerald-900 focus:outline-none focus:border-emerald-600 dir-rtl"
+                    className="w-full font-arabic text-sm font-bold text-emerald-800 p-3 rounded-xl bg-emerald-50/60 border border-emerald-300 focus:outline-none dir-rtl"
                     dir="rtl"
                   />
                 </div>
@@ -853,71 +901,35 @@ export default function ExerciseStudioPage() {
 
               <div>
                 <label className="text-[10px] font-bold uppercase tracking-wider text-claude-textMuted block mb-1">
-                  Grammatical Rule / Parsing Explanation (I'rab Note)
+                  Grammatical Rule Explanation Note (English)
                 </label>
                 <input
                   type="text"
                   value={currentQ.grammaticalRuleEn}
                   onChange={(e) => updateCurrentQuestion("grammaticalRuleEn", e.target.value)}
-                  placeholder="Khabar is Marfoo' with Tanween Dammah (ٌُ)"
-                  className="w-full p-2.5 rounded-xl bg-claude-bg border border-claude-border text-xs text-claude-textMain focus:outline-none focus:border-purple-600"
+                  className="w-full text-xs font-medium text-claude-textMain p-3 rounded-xl bg-claude-bg border border-claude-border focus:outline-none focus:border-purple-600"
                 />
               </div>
             </div>
 
-            {/* Live Learner Card Preview */}
-            <div className="bg-claude-bg border border-claude-border rounded-xl p-5 space-y-3">
-              <span className="text-[10px] font-mono font-bold text-claude-textMuted uppercase tracking-wider block">
-                👁️ Live Learner Card View Preview (Question {activeQTab + 1})
-              </span>
-              <div className="bg-white border border-claude-border rounded-xl p-4 space-y-3 shadow-xs">
-                <span className="font-arabic text-2xl text-slate-900 font-bold block text-center dir-rtl" dir="rtl">
-                  {currentQ.sentenceAr || "الْعِلْمُ ____ فِي الْحَيَاةِ"}
+            {/* Save & Publish Footer */}
+            <div className="pt-4 border-t border-claude-border flex items-center justify-between">
+              {isSaved ? (
+                <span className="text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-4 py-2 rounded-xl">
+                  ✓ Saved to PostgreSQL DB & Published Live OTA
                 </span>
-                <p className="text-xs text-center text-claude-textMuted font-medium">
-                  {currentQ.sentenceEn || "Knowledge is light in life."}
-                </p>
-
-                <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
-                  {(currentQ.optionsCsv || "نُورٌ, نُورًا, نُورٍ, نُورَ")
-                    .split(",")
-                    .map((opt, i) => (
-                      <span
-                        key={i}
-                        className={`px-4 py-2 rounded-xl text-sm font-arabic font-bold border transition-colors ${
-                          opt.trim() === currentQ.correctAnswer
-                            ? "bg-emerald-50 border-emerald-500 text-emerald-900 shadow-sm"
-                            : "bg-claude-bg border-claude-border text-slate-800"
-                        }`}
-                      >
-                        {opt.trim()}
-                      </span>
-                    ))}
-                </div>
-              </div>
-            </div>
-
-            {/* OTA Publish Footer */}
-            <div className="border-t border-claude-border pt-4 flex items-center justify-between">
-              {isSaved && (
-                <span className="text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
-                  ✓ OTA Exercise Unit & Questions Published
+              ) : (
+                <span className="text-xs text-claude-textMuted">
+                  Click save to persist exercise unit to PostgreSQL database.
                 </span>
               )}
-              <div className="flex items-center gap-3 ml-auto">
-                <button
-                  onClick={() => setViewMode("TREE")}
-                  className="px-4 py-2.5 rounded-xl bg-white border border-claude-border text-claude-textMain font-semibold text-xs hover:border-claude-borderHover"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSaveBigStudio}
-                  className="px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs transition-colors shadow-sm"
-                >
-                  🚀 Publish OTA Exercise Unit
-                </button>
-              </div>
+
+              <button
+                onClick={handleSaveBigStudio}
+                className="px-6 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md transition-colors"
+              >
+                🚀 Save to PostgreSQL & Publish OTA
+              </button>
             </div>
           </div>
         </div>

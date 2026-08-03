@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { db, lessons } from "@alarabi/database";
-import { eq } from "drizzle-orm";
+import { db, lessons, eq } from "@alarabi/database";
 
 export const dynamic = "force-dynamic";
 

@@ -3,6 +3,8 @@ import postgres from "postgres";
 import { createClient } from "@supabase/supabase-js";
 import * as schema from "./schema";
 
+export { eq, and, or, sql } from "drizzle-orm";
+
 /**
  * Environment Variable Helper with Warning Notifications
  */
