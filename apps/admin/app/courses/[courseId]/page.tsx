@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { COURSE_1_LEVELS, LevelNode, ModuleNode, LessonNode } from "@alarabi/curriculum";
+import RichMediumEditor from "../../components/RichMediumEditor";
+import { LayoutList, Maximize2, Split } from "lucide-react";
 
 export default function CourseCurriculumEditorPage() {
   const params = useParams();
@@ -16,12 +18,16 @@ export default function CourseCurriculumEditorPage() {
   // Nested Curriculum Hierarchy State: Level -> Module -> Lesson from shared package
   const [levels, setLevels] = useState<LevelNode[]>(COURSE_1_LEVELS);
 
-  // Selected lesson for Medium-style Rich Editor
+  // Selected lesson for Rich Medium Editor
   const [selectedLesson, setSelectedLesson] = useState<LessonNode | null>(levels[0].modules[0].lessons[0]);
   const [editorContent, setEditorContent] = useState<string>(levels[0].modules[0].lessons[0].contentBodyEn || "");
   const [editorTitleAr, setEditorTitleAr] = useState<string>(levels[0].modules[0].lessons[0].titleAr);
   const [editorTitleEn, setEditorTitleEn] = useState<string>(levels[0].modules[0].lessons[0].titleEn);
+  const [audioUrl, setAudioUrl] = useState<string>("");
   const [isSaved, setIsSaved] = useState(false);
+
+  // View Mode: "SPLIT" (Tree + Editor) vs "FULL_WIDTH" (100% Wide Editor)
+  const [editorViewMode, setEditorViewMode] = useState<"SPLIT" | "FULL_WIDTH">("FULL_WIDTH");
 
   // CRUD Handler Functions
   const handleAddLevel = () => {
@@ -130,53 +136,86 @@ export default function CourseCurriculumEditorPage() {
     setTimeout(() => setIsSaved(false), 3000);
   };
 
-  // Medium-style formatting helpers
-  const insertFormatting = (prefix: string, suffix: string = "") => {
-    setEditorContent((prev) => `${prev}\n${prefix} ${suffix}`);
-  };
-
   return (
-    <div className="min-h-screen bg-claude-bg text-claude-textMain space-y-6">
-      {/* Top Breadcrumb Header */}
-      <div className="flex items-center justify-between border-b border-claude-border pb-4">
+    <div className="min-h-screen bg-claude-bg text-claude-textMain space-y-6 w-full px-1">
+      {/* Top Header Bar */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-claude-border pb-4">
         <div>
           <Link href="/" className="text-xs font-semibold text-claude-terracotta hover:underline">
             ← Back to Admin Dashboard
           </Link>
           <h1 className="text-2xl font-extrabold text-claude-textMain mt-1">{courseTitle}</h1>
           <p className="text-xs text-claude-textMuted">
-            Manage nested Levels → Modules → Lessons hierarchy and edit lessons with Medium-style editor.
+            Curriculum Studio: Manage levels, modules, lessons, and edit vowelled Arabic notes in full width.
           </p>
         </div>
 
-        <button
-          onClick={handleAddLevel}
-          className="px-4 py-2 bg-claude-terracotta hover:bg-[#B85C3C] text-white font-bold text-xs rounded-xl transition-colors shadow-sm"
-        >
-          + Add New Level
-        </button>
+        <div className="flex items-center gap-3">
+          {/* View Mode Toggle: Split vs 100% Full Width */}
+          <div className="flex items-center bg-white border border-claude-border rounded-xl p-1 shadow-2xs">
+            <button
+              onClick={() => setEditorViewMode("FULL_WIDTH")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                editorViewMode === "FULL_WIDTH"
+                  ? "bg-claude-terracotta text-white shadow-2xs"
+                  : "text-claude-textMuted hover:text-claude-textMain"
+              }`}
+              title="Expand Lesson Editor to 100% Full Width"
+            >
+              <Maximize2 className="w-3.5 h-3.5" />
+              <span>Full Width Editor</span>
+            </button>
+
+            <button
+              onClick={() => setEditorViewMode("SPLIT")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                editorViewMode === "SPLIT"
+                  ? "bg-claude-terracotta text-white shadow-2xs"
+                  : "text-claude-textMuted hover:text-claude-textMain"
+              }`}
+              title="Show Side-by-Side Curriculum Tree + Editor"
+            >
+              <Split className="w-3.5 h-3.5" />
+              <span>Split Tree View</span>
+            </button>
+          </div>
+
+          <button
+            onClick={handleAddLevel}
+            className="px-4 py-2 bg-claude-terracotta hover:bg-[#B85C3C] text-white font-bold text-xs rounded-xl transition-colors shadow-sm"
+          >
+            + Add New Level
+          </button>
+        </div>
       </div>
 
-      {/* Main Split Grid: Left = Nested Tree Hierarchy | Right = Medium-Style Editor */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left Column: Nested Hierarchy Explorer (Levels -> Modules -> Lessons) */}
-        <div className="lg:col-span-5 space-y-4">
-          <div className="claude-card rounded-2xl p-5 space-y-4">
+      {/* Main Workspace Layout */}
+      <div
+        className={
+          editorViewMode === "SPLIT"
+            ? "grid grid-cols-1 lg:grid-cols-12 gap-6 items-start"
+            : "space-y-6 w-full"
+        }
+      >
+        {/* Left Column: Hierarchy Tree Explorer */}
+        <div className={editorViewMode === "SPLIT" ? "lg:col-span-4 space-y-4" : "w-full space-y-4"}>
+          <div className="claude-card rounded-2xl p-5 space-y-4 bg-white border border-claude-border shadow-xs">
             <div className="flex items-center justify-between border-b border-claude-border pb-3">
-              <h2 className="font-extrabold text-claude-textMain text-sm uppercase tracking-wider">
-                Curriculum Hierarchy
+              <h2 className="font-extrabold text-claude-textMain text-xs uppercase tracking-wider flex items-center gap-2">
+                <LayoutList className="w-4 h-4 text-claude-terracotta" />
+                <span>Curriculum Tree ({levels.length} Levels)</span>
               </h2>
-              <span className="text-[10px] text-claude-textMuted font-mono">Tree View</span>
+              <span className="text-[10px] text-claude-textMuted font-mono">Select to Edit</span>
             </div>
 
             {/* Levels List */}
-            <div className="space-y-4">
+            <div className={editorViewMode === "FULL_WIDTH" ? "grid grid-cols-1 md:grid-cols-2 gap-4" : "space-y-4"}>
               {levels.map((lvl, lvlIdx) => (
                 <div key={lvl.id} className="border border-claude-border rounded-xl bg-claude-bg/40 p-4 space-y-3">
                   {/* Level Header */}
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-900 border border-blue-200">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-100 text-purple-900 border border-purple-200">
                         Level {lvlIdx + 1}
                       </span>
                       <h3 className="font-bold text-xs text-claude-textMain mt-1">{lvl.titleEn}</h3>
@@ -189,29 +228,26 @@ export default function CourseCurriculumEditorPage() {
                       <button
                         onClick={() => handleAddModule(lvl.id)}
                         className="px-2 py-1 text-[11px] font-bold text-claude-terracotta bg-white border border-claude-border rounded-md hover:bg-claude-terracottaLight"
-                        title="Add Module to Level"
                       >
                         + Mod
                       </button>
                       <button
                         onClick={() => handleDeleteLevel(lvl.id)}
                         className="p-1 text-rose-600 hover:bg-rose-50 rounded-md text-xs"
-                        title="Delete Level"
                       >
                         🗑️
                       </button>
                     </div>
                   </div>
 
-                  {/* Nested Modules List */}
-                  <div className="pl-3 border-l-2 border-claude-border space-y-3 pt-1">
+                  {/* Modules List */}
+                  <div className="pl-2 border-l-2 border-claude-border space-y-2 pt-1">
                     {lvl.modules.map((mod, modIdx) => (
                       <div key={mod.id} className="bg-white border border-claude-border rounded-xl p-3 space-y-2">
-                        {/* Module Header */}
                         <div className="flex items-center justify-between">
                           <div>
                             <span className="text-[10px] font-semibold text-claude-textMuted">
-                              Module {modIdx + 1}: {mod.titleEn}
+                              Mod {modIdx + 1}: {mod.titleEn}
                             </span>
                             <span className="font-arabic text-xs text-slate-900 font-bold block dir-rtl" dir="rtl">
                               {mod.titleAr}
@@ -221,7 +257,7 @@ export default function CourseCurriculumEditorPage() {
                           <div className="flex items-center gap-1">
                             <button
                               onClick={() => handleAddLesson(lvl.id, mod.id)}
-                              className="px-2 py-0.5 text-[10px] font-bold bg-claude-sageLight text-claude-sage border border-claude-sage/20 rounded hover:bg-emerald-100"
+                              className="px-2 py-0.5 text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 rounded hover:bg-emerald-100"
                             >
                               + Lesson
                             </button>
@@ -234,7 +270,7 @@ export default function CourseCurriculumEditorPage() {
                           </div>
                         </div>
 
-                        {/* Nested Lessons List */}
+                        {/* Lessons List */}
                         <div className="space-y-1.5 pt-1">
                           {mod.lessons.map((les) => {
                             const isSelected = selectedLesson?.id === les.id;
@@ -242,31 +278,28 @@ export default function CourseCurriculumEditorPage() {
                               <div
                                 key={les.id}
                                 onClick={() => handleSelectLesson(les)}
-                                className={`p-2.5 rounded-lg border text-left cursor-pointer transition-all flex items-center justify-between ${
+                                className={`p-2.5 rounded-xl border text-left cursor-pointer transition-all flex items-center justify-between ${
                                   isSelected
-                                    ? "bg-claude-terracottaLight border-claude-terracotta text-claude-terracotta shadow-sm"
-                                    : "bg-claude-bg border-claude-border hover:border-claude-borderHover"
+                                    ? "bg-claude-terracotta text-white border-claude-terracotta shadow-xs"
+                                    : "bg-claude-bg border-claude-border hover:border-claude-borderHover text-claude-textMain"
                                 }`}
                               >
                                 <div className="truncate pr-2">
-                                  <span className="font-arabic text-sm text-slate-900 block truncate dir-rtl" dir="rtl">
+                                  <span className={`font-arabic text-sm block truncate dir-rtl ${isSelected ? "text-white font-bold" : "text-slate-900 font-bold"}`} dir="rtl">
                                     {les.titleAr}
                                   </span>
-                                  <span className="text-[11px] font-semibold text-claude-textMain block truncate">
+                                  <span className={`text-[11px] block truncate ${isSelected ? "text-orange-100 font-semibold" : "text-claude-textMuted"}`}>
                                     {les.titleEn}
                                   </span>
                                 </div>
 
                                 <div className="flex items-center gap-1 shrink-0">
-                                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-white border text-claude-textMuted font-mono">
-                                    5 Qs
-                                  </span>
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       handleDeleteLesson(lvl.id, mod.id, les.id);
                                     }}
-                                    className="text-rose-600 hover:bg-rose-50 text-xs px-1"
+                                    className={`text-xs px-1.5 py-0.5 rounded ${isSelected ? "text-white hover:bg-orange-800" : "text-rose-600 hover:bg-rose-50"}`}
                                   >
                                     ✕
                                   </button>
@@ -284,122 +317,27 @@ export default function CourseCurriculumEditorPage() {
           </div>
         </div>
 
-        {/* Right Column: Medium-Style Rich Lesson Content Editor */}
-        <div className="lg:col-span-7">
+        {/* Right / Main Full-Width Editor Area */}
+        <div className={editorViewMode === "SPLIT" ? "lg:col-span-8 w-full" : "w-full"}>
           {selectedLesson ? (
-            <div className="claude-card rounded-2xl p-8 space-y-6 bg-white min-h-[600px] border border-claude-border shadow-sm">
-              {/* Medium-Style Top Toolbar */}
-              <div className="flex items-center justify-between border-b border-claude-border pb-4">
-                <div className="flex items-center gap-1 bg-claude-bg p-1 rounded-xl border border-claude-border">
-                  <button
-                    onClick={() => insertFormatting("**", "**")}
-                    className="w-8 h-8 rounded-lg font-bold text-xs hover:bg-white transition-colors"
-                    title="Bold"
-                  >
-                    B
-                  </button>
-                  <button
-                    onClick={() => insertFormatting("*", "*")}
-                    className="w-8 h-8 rounded-lg italic text-xs hover:bg-white transition-colors"
-                    title="Italic"
-                  >
-                    I
-                  </button>
-                  <button
-                    onClick={() => insertFormatting("### ")}
-                    className="w-8 h-8 rounded-lg font-bold text-xs hover:bg-white transition-colors"
-                    title="Heading"
-                  >
-                    H2
-                  </button>
-                  <button
-                    onClick={() => insertFormatting("> ")}
-                    className="w-8 h-8 rounded-lg text-xs hover:bg-white transition-colors"
-                    title="Quote"
-                  >
-                    ”
-                  </button>
-                  <button
-                    onClick={() => insertFormatting("💡 **Grammar Rule**: ")}
-                    className="w-8 h-8 rounded-lg text-xs hover:bg-white transition-colors"
-                    title="Callout"
-                  >
-                    💡
-                  </button>
-                  <button
-                    onClick={() => insertFormatting("\n\nالْجُمْلَةُ النَّحْوِيَّةُ: ")}
-                    className="w-8 h-8 rounded-lg font-arabic font-bold text-sm text-claude-terracotta hover:bg-white transition-colors"
-                    title="Arabic Text Block"
-                  >
-                    ع
-                  </button>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  {isSaved && (
-                    <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
-                      ✓ Saved & Live OTA
-                    </span>
-                  )}
-                  <button
-                    onClick={handleSaveLesson}
-                    className="px-6 py-2 rounded-xl bg-claude-terracotta hover:bg-[#B85C3C] text-white font-bold text-xs transition-colors shadow-sm"
-                  >
-                    Publish OTA Lesson
-                  </button>
-                </div>
-              </div>
-
-              {/* Medium-Style Canvas Inputs */}
-              <div className="space-y-4 pt-2">
-                {/* Arabic Title Input */}
-                <div>
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-claude-textMuted block mb-1">
-                    Lesson Title (Pure Vowelled Arabic Script)
-                  </label>
-                  <input
-                    type="text"
-                    value={editorTitleAr}
-                    onChange={(e) => setEditorTitleAr(e.target.value)}
-                    className="w-full font-arabic text-3xl text-slate-900 font-bold focus:outline-none border-b border-transparent focus:border-claude-terracotta py-1 dir-rtl"
-                    dir="rtl"
-                  />
-                </div>
-
-                {/* English Title Input */}
-                <div>
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-claude-textMuted block mb-1">
-                    Lesson Title (English Medium)
-                  </label>
-                  <input
-                    type="text"
-                    value={editorTitleEn}
-                    onChange={(e) => setEditorTitleEn(e.target.value)}
-                    className="w-full text-xl font-bold text-claude-textMain focus:outline-none border-b border-transparent focus:border-claude-terracotta py-1"
-                  />
-                </div>
-
-                {/* Medium-Style Content Body Textarea */}
-                <div>
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-claude-textMuted block mb-2">
-                    Lesson Content Body (Medium-Style Explanation Notes)
-                  </label>
-                  <textarea
-                    rows={12}
-                    value={editorContent}
-                    onChange={(e) => setEditorContent(e.target.value)}
-                    placeholder="Write your grammar lesson explanation here in Medium style..."
-                    className="w-full p-4 rounded-xl bg-claude-bg/30 border border-claude-border text-sm leading-relaxed text-claude-textMain focus:outline-none focus:border-claude-terracotta font-sans resize-y"
-                  />
-                </div>
-              </div>
-            </div>
+            <RichMediumEditor
+              titleAr={editorTitleAr}
+              setTitleAr={setEditorTitleAr}
+              titleEn={editorTitleEn}
+              setTitleEn={setEditorTitleEn}
+              content={editorContent}
+              setContent={setEditorContent}
+              audioUrl={audioUrl}
+              setAudioUrl={setAudioUrl}
+              onSave={handleSaveLesson}
+              isSaved={isSaved}
+            />
           ) : (
-            <div className="claude-card rounded-2xl p-12 text-center space-y-3 bg-white border border-claude-border">
-              <span className="text-4xl block">📝</span>
-              <h3 className="font-bold text-claude-textMain text-base">Select a Lesson from the Tree Hierarchy</h3>
+            <div className="claude-card rounded-2xl p-16 text-center space-y-3 bg-white border border-claude-border w-full">
+              <span className="text-5xl block">📝</span>
+              <h3 className="font-bold text-claude-textMain text-lg">Select a Lesson to Open Editor</h3>
               <p className="text-xs text-claude-textMuted max-w-sm mx-auto">
-                Click any lesson on the left to edit its vowelled Arabic title and Medium-style explanation notes.
+                Click any lesson from the curriculum hierarchy above to edit its vowelled Arabic title, notes, and native audio.
               </p>
             </div>
           )}

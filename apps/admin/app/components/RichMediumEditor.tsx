@@ -404,7 +404,7 @@ export default function RichMediumEditor({
         </div>
 
         {/* Large Textarea Editor Canvas */}
-        <div className="flex-1 flex flex-col pt-2 min-h-[420px]">
+        <div className="flex-1 flex flex-col pt-2 min-h-[650px]">
           <div className="flex items-center justify-between text-[11px] font-bold text-claude-textMuted mb-1.5">
             <span>Lesson Content & Grammar Notes</span>
             <span className="font-mono uppercase tracking-wider">
@@ -412,6 +412,7 @@ export default function RichMediumEditor({
             </span>
           </div>
           <textarea
+            rows={24}
             value={content}
             onChange={(e) => setContent(e.target.value)}
             style={{ fontSize, textAlign }}
@@ -421,7 +422,7 @@ export default function RichMediumEditor({
                 ? "اكْتُبْ شَرْحَ الدَّرْسِ وَالقَوَاعِدَ النَّحْوِيَّةَ هُنَا..."
                 : "Write your detailed lesson notes, vowelled Arabic examples, and grammar rules here..."
             }
-            className={`w-full flex-1 min-h-[420px] p-6 rounded-2xl bg-claude-bg/30 border border-claude-border leading-relaxed text-claude-textMain focus:outline-none focus:border-claude-terracotta ${fontClass} resize-y transition-colors shadow-inner`}
+            className={`w-full flex-1 min-h-[650px] md:min-h-[720px] p-6 rounded-2xl bg-claude-bg/30 border border-claude-border leading-relaxed text-claude-textMain focus:outline-none focus:border-claude-terracotta ${fontClass} resize-y transition-colors shadow-inner`}
           />
         </div>
       </div>
