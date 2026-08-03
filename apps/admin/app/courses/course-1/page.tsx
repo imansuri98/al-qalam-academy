@@ -388,21 +388,23 @@ export default function Course1AdminPage() {
   };
 
   const handleAddExercise = () => {
-    const titleEn = prompt("Exercise title:", "New 5-Question Exercise");
+    const titleEn = prompt("Exercise title:", "");
     if (!titleEn) return;
     const newEx: ExerciseUnit = {
       id: `ex-${Date.now()}`,
-      titleAr: "تَمْرِينٌ جَدِيدٌ",
+      titleAr: "",
       titleEn,
       exerciseType: "TASHKEEL_PICKER",
-      questions: Array.from({ length: 5 }, (_, i) => ({
-        id: `q-${Date.now()}-${i}`,
-        sentenceAr: `الْجُمْلَةُ ${i + 1} ____ فِي الدَّرْسِ`,
-        sentenceEn: `English context ${i + 1}`,
-        optionsCsv: "خِيَار 1, خِيَار 2, خِيَار 3, خِيَار 4",
-        correctAnswer: "خِيَار 1",
-        grammaticalRuleEn: "Rule explanation",
-      })),
+      questions: [
+        {
+          id: `q-${Date.now()}-0`,
+          sentenceAr: "",
+          sentenceEn: "",
+          optionsCsv: "",
+          correctAnswer: "",
+          grammaticalRuleEn: "",
+        },
+      ],
     };
     setLessonExercises([...lessonExercises, newEx]);
     setActiveExIdx(lessonExercises.length);
@@ -714,11 +716,11 @@ export default function Course1AdminPage() {
                             onClick={() => {
                               const newQ: QuestionItem = {
                                 id: `q-${Date.now()}`,
-                                sentenceAr: "جُمْلَةٌ جَدِيدَةٌ ____ فِي الدَّرْسِ",
-                                sentenceEn: "New English context.",
-                                optionsCsv: "خِيَار 1, خِيَار 2, خِيَار 3, خِيَار 4",
-                                correctAnswer: "خِيَار 1",
-                                grammaticalRuleEn: "Rule explanation",
+                                sentenceAr: "",
+                                sentenceEn: "",
+                                optionsCsv: "",
+                                correctAnswer: "",
+                                grammaticalRuleEn: "",
                               };
                               setLessonExercises(lessonExercises.map((ex, i) => i === activeExIdx ? { ...ex, questions: [...ex.questions, newQ] } : ex));
                               setActiveQIdx(activeEx.questions.length);
@@ -752,6 +754,7 @@ export default function Course1AdminPage() {
                                 )}
                               </div>
                               <input value={activeQ.sentenceAr} onChange={(e) => updateQ("sentenceAr", e.target.value)}
+                                placeholder="Enter Vowelled Arabic Sentence or Prompt..."
                                 className="w-full font-arabic text-xl font-bold p-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-purple-400 text-right" dir="rtl" />
                             </div>
                             <div>
@@ -759,6 +762,7 @@ export default function Course1AdminPage() {
                                 {activeEx.exerciseType === "SENTENCE_REORDER" ? "English Sentence Translation" : "English Prompt"}
                               </label>
                               <input value={activeQ.sentenceEn} onChange={(e) => updateQ("sentenceEn", e.target.value)}
+                                placeholder="Enter English Context or Question Prompt..."
                                 className="w-full text-sm p-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-purple-400" />
                             </div>
                             <div className="grid grid-cols-2 gap-3">
@@ -767,6 +771,7 @@ export default function Course1AdminPage() {
                                   {activeEx.exerciseType === "SENTENCE_REORDER" ? "Scrambled Word Tiles (comma-separated)" : "Options (comma-separated)"}
                                 </label>
                                 <input value={activeQ.optionsCsv} onChange={(e) => updateQ("optionsCsv", e.target.value)}
+                                  placeholder="Choice 1, Choice 2, Choice 3, Choice 4"
                                   className="w-full font-arabic text-sm font-bold p-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none text-right" dir="rtl" />
                               </div>
                               <div>
@@ -774,7 +779,8 @@ export default function Course1AdminPage() {
                                   {activeEx.exerciseType === "SENTENCE_REORDER" ? "Correct Word Sequence (comma-separated)" : "Correct Answer"}
                                 </label>
                                 <input value={activeQ.correctAnswer} onChange={(e) => updateQ("correctAnswer", e.target.value)}
-                                  className="w-full font-arabic text-sm font-bold p-3 rounded-xl bg-emerald-50 border border-emerald-300 focus:outline-none text-right" dir="rtl" />
+                                  placeholder="Enter Exact Correct Answer Choice..."
+                                  className="w-full font-arabic text-sm font-bold p-3 rounded-xl bg-emerald-50 border border-emerald-300 focus:outline-none text-right text-emerald-950" dir="rtl" />
                               </div>
                             </div>
                             <div>
