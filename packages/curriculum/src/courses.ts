@@ -34,6 +34,7 @@ export interface LessonNode {
   audioUrl?: string;
   exercisesCount?: number;
   exercises?: ExerciseUnit[];
+  canvasData?: Record<string, any>;
 }
 
 export interface ModuleNode {

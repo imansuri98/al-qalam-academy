@@ -11,7 +11,17 @@ import {
   LevelNode,
 } from "@alarabi/curriculum";
 import ExerciseEngine, { ExerciseData } from "../../components/exercises/ExerciseEngine";
-import { Play, Pause, ArrowRight, ArrowLeft, BookOpen, CheckCircle2, AlertCircle } from "lucide-react";
+import { Play, Pause, ArrowRight, ArrowLeft, BookOpen, CheckCircle2, AlertCircle, LayoutGrid } from "lucide-react";
+import dynamic from "next/dynamic";
+
+const LearnerCanvasViewer = dynamic(() => import("../../components/LearnerCanvasViewer"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-64 flex items-center justify-center rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-400 animate-pulse">
+      Loading visual diagram canvas…
+    </div>
+  ),
+});
 
 interface LessonContext {
   lesson: LessonNode;
@@ -245,7 +255,7 @@ export default function FullLessonPage() {
   const lessonId = (params?.lessonId as string) || "";
   const context = findLessonAndContext(lessonId);
 
-  const [activeTab, setActiveTab] = useState<"NOTES" | "EXERCISES">("NOTES");
+  const [activeTab, setActiveTab] = useState<"NOTES" | "EXERCISES" | "CANVAS">("NOTES");
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
 
   if (!context) {
@@ -342,11 +352,11 @@ export default function FullLessonPage() {
             </button>
           </div>
 
-          {/* 2 Main Tabs: Lesson Notes & Practice Drills */}
-          <div className="flex items-center justify-center bg-[#F8FAF6] p-1.5 rounded-xl border border-[#E2E8F0]">
+          {/* 3 Main Tabs: Lesson Notes, Practice Drills & Visual Study Canvas */}
+          <div className="flex items-center justify-center bg-[#F8FAF6] p-1.5 rounded-xl border border-[#E2E8F0] gap-1">
             <button
               onClick={() => setActiveTab("NOTES")}
-              className={`px-8 py-2.5 rounded-lg text-xs font-bold transition-all ${
+              className={`px-6 py-2.5 rounded-lg text-xs font-bold transition-all ${
                 activeTab === "NOTES"
                   ? "bg-[#C2410C] text-white shadow-2xs"
                   : "text-[#64748B] hover:text-[#0F172A]"
@@ -356,13 +366,24 @@ export default function FullLessonPage() {
             </button>
             <button
               onClick={() => setActiveTab("EXERCISES")}
-              className={`px-8 py-2.5 rounded-lg text-xs font-bold transition-all ${
+              className={`px-6 py-2.5 rounded-lg text-xs font-bold transition-all ${
                 activeTab === "EXERCISES"
                   ? "bg-[#C2410C] text-white shadow-2xs"
                   : "text-[#64748B] hover:text-[#0F172A]"
               }`}
             >
               2. Practice Drills ({exerciseDataUnits.reduce((acc, u) => acc + u.questions.length, 0)} Qs)
+            </button>
+            <button
+              onClick={() => setActiveTab("CANVAS")}
+              className={`px-6 py-2.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                activeTab === "CANVAS"
+                  ? "bg-[#C2410C] text-white shadow-2xs"
+                  : "text-[#64748B] hover:text-[#0F172A]"
+              }`}
+            >
+              <LayoutGrid className="w-3.5 h-3.5" />
+              <span>3. Visual Study Canvas</span>
             </button>
           </div>
         </div>
@@ -445,6 +466,24 @@ export default function FullLessonPage() {
               </button>
             </div>
           )}
+        </main>
+      )}
+
+      {/* TAB 3: VISUAL STUDY CANVAS */}
+      {activeTab === "CANVAS" && (
+        <main className="max-w-5xl mx-auto px-6 space-y-6">
+          <div className="pro-card rounded-2xl p-8 space-y-6 shadow-xs bg-white border border-[#E2E8F0]">
+            <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-4">
+              <div>
+                <span className="text-[10px] font-bold text-[#C2410C] uppercase tracking-wider block">Interactive Visual Diagram</span>
+                <h2 className="text-xl font-extrabold text-[#0F172A]">Grammar Concept Canvas</h2>
+              </div>
+              <span className="text-xs font-mono text-[#64748B]">Pan & Zoom to explore concept map</span>
+            </div>
+
+            {/* Read-Only Canvas Viewer */}
+            <LearnerCanvasViewer canvasData={lesson.canvasData} />
+          </div>
         </main>
       )}
     </div>

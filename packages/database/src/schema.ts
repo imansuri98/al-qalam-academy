@@ -87,6 +87,7 @@ export const lessons = pgTable("lessons", {
   titleAr: text("title_ar").notNull(),
   titleEn: text("title_en").notNull(),
   contentNotesEn: text("content_notes_en"),
+  canvasJson: jsonb("canvas_json"), // Stores visual canvas (React Flow nodes, I'rab tree, flowchart)
   orderIndex: integer("order_index").notNull().default(0),
 });
 
