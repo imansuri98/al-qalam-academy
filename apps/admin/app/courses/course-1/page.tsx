@@ -1,68 +1,235 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
-import RichMediumEditor from "../../components/RichMediumEditor";
 import {
   COURSE_1_LEVELS,
+  DEFAULT_PASSAGES,
   LevelNode,
   ModuleNode,
   LessonNode,
   ExerciseUnit,
   QuestionItem,
+  PassageItem,
 } from "@alarabi/curriculum";
+import RichMediumEditor from "../../components/RichMediumEditor";
 
-export default function Course1CurriculumPage() {
-  const courseTitle = "Course 1: Classical Arabic Grammar (Nahw & Sarf)";
+/* ─── Dynamic imports (SSR-safe) ────────────────────── */
 
-  const [viewMode, setViewMode] = useState<"TREE" | "LESSON_STUDIO">("TREE");
+const LessonConceptMap     = dynamic(() => import("./components/LessonConceptMap"),     { ssr: false, loading: () => <CanvasLoader /> });
+const LessonWhiteboard     = dynamic(() => import("./components/LessonWhiteboard"),     { ssr: false, loading: () => <CanvasLoader /> });
+const IrabParseTreeEditor  = dynamic(() => import("./components/IrabParseTreeEditor"),  { ssr: false, loading: () => <CanvasLoader /> });
+const MorphologyRootChart  = dynamic(() => import("./components/MorphologyRootChart"),  { ssr: false, loading: () => <CanvasLoader /> });
+const HarakahDragBoard     = dynamic(() => import("./components/HarakahDragBoard"),     { ssr: false, loading: () => <CanvasLoader /> });
+const GrammarFlowchart     = dynamic(() => import("./components/GrammarFlowchart"),     { ssr: false, loading: () => <CanvasLoader /> });
 
-  const [expandedLevels, setExpandedLevels] = useState<Record<string, boolean>>({
-    "lvl-1": true,
-  });
-  const [expandedModules, setExpandedModules] = useState<Record<string, boolean>>({
-    "mod-101": true,
-  });
+function CanvasLoader() {
+  return (
+    <div className="h-64 flex items-center justify-center rounded-2xl bg-slate-50 border border-slate-200">
+      <div className="text-xs text-slate-400 animate-pulse">Loading visual canvas…</div>
+    </div>
+  );
+}
 
-  const toggleLevel = (lvlId: string) => {
-    setExpandedLevels((prev) => ({ ...prev, [lvlId]: !prev[lvlId] }));
-  };
+/* ─── Types ─────────────────────────────────────────── */
 
-  const toggleModule = (modId: string) => {
-    setExpandedModules((prev) => ({ ...prev, [modId]: !prev[modId] }));
-  };
+type AdminView = "MAIN" | "LESSON_STUDIO";
+type LessonTab = "NOTES" | "CANVAS" | "WHITEBOARD" | "PARSE_TREE" | "MORPHOLOGY" | "FLOWCHART" | "EXERCISES" | "HARAKAH";
 
-  const defaultEx1: ExerciseUnit = {
-    id: "ex-101",
-    titleAr: "تَحَدِّي تَشْكِيلِ الْمُبْتَدَأِ وَالْخَبَرِ",
-    titleEn: "Unit 1: Harakah Challenge (5 Questions)",
-    exerciseType: "TASHKEEL_PICKER",
-    questions: [
-      {
-        id: "q-101",
-        sentenceAr: "الْعِلْمُ ____ فِي الْحَيَاةِ",
-        sentenceEn: "Knowledge is light in life.",
-        optionsCsv: "نُورٌ, نُورًا, نُورٍ, نُورَ",
-        correctAnswer: "نُورٌ",
-        grammaticalRuleEn: "Khabar is Marfoo' with Tanween Dammah (ٌُ)",
-      },
-    ],
-  };
+interface InsightCard {
+  id: string;
+  titleEn: string;
+  arabicExample: string;
+  insightBodyEn: string;
+  category: "RHETORIC" | "GRAMMAR" | "WISDOM";
+  sourceEn?: string;
+}
 
-  const [levels, setLevels] = useState<LevelNode[]>(COURSE_1_LEVELS);
+/* ─── Default Insights ───────────────────────────────── */
 
+const DEFAULT_INSIGHTS: InsightCard[] = [
+  {
+    id: "insight-1",
+    titleEn: "Why Arabic Puts the Predicate Last",
+    arabicExample: "الْعِلْمُ نُورٌ",
+    insightBodyEn:
+      "In Arabic nominal sentences (الجُمْلَةُ الاسْمِيَّة), the subject (مُبْتَدَأٌ) always comes first and the predicate (خَبَرٌ) follows. This mirrors a timeless rhetorical principle: establish the subject of your statement before attributing qualities to it. 'Knowledge is light' — we define 'knowledge' first, then illuminate it.",
+    category: "RHETORIC",
+    sourceEn: "Ibn Hisham, Mughni al-Labib",
+  },
+  {
+    id: "insight-2",
+    titleEn: "The Three Vowels That Carry All Meaning",
+    arabicExample: "ضَرَبَ / ضُرِبَ",
+    insightBodyEn:
+      "Arabic's case system (I'rab) encodes grammatical meaning directly into vowel endings. The same root ض-ر-ب means 'he struck' (ضَرَبَ) vs 'he was struck' (ضُرِبَ) — active vs passive — communicated through internal vowel changes alone. No extra words needed. This compactness is a hallmark of Classical Arabic.",
+    category: "GRAMMAR",
+    sourceEn: "Al-Jurjani, Dala'il al-I'jaz",
+  },
+  {
+    id: "insight-3",
+    titleEn: "The Wisdom in Verb-First Sentences",
+    arabicExample: "قَامَ زَيْدٌ",
+    insightBodyEn:
+      "When Arabic verbal sentences (الجُمْلَةُ الفِعْلِيَّة) place the verb first (قَامَ زَيْدٌ — 'Zayd stood'), the action is emphasised over the actor. Classical scholars noted this reflects Arabic's orientation toward deeds before identity — what you do precedes who you are.",
+    category: "WISDOM",
+    sourceEn: "Al-Zamakhshari, Al-Mufassal",
+  },
+  {
+    id: "insight-4",
+    titleEn: "إِنَّمَا — The Most Powerful Restriction Particle",
+    arabicExample: "إِنَّمَا الْأَعْمَالُ بِالنِّيَّاتِ",
+    insightBodyEn:
+      "The particle إِنَّمَا (innama) is a rhetorical restriction device (حَصْرٌ) meaning 'only / nothing but'. When it precedes a nominal sentence it restricts the predicate exclusively to the subject. 'Actions are by intentions only' — this single particle eliminates all other possible causes, making the statement absolute and rhetorically devastating in its precision.",
+    category: "RHETORIC",
+    sourceEn: "Prophetic Hadith • Sahih al-Bukhari #1",
+  },
+];
+
+/* ─── Lesson Tab Config ──────────────────────────────── */
+
+const LESSON_TABS: { id: LessonTab; label: string; emoji: string; desc: string }[] = [
+  { id: "NOTES",      emoji: "🎙️", label: "Notes & Audio",    desc: "Vowelled Medium text + native audio" },
+  { id: "CANVAS",     emoji: "🎨", label: "Concept Map",      desc: "React Flow grammar node canvas" },
+  { id: "WHITEBOARD", emoji: "✏️", label: "Whiteboard",       desc: "Freehand Excalidraw sketch" },
+  { id: "PARSE_TREE", emoji: "🌿", label: "I'rab Tree",        desc: "Syntactic parse tree builder" },
+  { id: "MORPHOLOGY", emoji: "📊", label: "Morphology",        desc: "Root word radial chart" },
+  { id: "FLOWCHART",  emoji: "📋", label: "Grammar Flow",      desc: "Mermaid decision flowchart" },
+  { id: "EXERCISES",  emoji: "🎯", label: "Exercises",         desc: "Question builder" },
+  { id: "HARAKAH",    emoji: "🖐️", label: "Harakah Drag",     desc: "Drag-to-place vowel exercise" },
+];
+
+/* ─── Category colour helper ─────────────────────────── */
+
+function insightCatStyle(cat: InsightCard["category"]) {
+  return cat === "RHETORIC"
+    ? "bg-amber-100 text-amber-800 border-amber-200"
+    : cat === "GRAMMAR"
+    ? "bg-blue-100 text-blue-800 border-blue-200"
+    : "bg-emerald-100 text-emerald-800 border-emerald-200";
+}
+
+/* ═══════════════════════════════════════════════════════
+   PAGE COMPONENT
+═══════════════════════════════════════════════════════ */
+
+export default function Course1AdminPage() {
+  /* ── View state ── */
+  const [view, setView] = useState<AdminView>("MAIN");
+  const [lessonTab, setLessonTab] = useState<LessonTab>("NOTES");
   const [activeLesson, setActiveLesson] = useState<LessonNode | null>(null);
-  const [lessonTab, setLessonTab] = useState<"NOTES" | "EXERCISES">("NOTES");
-  const [editorTitleAr, setEditorTitleAr] = useState<string>("");
-  const [editorTitleEn, setEditorTitleEn] = useState<string>("");
-  const [editorContent, setEditorContent] = useState<string>("");
-  const [editorAudioUrl, setEditorAudioUrl] = useState<string>("");
 
+  /* ── Curriculum tree ── */
+  const [levels, setLevels] = useState<LevelNode[]>(COURSE_1_LEVELS);
+  const [expandedLevels, setExpandedLevels] = useState<Record<string, boolean>>({ "lvl-1": true });
+  const [expandedModules, setExpandedModules] = useState<Record<string, boolean>>({ "mod-101": true });
+
+  /* ── Lesson editor ── */
+  const [editorTitleAr, setEditorTitleAr]     = useState("");
+  const [editorTitleEn, setEditorTitleEn]     = useState("");
+  const [editorContent, setEditorContent]     = useState("");
+  const [editorAudioUrl, setEditorAudioUrl]   = useState("");
   const [lessonExercises, setLessonExercises] = useState<ExerciseUnit[]>([]);
-  const [activeExIdx, setActiveExIdx] = useState<number>(0);
-  const [activeQIdx, setActiveQIdx] = useState<number>(0);
   const [isSaved, setIsSaved] = useState(false);
 
+  /* ── Exercise builder (inside lesson) ── */
+  const [activeExIdx, setActiveExIdx] = useState(0);
+  const [activeQIdx, setActiveQIdx]   = useState(0);
+
+  /* ── Passages ── */
+  const [passages, setPassages]                   = useState<PassageItem[]>(DEFAULT_PASSAGES);
+  const [editingPassageId, setEditingPassageId]   = useState<string | null>(null);
+  const [passageCategory, setPassageCategory]     = useState<"ALL"|"QURAN"|"HADITH"|"LITERATURE">("ALL");
+  const [editPassageForm, setEditPassageForm]     = useState<Partial<PassageItem>>({});
+
+  /* ── Insights ── */
+  const [insights, setInsights]               = useState<InsightCard[]>(DEFAULT_INSIGHTS);
+  const [editingInsightId, setEditingInsightId] = useState<string | null>(null);
+  const [editInsightForm, setEditInsightForm] = useState<Partial<InsightCard>>({});
+  const [insightModal, setInsightModal]       = useState<InsightCard | null>(null);
+
+  /* ── Computed ── */
+  const filteredPassages = useMemo(() =>
+    passageCategory === "ALL" ? passages : passages.filter((p) => p.category === passageCategory),
+    [passages, passageCategory]
+  );
+
+  /* ════════════════════ CRUD HANDLERS ════════════════ */
+
+  /* Curriculum tree */
+  const toggleLevel = (id: string) => setExpandedLevels((p) => ({ ...p, [id]: !p[id] }));
+  const toggleModule = (id: string) => setExpandedModules((p) => ({ ...p, [id]: !p[id] }));
+
+  const handleAddLevel = () => {
+    const titleEn = prompt("Level title (English):", `Level ${levels.length + 1}`);
+    if (!titleEn) return;
+    const id = `lvl-${Date.now()}`;
+    setLevels([...levels, { id, titleAr: "الْمُسْتَوَى الْجَدِيدُ", titleEn, modules: [] }]);
+    setExpandedLevels((p) => ({ ...p, [id]: true }));
+  };
+
+  const handleDeleteLevel = (lvlId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (confirm("Delete this level and all its content?")) {
+      setLevels(levels.filter((l) => l.id !== lvlId));
+    }
+  };
+
+  const handleAddModule = (lvlId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const titleEn = prompt("Module title (English):", "New Grammar Module");
+    if (!titleEn) return;
+    const id = `mod-${Date.now()}`;
+    setLevels(levels.map((l) =>
+      l.id === lvlId ? { ...l, modules: [...l.modules, { id, titleAr: "الْوَحْدَةُ الْجَدِيدَةُ", titleEn, lessons: [] }] } : l
+    ));
+    setExpandedModules((p) => ({ ...p, [id]: true }));
+  };
+
+  const handleDeleteModule = (lvlId: string, modId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (confirm("Delete this module?")) {
+      setLevels(levels.map((l) =>
+        l.id === lvlId ? { ...l, modules: l.modules.filter((m) => m.id !== modId) } : l
+      ));
+    }
+  };
+
+  const handleAddLesson = (lvlId: string, modId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const titleEn = prompt("Lesson title (English):", "New Grammar Lesson");
+    if (!titleEn) return;
+    const newLes: LessonNode = {
+      id: `les-${Date.now()}`,
+      titleAr: "الدَّرْسُ الْجَدِيدُ",
+      titleEn,
+      contentBodyEn: "Start writing your lesson notes here…",
+      audioUrl: "",
+      exercises: [],
+    };
+    setLevels(levels.map((l) => {
+      if (l.id !== lvlId) return l;
+      return { ...l, modules: l.modules.map((m) =>
+        m.id === modId ? { ...m, lessons: [...m.lessons, newLes] } : m
+      )};
+    }));
+  };
+
+  const handleDeleteLesson = (lvlId: string, modId: string, lesId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (confirm("Delete this lesson?")) {
+      setLevels(levels.map((l) => {
+        if (l.id !== lvlId) return l;
+        return { ...l, modules: l.modules.map((m) =>
+          m.id === modId ? { ...m, lessons: m.lessons.filter((les) => les.id !== lesId) } : m
+        )};
+      }));
+      if (activeLesson?.id === lesId) { setView("MAIN"); setActiveLesson(null); }
+    }
+  };
+
+  /* Open lesson studio */
   const handleOpenLessonStudio = (les: LessonNode) => {
     setActiveLesson(les);
     setEditorTitleAr(les.titleAr);
@@ -73,383 +240,843 @@ export default function Course1CurriculumPage() {
     setActiveExIdx(0);
     setActiveQIdx(0);
     setLessonTab("NOTES");
-    setViewMode("LESSON_STUDIO");
+    setView("LESSON_STUDIO");
   };
 
-  const handleSaveLessonStudio = () => {
+  /* Save lesson back to tree */
+  const handleSaveLesson = () => {
     if (!activeLesson) return;
     setIsSaved(true);
-
-    setLevels(
-      levels.map((lvl) => ({
-        ...lvl,
-        modules: lvl.modules.map((mod) => ({
-          ...mod,
-          lessons: mod.lessons.map((les) =>
-            les.id === activeLesson.id
-              ? {
-                  ...les,
-                  titleAr: editorTitleAr,
-                  titleEn: editorTitleEn,
-                  contentBodyEn: editorContent,
-                  audioUrl: editorAudioUrl,
-                  exercises: lessonExercises,
-                }
-              : les
-          ),
-        })),
-      }))
-    );
-
-    setTimeout(() => {
-      setIsSaved(false);
-    }, 2500);
+    setLevels(levels.map((l) => ({
+      ...l,
+      modules: l.modules.map((m) => ({
+        ...m,
+        lessons: m.lessons.map((les) =>
+          les.id === activeLesson.id
+            ? { ...les, titleAr: editorTitleAr, titleEn: editorTitleEn, contentBodyEn: editorContent, audioUrl: editorAudioUrl, exercises: lessonExercises }
+            : les
+        ),
+      })),
+    })));
+    setTimeout(() => setIsSaved(false), 2500);
   };
 
-  const handleAddLevel = () => {
-    const titleEn = prompt("Enter Level Title in English:", `Level ${levels.length + 1}: Advanced Grammar`);
+  /* Exercise CRUD inside lesson */
+  const activeEx = lessonExercises[activeExIdx] ?? null;
+  const activeQ  = activeEx?.questions[activeQIdx] ?? null;
+
+  const updateQ = (field: keyof QuestionItem, val: string) => {
+    setLessonExercises(lessonExercises.map((ex, ei) =>
+      ei !== activeExIdx ? ex : {
+        ...ex,
+        questions: ex.questions.map((q, qi) => qi === activeQIdx ? { ...q, [field]: val } : q),
+      }
+    ));
+  };
+
+  const handleAddExercise = () => {
+    const titleEn = prompt("Exercise title:", "New 5-Question Exercise");
     if (!titleEn) return;
-    const newLvlId = `lvl-${Date.now()}`;
-    const newLvl: LevelNode = {
-      id: newLvlId,
-      titleAr: "الْمُسْتَوَى الْجَدِيدُ",
-      titleEn: titleEn,
-      modules: [],
+    const newEx: ExerciseUnit = {
+      id: `ex-${Date.now()}`,
+      titleAr: "تَمْرِينٌ جَدِيدٌ",
+      titleEn,
+      exerciseType: "TASHKEEL_PICKER",
+      questions: Array.from({ length: 5 }, (_, i) => ({
+        id: `q-${Date.now()}-${i}`,
+        sentenceAr: `الْجُمْلَةُ ${i + 1} ____ فِي الدَّرْسِ`,
+        sentenceEn: `English context ${i + 1}`,
+        optionsCsv: "خِيَار 1, خِيَار 2, خِيَار 3, خِيَار 4",
+        correctAnswer: "خِيَار 1",
+        grammaticalRuleEn: "Rule explanation",
+      })),
     };
-    setLevels([...levels, newLvl]);
-    setExpandedLevels((prev) => ({ ...prev, [newLvlId]: true }));
+    setLessonExercises([...lessonExercises, newEx]);
+    setActiveExIdx(lessonExercises.length);
+    setActiveQIdx(0);
   };
 
-  const handleDeleteLevel = (lvlId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (confirm("Delete this Level?")) {
-      setLevels(levels.filter((l) => l.id !== lvlId));
-    }
+  const handleDeleteExercise = (idx: number) => {
+    if (!confirm("Delete this exercise unit?")) return;
+    setLessonExercises(lessonExercises.filter((_, i) => i !== idx));
+    setActiveExIdx(Math.max(0, idx - 1));
   };
 
-  const handleAddModule = (lvlId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    const titleEn = prompt("Enter Module Title in English:", "New Grammar Module");
-    if (!titleEn) return;
-    const newModId = `mod-${Date.now()}`;
-    const newMod: ModuleNode = {
-      id: newModId,
-      titleAr: "الْوَحْدَةُ الْجَدِيدَةُ",
-      titleEn: titleEn,
-      lessons: [],
+  /* Passages CRUD */
+  const handleEditPassage = (pas: PassageItem) => {
+    setEditingPassageId(pas.id);
+    setEditPassageForm({ ...pas });
+  };
+
+  const handleSavePassage = () => {
+    setPassages(passages.map((p) => p.id === editingPassageId ? { ...p, ...editPassageForm } as PassageItem : p));
+    setEditingPassageId(null);
+  };
+
+  const handleDeletePassage = (id: string) => {
+    if (confirm("Delete this passage?")) setPassages(passages.filter((p) => p.id !== id));
+  };
+
+  const handleAddPassage = () => {
+    const newP: PassageItem = {
+      id: `pas-${Date.now()}`,
+      category: "QURAN",
+      titleAr: "نَصٌّ جَدِيدٌ",
+      titleEn: "New Passage",
+      citationEn: "Source citation here",
+      arabicText: "النَّصُّ الْعَرَبِيُّ",
+      englishTranslation: "English translation of the passage.",
+      isUnlocked: false,
+      unlockRequirementEn: "🔒 Complete a module to unlock",
+      questions: [],
     };
-    setLevels(
-      levels.map((lvl) => (lvl.id === lvlId ? { ...lvl, modules: [...lvl.modules, newMod] } : lvl))
-    );
-    setExpandedLevels((prev) => ({ ...prev, [lvlId]: true }));
-    setExpandedModules((prev) => ({ ...prev, [newModId]: true }));
+    setPassages([...passages, newP]);
+    handleEditPassage(newP);
   };
 
-  const handleDeleteModule = (lvlId: string, modId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (confirm("Delete this module?")) {
-      setLevels(
-        levels.map((lvl) =>
-          lvl.id === lvlId
-            ? { ...lvl, modules: lvl.modules.filter((m) => m.id !== modId) }
-            : lvl
-        )
-      );
-    }
+  /* Insights CRUD */
+  const handleEditInsight = (ins: InsightCard) => {
+    setEditingInsightId(ins.id);
+    setEditInsightForm({ ...ins });
   };
 
-  const handleAddLesson = (lvlId: string, modId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    const titleEn = prompt("Enter Lesson Title in English:", "New Grammar Lesson");
-    if (!titleEn) return;
-    const newLes: LessonNode = {
-      id: `les-${Date.now()}`,
-      titleAr: "الدَّرْسُ الْجَدِيدُ",
-      titleEn: titleEn,
-      contentBodyEn: "Start writing lesson explanation notes here...",
-      audioUrl: "",
-      exercises: [defaultEx1],
+  const handleSaveInsight = () => {
+    setInsights(insights.map((ins) => ins.id === editingInsightId ? { ...ins, ...editInsightForm } as InsightCard : ins));
+    setEditingInsightId(null);
+  };
+
+  const handleDeleteInsight = (id: string) => {
+    if (confirm("Delete this insight?")) setInsights(insights.filter((ins) => ins.id !== id));
+  };
+
+  const handleAddInsight = () => {
+    const newIns: InsightCard = {
+      id: `insight-${Date.now()}`,
+      titleEn: "New Rhetorical Insight",
+      arabicExample: "مِثَالٌ عَرَبِيٌّ",
+      insightBodyEn: "Explain the grammatical or rhetorical insight here.",
+      category: "GRAMMAR",
+      sourceEn: "",
     };
-
-    setLevels(
-      levels.map((lvl) => {
-        if (lvl.id !== lvlId) return lvl;
-        return {
-          ...lvl,
-          modules: lvl.modules.map((mod) => {
-            if (mod.id !== modId) return mod;
-            return { ...mod, lessons: [...mod.lessons, newLes] };
-          }),
-        };
-      })
-    );
-    setExpandedModules((prev) => ({ ...prev, [modId]: true }));
+    setInsights([...insights, newIns]);
+    handleEditInsight(newIns);
   };
 
-  const handleDeleteLesson = (lvlId: string, modId: string, lesId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (confirm("Delete this lesson?")) {
-      setLevels(
-        levels.map((lvl) => {
-          if (lvl.id !== lvlId) return lvl;
-          return {
-            ...lvl,
-            modules: lvl.modules.map((mod) => {
-              if (mod.id !== modId) return mod;
-              return { ...mod, lessons: mod.lessons.filter((l) => l.id !== lesId) };
-            }),
-          };
-        })
-      );
-    }
-  };
+  /* ════════════════════ RENDER ═══════════════════════ */
 
   return (
-    <div className="min-h-screen bg-claude-bg text-claude-textMain space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-claude-border pb-4">
-        <div>
-          <Link href="/" className="text-xs font-semibold text-claude-terracotta hover:underline">
-            ← Back to Dashboard
-          </Link>
-          <h1 className="text-2xl font-extrabold text-claude-textMain mt-1">{courseTitle}</h1>
-          <p className="text-xs text-claude-textMuted">
-            {viewMode === "TREE"
-              ? "Full Screen Accordion Tree: Levels → Modules → Audible Lessons."
-              : `Full Screen Lesson & Audio Studio: "${activeLesson?.titleEn}"`}
-          </p>
-        </div>
+    <div className="min-h-screen bg-claude-bg text-claude-textMain">
 
-        <div className="flex items-center gap-3">
-          {viewMode === "LESSON_STUDIO" ? (
+      {/* ── LESSON STUDIO VIEW ── */}
+      {view === "LESSON_STUDIO" && activeLesson && (
+        <div className="space-y-5 max-w-7xl mx-auto">
+          {/* Studio Header */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-claude-border pb-4">
+            <div>
+              <button
+                onClick={() => setView("MAIN")}
+                className="text-xs font-bold text-claude-terracotta hover:underline flex items-center gap-1"
+              >
+                ← Back to Course 1 Overview
+              </button>
+              <h1 className="text-xl font-extrabold text-claude-textMain mt-1">
+                Lesson Studio: {editorTitleEn}
+              </h1>
+              <p className="font-arabic text-base font-bold text-slate-700 dir-rtl mt-0.5" dir="rtl">
+                {editorTitleAr}
+              </p>
+            </div>
             <button
-              onClick={() => setViewMode("TREE")}
-              className="px-4 py-2 bg-white border border-claude-border hover:border-claude-borderHover font-bold text-xs rounded-xl transition-colors shadow-sm"
+              onClick={handleSaveLesson}
+              className={`px-6 py-2.5 rounded-xl text-white font-bold text-xs transition-colors shadow-sm shrink-0 ${
+                isSaved
+                  ? "bg-emerald-600"
+                  : "bg-claude-terracotta hover:bg-[#B85C3C]"
+              }`}
             >
-              ← Back to Full Screen Curriculum Tree
+              {isSaved ? "✓ Saved!" : "💾 Save Lesson"}
             </button>
-          ) : (
-            <button
-              onClick={handleAddLevel}
-              className="px-4 py-2 bg-claude-terracotta hover:bg-[#B85C3C] text-white font-bold text-xs rounded-xl transition-colors shadow-sm"
-            >
-              + Add New Level
-            </button>
-          )}
-        </div>
-      </div>
+          </div>
 
-      {/* VIEW MODE 1: ACCORDION CURRICULUM TREE */}
-      {viewMode === "TREE" && (
-        <div className="space-y-4 max-w-6xl mx-auto">
-          {levels.map((lvl, lvlIdx) => {
-            const isLvlExpanded = !!expandedLevels[lvl.id];
+          {/* Tab Bar */}
+          <div className="flex flex-wrap items-center gap-1.5 p-1.5 bg-white border border-claude-border rounded-2xl shadow-sm">
+            {LESSON_TABS.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setLessonTab(tab.id)}
+                title={tab.desc}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  lessonTab === tab.id
+                    ? "bg-claude-terracotta text-white shadow-sm"
+                    : "text-claude-textMuted hover:text-claude-textMain hover:bg-slate-50"
+                }`}
+              >
+                <span>{tab.emoji}</span>
+                <span>{tab.label}</span>
+              </button>
+            ))}
+          </div>
 
-            return (
-              <div key={lvl.id} className="claude-card rounded-2xl bg-white border border-claude-border shadow-sm overflow-hidden transition-all">
-                <div
-                  onClick={() => toggleLevel(lvl.id)}
-                  className="p-5 bg-claude-bg/60 hover:bg-claude-bg cursor-pointer flex items-center justify-between border-b border-claude-border transition-colors select-none"
-                >
-                  <div className="flex items-center gap-4">
-                    <span className="w-8 h-8 rounded-xl bg-white border border-claude-border font-bold text-sm flex items-center justify-center text-claude-textMain shadow-sm">
-                      {isLvlExpanded ? "▼" : "►"}
-                    </span>
+          {/* Tab Content */}
+          <div className="min-h-[500px]">
 
-                    <div className="space-y-0.5">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-900 border border-blue-200">
-                          Level {lvlIdx + 1}
-                        </span>
-                        <h2 className="text-base font-bold text-claude-textMain">{lvl.titleEn}</h2>
-                      </div>
-                      <span className="font-arabic text-lg text-slate-900 font-bold block dir-rtl" dir="rtl">
-                        {lvl.titleAr}
-                      </span>
-                    </div>
+            {/* NOTES */}
+            {lessonTab === "NOTES" && (
+              <RichMediumEditor
+                titleAr={editorTitleAr} setTitleAr={setEditorTitleAr}
+                titleEn={editorTitleEn} setTitleEn={setEditorTitleEn}
+                content={editorContent}   setContent={setEditorContent}
+                audioUrl={editorAudioUrl} setAudioUrl={setEditorAudioUrl}
+                onSave={handleSaveLesson} isSaved={isSaved}
+              />
+            )}
+
+            {/* CONCEPT MAP */}
+            {lessonTab === "CANVAS" && (
+              <div className="claude-card rounded-2xl bg-white border border-claude-border shadow-sm p-5 space-y-3">
+                <div>
+                  <h2 className="font-bold text-claude-textMain text-sm">🎨 Grammar Concept Map</h2>
+                  <p className="text-xs text-claude-textMuted">
+                    Drag concept cards, example sentences, and rule boxes. Connect them with labeled arrows.
+                  </p>
+                </div>
+                <LessonConceptMap />
+              </div>
+            )}
+
+            {/* WHITEBOARD */}
+            {lessonTab === "WHITEBOARD" && (
+              <div className="claude-card rounded-2xl bg-white border border-claude-border shadow-sm p-5 space-y-3">
+                <div>
+                  <h2 className="font-bold text-claude-textMain text-sm">✏️ Freehand Whiteboard</h2>
+                  <p className="text-xs text-claude-textMuted">
+                    Sketch grammar diagrams, annotate Arabic words, draw arrows — just like a real whiteboard.
+                  </p>
+                </div>
+                <LessonWhiteboard />
+              </div>
+            )}
+
+            {/* I'RAB TREE */}
+            {lessonTab === "PARSE_TREE" && (
+              <div className="claude-card rounded-2xl bg-white border border-claude-border shadow-sm p-5 space-y-3">
+                <div>
+                  <h2 className="font-bold text-claude-textMain text-sm">🌿 I'rab Parse Tree</h2>
+                  <p className="text-xs text-claude-textMuted">
+                    Build an interactive syntactic parse tree. Add nodes with grammatical roles and case endings.
+                  </p>
+                </div>
+                <IrabParseTreeEditor />
+              </div>
+            )}
+
+            {/* MORPHOLOGY */}
+            {lessonTab === "MORPHOLOGY" && (
+              <div className="claude-card rounded-2xl bg-white border border-claude-border shadow-sm p-5 space-y-3">
+                <div>
+                  <h2 className="font-bold text-claude-textMain text-sm">📊 Morphological Root Chart</h2>
+                  <p className="text-xs text-claude-textMuted">
+                    Enter a 3-letter root and build a radial chart of all its derived word forms (Sarf patterns).
+                  </p>
+                </div>
+                <MorphologyRootChart />
+              </div>
+            )}
+
+            {/* GRAMMAR FLOWCHART */}
+            {lessonTab === "FLOWCHART" && (
+              <div className="claude-card rounded-2xl bg-white border border-claude-border shadow-sm p-5 space-y-3">
+                <div>
+                  <h2 className="font-bold text-claude-textMain text-sm">📋 Grammar Decision Flowchart</h2>
+                  <p className="text-xs text-claude-textMuted">
+                    Write Mermaid syntax to generate grammar decision trees and rule flowcharts.
+                  </p>
+                </div>
+                <GrammarFlowchart />
+              </div>
+            )}
+
+            {/* EXERCISES */}
+            {lessonTab === "EXERCISES" && (
+              <div className="claude-card rounded-2xl bg-white border border-claude-border shadow-sm p-6 space-y-5">
+                <div className="flex items-center justify-between border-b border-claude-border pb-4">
+                  <div>
+                    <h2 className="font-bold text-claude-textMain">🎯 Exercise Suite</h2>
+                    <p className="text-xs text-claude-textMuted">{lessonExercises.length} Exercise Units</p>
                   </div>
-
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={(e) => handleAddModule(lvl.id, e)}
-                      className="px-3.5 py-1.5 text-xs font-bold text-claude-terracotta bg-claude-terracottaLight border border-claude-terracotta/20 rounded-xl hover:bg-claude-terracotta hover:text-white transition-colors"
-                    >
-                      + Add Module
-                    </button>
-                    <button
-                      onClick={(e) => handleDeleteLevel(lvl.id, e)}
-                      className="px-3 py-1.5 text-xs font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100 transition-colors"
-                    >
-                      🗑️ Level
-                    </button>
-                  </div>
+                  <button
+                    onClick={handleAddExercise}
+                    className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl"
+                  >
+                    + Add Exercise Unit
+                  </button>
                 </div>
 
-                {isLvlExpanded && (
-                  <div className="p-6 space-y-4 bg-white border-t border-claude-border/40">
-                    {lvl.modules.map((mod, modIdx) => {
-                      const isModExpanded = !!expandedModules[mod.id];
-
-                      return (
-                        <div key={mod.id} className="border border-claude-border rounded-xl overflow-hidden bg-claude-bg/30">
-                          <div
-                            onClick={() => toggleModule(mod.id)}
-                            className="p-4 bg-white hover:bg-claude-bg cursor-pointer flex items-center justify-between border-b border-claude-border transition-colors select-none"
+                {/* Exercise Tabs */}
+                {lessonExercises.length > 0 ? (
+                  <>
+                    <div className="flex flex-wrap gap-2">
+                      {lessonExercises.map((ex, ei) => (
+                        <div key={ex.id} className="flex items-center gap-1">
+                          <button
+                            onClick={() => { setActiveExIdx(ei); setActiveQIdx(0); }}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                              activeExIdx === ei ? "bg-purple-600 text-white shadow-sm" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                            }`}
                           >
-                            <div className="flex items-center gap-3">
-                              <span className="w-7 h-7 rounded-lg bg-claude-terracottaLight text-claude-terracotta font-bold text-xs flex items-center justify-center border border-claude-terracotta/20">
-                                {isModExpanded ? "▼" : "►"}
-                              </span>
+                            Exercise {ei + 1}
+                          </button>
+                          <button
+                            onClick={() => handleDeleteExercise(ei)}
+                            className="text-rose-400 hover:text-rose-600 text-xs px-1"
+                          >✕</button>
+                        </div>
+                      ))}
+                    </div>
+
+                    {activeEx && (
+                      <div className="space-y-4">
+                        {/* Exercise metadata */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                          <div>
+                            <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Title (Arabic)</label>
+                            <input
+                              value={activeEx.titleAr}
+                              onChange={(e) => setLessonExercises(lessonExercises.map((ex, i) => i === activeExIdx ? { ...ex, titleAr: e.target.value } : ex))}
+                              className="w-full font-arabic text-base font-bold p-2 rounded-lg border border-slate-200 focus:outline-none text-right"
+                              dir="rtl"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Title (English)</label>
+                            <input
+                              value={activeEx.titleEn}
+                              onChange={(e) => setLessonExercises(lessonExercises.map((ex, i) => i === activeExIdx ? { ...ex, titleEn: e.target.value } : ex))}
+                              className="w-full text-sm font-bold p-2 rounded-lg border border-slate-200 focus:outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Type</label>
+                            <select
+                              value={activeEx.exerciseType}
+                              onChange={(e) => setLessonExercises(lessonExercises.map((ex, i) => i === activeExIdx ? { ...ex, exerciseType: e.target.value as any } : ex))}
+                              className="w-full text-xs font-bold p-2 rounded-lg border border-slate-200 focus:outline-none"
+                            >
+                              <option value="TASHKEEL_PICKER">Harakah Challenge (Tashkeel Picker)</option>
+                              <option value="SENTENCE_REORDER">Sentence Unscrambler</option>
+                              <option value="TRANSLATION">Pure Translation</option>
+                              <option value="IRAB_ANALYSIS">I'rab Parsing Challenge</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        {/* Question Tabs */}
+                        <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3">
+                          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Questions:</span>
+                          {activeEx.questions.map((_, qi) => (
+                            <button
+                              key={qi}
+                              onClick={() => setActiveQIdx(qi)}
+                              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                                activeQIdx === qi ? "bg-purple-600 text-white scale-105" : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                              }`}
+                            >
+                              Q{qi + 1}
+                            </button>
+                          ))}
+                          <button
+                            onClick={() => {
+                              const newQ: QuestionItem = {
+                                id: `q-${Date.now()}`,
+                                sentenceAr: "جُمْلَةٌ جَدِيدَةٌ ____ فِي الدَّرْسِ",
+                                sentenceEn: "New English context.",
+                                optionsCsv: "خِيَار 1, خِيَار 2, خِيَار 3, خِيَار 4",
+                                correctAnswer: "خِيَار 1",
+                                grammaticalRuleEn: "Rule explanation",
+                              };
+                              setLessonExercises(lessonExercises.map((ex, i) => i === activeExIdx ? { ...ex, questions: [...ex.questions, newQ] } : ex));
+                              setActiveQIdx(activeEx.questions.length);
+                            }}
+                            className="px-2.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold hover:bg-emerald-100"
+                          >
+                            + Add Q
+                          </button>
+                        </div>
+
+                        {/* Active Question Fields */}
+                        {activeQ && (
+                          <div className="space-y-3">
+                            <div>
+                              <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Arabic Sentence (with blank __)</label>
+                              <input value={activeQ.sentenceAr} onChange={(e) => updateQ("sentenceAr", e.target.value)}
+                                className="w-full font-arabic text-xl font-bold p-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-purple-400 text-right" dir="rtl" />
+                            </div>
+                            <div>
+                              <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">English Prompt</label>
+                              <input value={activeQ.sentenceEn} onChange={(e) => updateQ("sentenceEn", e.target.value)}
+                                className="w-full text-sm p-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-purple-400" />
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
                               <div>
-                                <span className="text-xs font-extrabold text-claude-textMain block">
-                                  Module {modIdx + 1}: {mod.titleEn}
-                                </span>
-                                <span className="font-arabic text-sm text-slate-900 font-bold block dir-rtl" dir="rtl">
-                                  {mod.titleAr}
-                                </span>
+                                <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Options (comma-separated)</label>
+                                <input value={activeQ.optionsCsv} onChange={(e) => updateQ("optionsCsv", e.target.value)}
+                                  className="w-full font-arabic text-sm font-bold p-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none text-right" dir="rtl" />
+                              </div>
+                              <div>
+                                <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Correct Answer</label>
+                                <input value={activeQ.correctAnswer} onChange={(e) => updateQ("correctAnswer", e.target.value)}
+                                  className="w-full font-arabic text-sm font-bold p-3 rounded-xl bg-emerald-50 border border-emerald-300 focus:outline-none text-right" dir="rtl" />
                               </div>
                             </div>
-
-                            <div className="flex items-center gap-3">
-                              <button
-                                onClick={(e) => handleAddLesson(lvl.id, mod.id, e)}
-                                className="px-3 py-1 text-xs font-bold bg-claude-sageLight text-claude-sage border border-claude-sage/20 rounded-lg hover:bg-emerald-100 transition-colors"
-                              >
-                                + Add Lesson
-                              </button>
-                              <button
-                                onClick={(e) => handleDeleteModule(lvl.id, mod.id, e)}
-                                className="px-2 py-1 text-xs font-bold text-rose-600 bg-white border border-rose-200 rounded-lg hover:bg-rose-50"
-                              >
-                                ✕ Module
-                              </button>
+                            <div>
+                              <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Grammatical Rule Note</label>
+                              <input value={activeQ.grammaticalRuleEn} onChange={(e) => updateQ("grammaticalRuleEn", e.target.value)}
+                                className="w-full text-xs p-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none" />
                             </div>
                           </div>
-
-                          {/* AUDIBLE LESSON BARS WITH FULL LESSON AUDIO BADGE */}
-                          {isModExpanded && (
-                            <div className="p-4 space-y-2.5 bg-claude-bg/50">
-                              {mod.lessons.map((les, lesIdx) => (
-                                <div
-                                  key={les.id}
-                                  className="claude-card rounded-xl p-3.5 bg-white border border-claude-border hover:border-claude-borderHover transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm"
-                                >
-                                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                                    <div className="w-8 h-8 rounded-lg bg-claude-terracotta text-white font-extrabold text-xs flex items-center justify-center shrink-0">
-                                      {lesIdx + 1}
-                                    </div>
-
-                                    <div className="space-y-0.5 flex-1 min-w-0">
-                                      <span className="font-arabic text-lg text-slate-900 font-bold block truncate dir-rtl" dir="rtl">
-                                        {les.titleAr}
-                                      </span>
-                                      <span className="text-xs font-bold text-claude-textMain block truncate">
-                                        Lesson {lesIdx + 1}: {les.titleEn}
-                                      </span>
-                                    </div>
-                                  </div>
-
-                                  <div className="flex items-center gap-3 shrink-0">
-                                    {/* FULL LESSON NATIVE AUDIO BADGE */}
-                                    <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-900 border border-emerald-200 flex items-center gap-1.5">
-                                      🎙️ Full Lesson Native Audio Attached
-                                    </span>
-
-                                    <button
-                                      onClick={() => handleOpenLessonStudio(les)}
-                                      className="px-4 py-2 rounded-xl bg-claude-terracotta text-white font-bold text-xs hover:bg-[#B85C3C] transition-colors shadow-sm flex items-center gap-1.5"
-                                    >
-                                      ✏️ Edit Lesson & Audio
-                                    </button>
-
-                                    <button
-                                      onClick={(e) => handleDeleteLesson(lvl.id, mod.id, les.id, e)}
-                                      className="p-1.5 text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-lg text-xs"
-                                    >
-                                      ✕
-                                    </button>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                        )}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-center py-12 text-claude-textMuted">
+                    <span className="text-4xl block mb-2">🎯</span>
+                    <p className="text-sm font-bold">No exercises yet</p>
+                    <p className="text-xs mt-1">Click "+ Add Exercise Unit" to build the first quiz</p>
                   </div>
                 )}
               </div>
-            );
-          })}
+            )}
+
+            {/* HARAKAH DRAG */}
+            {lessonTab === "HARAKAH" && (
+              <div className="claude-card rounded-2xl bg-white border border-claude-border shadow-sm p-6 space-y-3">
+                <div>
+                  <h2 className="font-bold text-claude-textMain text-sm">🖐️ Harakah Drag-to-Place Exercise</h2>
+                  <p className="text-xs text-claude-textMuted">
+                    Drag the correct vowel mark (harakah) from the palette to the blank in the sentence. Uses spring physics.
+                  </p>
+                </div>
+                <HarakahDragBoard />
+              </div>
+            )}
+          </div>
         </div>
       )}
 
-      {/* VIEW MODE 2: FULL SCREEN AUDIBLE LESSON STUDIO */}
-      {viewMode === "LESSON_STUDIO" && activeLesson && (
-        <div className="max-w-6xl mx-auto space-y-6">
-          <div className="flex items-center justify-between">
-            <button
-              onClick={() => setViewMode("TREE")}
-              className="text-xs font-bold text-claude-terracotta hover:underline flex items-center gap-1"
-            >
-              ← Return to Full Screen Curriculum Tree
-            </button>
+      {/* ── MAIN VIEW ── */}
+      {view === "MAIN" && (
+        <div className="max-w-6xl mx-auto space-y-10">
 
-            <div className="flex items-center bg-white border border-claude-border rounded-xl p-1 shadow-sm">
+          {/* ── HEADER ── */}
+          <div className="flex items-center justify-between border-b border-claude-border pb-4">
+            <div>
+              <Link href="/" className="text-xs font-semibold text-claude-terracotta hover:underline">
+                ← Back to Dashboard
+              </Link>
+              <h1 className="text-2xl font-extrabold text-claude-textMain mt-1">
+                Course 1: Classical Arabic Grammar (Nahw & Sarf)
+              </h1>
+              <p className="text-xs text-claude-textMuted">
+                Unified Admin Studio — Curriculum · Passages · Insights · All Visual Tools
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
               <button
-                onClick={() => setLessonTab("NOTES")}
-                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                  lessonTab === "NOTES"
-                    ? "bg-claude-terracotta text-white shadow-sm"
-                    : "text-claude-textMuted hover:text-claude-textMain"
-                }`}
+                onClick={handleAddLevel}
+                className="px-4 py-2 bg-claude-terracotta hover:bg-[#B85C3C] text-white font-bold text-xs rounded-xl transition-colors shadow-sm"
               >
-                🎙️ Notes & Native Audio Editor
-              </button>
-              <button
-                onClick={() => setLessonTab("EXERCISES")}
-                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                  lessonTab === "EXERCISES"
-                    ? "bg-purple-600 text-white shadow-sm"
-                    : "text-claude-textMuted hover:text-claude-textMain"
-                }`}
-              >
-                🎯 Exercises Manager ({lessonExercises.length} Units)
+                + Add Level
               </button>
             </div>
           </div>
 
-          {/* TAB 1: MEDIUM NOTES & FULL LESSON NATIVE AUDIO EDITOR */}
-          {lessonTab === "NOTES" && (
-            <RichMediumEditor
-              titleAr={editorTitleAr}
-              setTitleAr={setEditorTitleAr}
-              titleEn={editorTitleEn}
-              setTitleEn={setEditorTitleEn}
-              content={editorContent}
-              setContent={setEditorContent}
-              audioUrl={editorAudioUrl}
-              setAudioUrl={setEditorAudioUrl}
-              onSave={handleSaveLessonStudio}
-              isSaved={isSaved}
-            />
-          )}
-
-          {/* TAB 2: EXERCISES */}
-          {lessonTab === "EXERCISES" && (
-            <div className="claude-card rounded-2xl bg-white border border-claude-border shadow-sm p-6 space-y-4">
-              <h2 className="font-bold text-claude-textMain">Lesson Exercise Suite</h2>
-              <p className="text-xs text-claude-textMuted">
-                Manage questions for this lesson or open Dedicated Exercise Studio.
-              </p>
-              <Link
-                href="/lessons/new"
-                className="inline-block px-4 py-2 rounded-xl bg-purple-600 text-white font-bold text-xs shadow-sm"
-              >
-                Open Dedicated Exercise Studio →
-              </Link>
+          {/* ══════════════════════════════════════════════
+              SECTION 2 — CURRICULUM TREE
+          ══════════════════════════════════════════════ */}
+          <section className="space-y-4">
+            <div className="flex items-center justify-between border-b border-claude-border pb-3">
+              <div>
+                <span className="text-[10px] font-bold text-claude-terracotta uppercase tracking-wider block">Curriculum Hierarchy</span>
+                <h2 className="text-xl font-extrabold text-claude-textMain">Levels · Modules · Lessons</h2>
+              </div>
+              <span className="text-xs text-claude-textMuted font-mono">{levels.length} Levels</span>
             </div>
-          )}
+
+            <div className="space-y-4">
+              {levels.map((lvl, lvlIdx) => {
+                const isLvlExpanded = !!expandedLevels[lvl.id];
+                return (
+                  <div key={lvl.id} className="claude-card rounded-2xl bg-white border border-claude-border shadow-sm overflow-hidden">
+                    {/* Level bar */}
+                    <div
+                      onClick={() => toggleLevel(lvl.id)}
+                      className="p-4 bg-claude-bg/60 hover:bg-claude-bg cursor-pointer flex items-center justify-between border-b border-claude-border transition-colors select-none"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="w-7 h-7 rounded-lg bg-white border border-claude-border font-bold text-xs flex items-center justify-center">
+                          {isLvlExpanded ? "▼" : "►"}
+                        </span>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-blue-100 text-blue-900 border border-blue-200">
+                              Level {lvlIdx + 1}
+                            </span>
+                            <span className="text-sm font-bold text-claude-textMain">{lvl.titleEn}</span>
+                          </div>
+                          <span className="font-arabic text-base text-slate-900 font-bold block" dir="rtl">{lvl.titleAr}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button onClick={(e) => handleAddModule(lvl.id, e)}
+                          className="px-3 py-1.5 text-xs font-bold text-claude-terracotta bg-claude-terracottaLight border border-claude-terracotta/20 rounded-xl hover:bg-claude-terracotta hover:text-white transition-colors">
+                          + Module
+                        </button>
+                        <button onClick={(e) => handleDeleteLevel(lvl.id, e)}
+                          className="px-2.5 py-1.5 text-xs font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100">
+                          🗑️
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Modules */}
+                    {isLvlExpanded && (
+                      <div className="p-5 space-y-4 bg-white">
+                        {lvl.modules.map((mod, modIdx) => {
+                          const isModExpanded = !!expandedModules[mod.id];
+                          return (
+                            <div key={mod.id} className="border border-claude-border rounded-xl overflow-hidden bg-claude-bg/20">
+                              {/* Module bar */}
+                              <div
+                                onClick={() => toggleModule(mod.id)}
+                                className="p-3.5 bg-white hover:bg-claude-bg cursor-pointer flex items-center justify-between border-b border-claude-border transition-colors select-none"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <span className="w-6 h-6 rounded-lg bg-claude-terracottaLight text-claude-terracotta font-bold text-xs flex items-center justify-center border border-claude-terracotta/20">
+                                    {isModExpanded ? "▼" : "►"}
+                                  </span>
+                                  <div>
+                                    <span className="text-xs font-extrabold text-claude-textMain block">
+                                      Module {modIdx + 1}: {mod.titleEn}
+                                    </span>
+                                    <span className="font-arabic text-sm text-slate-900 font-bold" dir="rtl">{mod.titleAr}</span>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <button onClick={(e) => handleAddLesson(lvl.id, mod.id, e)}
+                                    className="px-2.5 py-1 text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg hover:bg-emerald-100">
+                                    + Lesson
+                                  </button>
+                                  <button onClick={(e) => handleDeleteModule(lvl.id, mod.id, e)}
+                                    className="text-xs text-rose-500 hover:text-rose-700 px-1">✕ Mod</button>
+                                </div>
+                              </div>
+
+                              {/* Lessons */}
+                              {isModExpanded && (
+                                <div className="p-3.5 space-y-2 bg-claude-bg/30">
+                                  {mod.lessons.map((les, lesIdx) => (
+                                    <div
+                                      key={les.id}
+                                      className="claude-card rounded-xl p-3 bg-white border border-claude-border hover:border-claude-borderHover transition-all flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-sm"
+                                    >
+                                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                                        <div className="w-8 h-8 rounded-lg bg-claude-terracotta text-white font-extrabold text-xs flex items-center justify-center shrink-0">
+                                          {lesIdx + 1}
+                                        </div>
+                                        <div className="min-w-0">
+                                          <span className="font-arabic text-base font-bold text-slate-900 block truncate" dir="rtl">{les.titleAr}</span>
+                                          <span className="text-xs font-bold text-claude-textMain block truncate">Lesson {lesIdx + 1}: {les.titleEn}</span>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center gap-2 shrink-0">
+                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200">
+                                          🎯 {(les.exercises || []).length} Exercises
+                                        </span>
+                                        <button
+                                          onClick={() => handleOpenLessonStudio(les)}
+                                          className="px-3.5 py-2 rounded-xl bg-claude-terracotta text-white font-bold text-xs hover:bg-[#B85C3C] transition-colors shadow-sm"
+                                        >
+                                          ✏️ Edit Full Studio
+                                        </button>
+                                        <button
+                                          onClick={(e) => handleDeleteLesson(lvl.id, mod.id, les.id, e)}
+                                          className="p-1.5 text-rose-500 hover:bg-rose-50 border border-rose-200 rounded-lg text-xs"
+                                        >✕</button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                  {mod.lessons.length === 0 && (
+                                    <p className="text-xs text-claude-textMuted py-2 text-center">No lessons yet — click + Lesson to add</p>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                        {lvl.modules.length === 0 && (
+                          <p className="text-xs text-claude-textMuted text-center py-4">No modules — click + Module to add</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* ══════════════════════════════════════════════
+              SECTION 3 — CAPSTONE PASSAGES
+          ══════════════════════════════════════════════ */}
+          <section className="space-y-5">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-claude-border pb-3">
+              <div>
+                <span className="text-[10px] font-bold text-claude-terracotta uppercase tracking-wider block">Graduation Capstones</span>
+                <h2 className="text-xl font-extrabold text-claude-textMain">Classical Passages (Quran, Hadith & Literature)</h2>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-100 border border-slate-200">
+                  {(["ALL", "QURAN", "HADITH", "LITERATURE"] as const).map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => setPassageCategory(cat)}
+                      className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                        passageCategory === cat ? "bg-white text-claude-terracotta shadow-sm border border-slate-200" : "text-slate-500"
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={handleAddPassage}
+                  className="px-4 py-2 bg-claude-terracotta hover:bg-[#B85C3C] text-white font-bold text-xs rounded-xl"
+                >
+                  + Add Passage
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {filteredPassages.map((pas) => (
+                <div key={pas.id} className={`claude-card rounded-2xl bg-white border border-claude-border shadow-sm p-5 space-y-4 ${!pas.isUnlocked ? "opacity-70" : ""}`}>
+                  {editingPassageId === pas.id ? (
+                    /* ── Edit Form ── */
+                    <div className="space-y-3">
+                      <p className="text-xs font-bold text-slate-500 uppercase">Editing Passage</p>
+                      <input
+                        value={editPassageForm.titleEn || ""}
+                        onChange={(e) => setEditPassageForm({ ...editPassageForm, titleEn: e.target.value })}
+                        className="w-full text-xs font-bold p-2 rounded-lg border border-slate-200 focus:outline-none"
+                        placeholder="Title (English)"
+                      />
+                      <textarea
+                        value={editPassageForm.arabicText || ""}
+                        onChange={(e) => setEditPassageForm({ ...editPassageForm, arabicText: e.target.value })}
+                        className="w-full font-arabic text-base font-bold p-2 rounded-lg border border-slate-200 focus:outline-none text-right"
+                        dir="rtl" rows={3} placeholder="النَّصُّ الْعَرَبِيُّ"
+                      />
+                      <textarea
+                        value={editPassageForm.englishTranslation || ""}
+                        onChange={(e) => setEditPassageForm({ ...editPassageForm, englishTranslation: e.target.value })}
+                        className="w-full text-xs p-2 rounded-lg border border-slate-200 focus:outline-none"
+                        rows={2} placeholder="English translation"
+                      />
+                      <input
+                        value={editPassageForm.citationEn || ""}
+                        onChange={(e) => setEditPassageForm({ ...editPassageForm, citationEn: e.target.value })}
+                        className="w-full text-xs p-2 rounded-lg border border-slate-200 focus:outline-none"
+                        placeholder="Citation"
+                      />
+                      <div className="flex items-center gap-2">
+                        <label className="text-xs font-bold text-slate-500">
+                          <input
+                            type="checkbox"
+                            checked={!!editPassageForm.isUnlocked}
+                            onChange={(e) => setEditPassageForm({ ...editPassageForm, isUnlocked: e.target.checked })}
+                            className="mr-1.5"
+                          />
+                          Unlocked
+                        </label>
+                        <select
+                          value={editPassageForm.category || "QURAN"}
+                          onChange={(e) => setEditPassageForm({ ...editPassageForm, category: e.target.value as any })}
+                          className="text-xs p-1.5 rounded-lg border border-slate-200 focus:outline-none"
+                        >
+                          <option value="QURAN">QURAN</option>
+                          <option value="HADITH">HADITH</option>
+                          <option value="LITERATURE">LITERATURE</option>
+                        </select>
+                      </div>
+                      <div className="flex gap-2">
+                        <button onClick={handleSavePassage} className="px-4 py-2 bg-emerald-600 text-white text-xs font-bold rounded-lg hover:bg-emerald-700 flex-1">✓ Save</button>
+                        <button onClick={() => setEditingPassageId(null)} className="px-4 py-2 bg-slate-100 text-slate-600 text-xs font-bold rounded-lg hover:bg-slate-200">Cancel</button>
+                      </div>
+                    </div>
+                  ) : (
+                    /* ── Display Card ── */
+                    <>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded border border-claude-border bg-claude-bg text-claude-textMain">
+                          {pas.category}
+                        </span>
+                        <span className={`text-[10px] font-bold flex items-center gap-1 ${pas.isUnlocked ? "text-emerald-700" : "text-amber-700"}`}>
+                          {pas.isUnlocked ? "🔓 Unlocked" : "🔒 Locked"}
+                        </span>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-extrabold text-claude-textMain">{pas.titleEn}</h3>
+                        <p className="text-[10px] text-claude-textMuted font-mono">{pas.citationEn}</p>
+                      </div>
+                      <div className="p-3 rounded-xl bg-claude-bg border border-claude-border text-right" dir="rtl">
+                        <p className="font-arabic text-base font-bold text-slate-900 leading-loose">{pas.arabicText}</p>
+                      </div>
+                      <p className="text-xs text-claude-textMuted italic line-clamp-2">"{pas.englishTranslation}"</p>
+                      <div className="flex items-center gap-2 pt-2 border-t border-claude-border">
+                        <button onClick={() => handleEditPassage(pas)}
+                          className="flex-1 py-2 rounded-xl bg-claude-bg border border-claude-border text-xs font-bold text-claude-textMain hover:border-claude-borderHover">
+                          ✏️ Edit Passage
+                        </button>
+                        <button onClick={() => handleDeletePassage(pas.id)}
+                          className="p-2 rounded-xl text-rose-500 border border-rose-200 hover:bg-rose-50 text-xs">🗑️</button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* ══════════════════════════════════════════════
+              SECTION 4 — DID YOU KNOW? INSIGHTS
+          ══════════════════════════════════════════════ */}
+          <section className="space-y-5 pb-12">
+            <div className="flex items-center justify-between border-b border-claude-border pb-3">
+              <div>
+                <span className="text-[10px] font-bold text-claude-terracotta uppercase tracking-wider block">Rhetorical Insights</span>
+                <h2 className="text-xl font-extrabold text-claude-textMain">💡 Did You Know? Cards</h2>
+                <p className="text-xs text-claude-textMuted">Visible to learners as clickable pop-up insight cards</p>
+              </div>
+              <button
+                onClick={handleAddInsight}
+                className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl"
+              >
+                + Add Insight
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {insights.map((ins) => (
+                <div key={ins.id} className="claude-card rounded-2xl bg-white border border-claude-border shadow-sm">
+                  {editingInsightId === ins.id ? (
+                    /* ── Edit Form ── */
+                    <div className="p-5 space-y-3">
+                      <p className="text-xs font-bold text-slate-500 uppercase">Editing Insight</p>
+                      <select
+                        value={editInsightForm.category || "GRAMMAR"}
+                        onChange={(e) => setEditInsightForm({ ...editInsightForm, category: e.target.value as any })}
+                        className="text-xs font-bold p-2 rounded-lg border border-slate-200 focus:outline-none"
+                      >
+                        <option value="RHETORIC">RHETORIC</option>
+                        <option value="GRAMMAR">GRAMMAR</option>
+                        <option value="WISDOM">WISDOM</option>
+                      </select>
+                      <input
+                        value={editInsightForm.titleEn || ""}
+                        onChange={(e) => setEditInsightForm({ ...editInsightForm, titleEn: e.target.value })}
+                        className="w-full text-sm font-bold p-2 rounded-lg border border-slate-200 focus:outline-none"
+                        placeholder="Title / hook (English)"
+                      />
+                      <input
+                        value={editInsightForm.arabicExample || ""}
+                        onChange={(e) => setEditInsightForm({ ...editInsightForm, arabicExample: e.target.value })}
+                        className="w-full font-arabic text-xl font-bold p-2 rounded-lg border border-slate-200 focus:outline-none text-right"
+                        dir="rtl" placeholder="الْمِثَالُ الْعَرَبِيُّ"
+                      />
+                      <textarea
+                        value={editInsightForm.insightBodyEn || ""}
+                        onChange={(e) => setEditInsightForm({ ...editInsightForm, insightBodyEn: e.target.value })}
+                        className="w-full text-xs p-2 rounded-lg border border-slate-200 focus:outline-none"
+                        rows={4} placeholder="Full rhetorical insight explanation…"
+                      />
+                      <input
+                        value={editInsightForm.sourceEn || ""}
+                        onChange={(e) => setEditInsightForm({ ...editInsightForm, sourceEn: e.target.value })}
+                        className="w-full text-xs p-2 rounded-lg border border-slate-200 focus:outline-none"
+                        placeholder="Source citation (optional)"
+                      />
+                      <div className="flex gap-2">
+                        <button onClick={handleSaveInsight} className="px-4 py-2 bg-amber-600 text-white text-xs font-bold rounded-lg hover:bg-amber-700 flex-1">✓ Save</button>
+                        <button onClick={() => setEditingInsightId(null)} className="px-4 py-2 bg-slate-100 text-slate-600 text-xs font-bold rounded-lg">Cancel</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-5 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${insightCatStyle(ins.category)}`}>
+                          {ins.category}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => setInsightModal(ins)}
+                            className="text-[10px] font-bold text-slate-400 hover:text-slate-600 underline"
+                          >
+                            Preview popup
+                          </button>
+                          <button onClick={() => handleEditInsight(ins)}
+                            className="text-xs text-claude-terracotta hover:underline font-bold">✏️</button>
+                          <button onClick={() => handleDeleteInsight(ins.id)}
+                            className="text-xs text-rose-500 hover:text-rose-700 font-bold">✕</button>
+                        </div>
+                      </div>
+                      <h3 className="text-sm font-extrabold text-claude-textMain">{ins.titleEn}</h3>
+                      <p className="font-arabic text-2xl font-bold text-slate-900 text-right dir-rtl" dir="rtl">
+                        {ins.arabicExample}
+                      </p>
+                      <p className="text-xs text-claude-textMuted leading-relaxed line-clamp-3">{ins.insightBodyEn}</p>
+                      {ins.sourceEn && (
+                        <p className="text-[10px] text-claude-textMuted font-mono">{ins.sourceEn}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+      )}
+
+      {/* ── INSIGHT PREVIEW MODAL ── */}
+      {insightModal && (
+        <div
+          className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setInsightModal(null)}
+        >
+          <div
+            className="bg-white border border-claude-border rounded-3xl max-w-lg w-full p-7 space-y-5 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between">
+              <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${insightCatStyle(insightModal.category)}`}>
+                {insightModal.category}
+              </span>
+              <button onClick={() => setInsightModal(null)} className="text-slate-400 hover:text-slate-600 text-lg leading-none">✕</button>
+            </div>
+            <div>
+              <h2 className="text-xl font-extrabold text-claude-textMain">💡 {insightModal.titleEn}</h2>
+            </div>
+            <div className="p-4 rounded-2xl bg-claude-bg border border-claude-border text-center">
+              <p className="font-arabic text-3xl font-black text-slate-900 leading-loose dir-rtl" dir="rtl">
+                {insightModal.arabicExample}
+              </p>
+            </div>
+            <p className="text-sm text-claude-textMuted leading-relaxed">{insightModal.insightBodyEn}</p>
+            {insightModal.sourceEn && (
+              <p className="text-xs text-claude-textMuted font-mono border-t border-claude-border pt-3">
+                📚 {insightModal.sourceEn}
+              </p>
+            )}
+          </div>
         </div>
       )}
     </div>

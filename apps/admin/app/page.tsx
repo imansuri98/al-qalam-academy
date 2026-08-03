@@ -5,9 +5,7 @@ import Link from "next/link";
 import {
   BookOpen,
   MessageSquare,
-  Target,
   FileText,
-  Bookmark,
   Users,
   ExternalLink,
   ArrowRight,
@@ -19,11 +17,11 @@ export default function AdminDashboardPage() {
       id: "course-1",
       title: "Course 1: Classical Grammar",
       titleAr: "النَّحْوُ وَالصَّرْفُ",
-      description: "Manage levels, modules, lessons, and native audio recitations for classical grammar (Nahw & Sarf).",
+      description: "Unified Studio: Manage levels, modules, lessons, native audio, exercises, Quran/Hadith passages, visual lesson canvases, and 'Did You Know?' rhetorical insights — all in one page.",
       icon: BookOpen,
-      badge: "Grammar Track",
+      badge: "Unified Grammar Studio",
       href: "/courses/course-1",
-      actionText: "Manage Classical Grammar",
+      actionText: "Open Course 1 Studio",
     },
     {
       id: "course-2",
@@ -36,16 +34,6 @@ export default function AdminDashboardPage() {
       actionText: "Manage Spoken Arabic",
     },
     {
-      id: "exercise-builder",
-      title: "Exercise Builder Studio",
-      titleAr: "تَمَارِينُ وَتَدْرِيبَاتٌ",
-      description: "Launch Big View Question Studio for Harakah Tashkeel Pickers, Sentence Unscramblers & I'rab Quizzes.",
-      icon: Target,
-      badge: "Question Studio",
-      href: "/lessons/new",
-      actionText: "Open Exercise Studio",
-    },
-    {
       id: "vocab-audio",
       title: "Vocabulary & Native Audio",
       titleAr: "الْمُفْرَدَاتُ وَالصَّوْتِيَّاتُ",
@@ -54,16 +42,6 @@ export default function AdminDashboardPage() {
       badge: "Audio & Media",
       href: "/vocabulary/new",
       actionText: "Open Media Studio",
-    },
-    {
-      id: "passages-studio",
-      title: "Quran, Hadith & Passages",
-      titleAr: "الْقُرْآنُ وَالْحَدِيثُ وَالأَدَبُ",
-      description: "Build milestone capstone passages unlocked ONLY after completing an entire Module or Level.",
-      icon: Bookmark,
-      badge: "Milestone Passages",
-      href: "/passages/new",
-      actionText: "Open Passages Studio",
     },
   ];
 
