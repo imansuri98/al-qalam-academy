@@ -737,8 +737,10 @@ export default function Course1AdminPage() {
                             >
                               <option value="TASHKEEL_PICKER">Harakah Challenge (Tashkeel Picker)</option>
                               <option value="SENTENCE_REORDER">Sentence Unscrambler</option>
-                              <option value="TRANSLATION">Pure Translation</option>
-                              <option value="IRAB_ANALYSIS">I'rab Parsing Challenge</option>
+                              <option value="TRANSLATION">Translation 1: Arabic → English</option>
+                              <option value="TRANSLATION_EN_AR">Translation 2: English → Arabic</option>
+                              <option value="IRAB_PARSING">I'rab 3-Step Syntactic Breakdown</option>
+                              <option value="MULTIPLE_CHOICE">Multiple Choice (Open MCQ)</option>
                             </select>
                           </div>
                         </div>

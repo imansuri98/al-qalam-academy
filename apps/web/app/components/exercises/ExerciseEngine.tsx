@@ -20,6 +20,9 @@ export interface ExerciseData {
     | "TASHKEEL_PICKER"
     | "SENTENCE_REORDER"
     | "IRAB_PARSING"
+    | "TRANSLATION"
+    | "TRANSLATION_EN_AR"
+    | "MULTIPLE_CHOICE"
     | "DIALOGUE_ROLEPLAY"
     | "AUDIO_MATCHING";
   titleAr: string;
@@ -229,18 +232,33 @@ export default function ExerciseEngine({ exercises }: ExerciseEngineProps) {
               </span>
             )}
 
-            {activeQ.sentenceAr && activeQ.sentenceAr.trim() !== "" && (
-              <span className="font-arabic text-3xl font-bold text-[#090D16] block dir-rtl leading-relaxed" dir="rtl">
-                {activeEx.exerciseType === "TASHKEEL_PICKER" && selectedOption
-                  ? activeQ.sentenceAr.replace("____", selectedOption)
-                  : activeQ.sentenceAr}
-              </span>
-            )}
+            {/* TRANSLATION_EN_AR: English Prompt Big, Arabic Subtext */}
+            {activeEx.exerciseType === "TRANSLATION_EN_AR" ? (
+              <div className="space-y-2">
+                <span className="text-xs font-bold text-[#C2410C] uppercase tracking-wider block">
+                  Translate to Vowelled Arabic:
+                </span>
+                <p className="text-2xl font-extrabold text-[#0F172A] leading-snug">
+                  "{activeQ.sentenceEn}"
+                </p>
+              </div>
+            ) : (
+              /* ARABIC FIRST PROMPTS (TRANSLATION AR->EN, TASHKEEL, REORDER, ETC.) */
+              <div className="space-y-2">
+                {activeQ.sentenceAr && activeQ.sentenceAr.trim() !== "" && (
+                  <span className="font-arabic text-3xl font-bold text-[#090D16] block dir-rtl leading-relaxed" dir="rtl">
+                    {activeEx.exerciseType === "TASHKEEL_PICKER" && selectedOption
+                      ? activeQ.sentenceAr.replace("____", selectedOption)
+                      : activeQ.sentenceAr}
+                  </span>
+                )}
 
-            {activeQ.sentenceEn && activeQ.sentenceEn.trim() !== "" && (
-              <p className="text-sm font-semibold text-[#0F172A] leading-relaxed">
-                {activeQ.sentenceEn}
-              </p>
+                {activeQ.sentenceEn && activeQ.sentenceEn.trim() !== "" && (
+                  <p className="text-sm font-semibold text-[#475569] leading-relaxed">
+                    {activeEx.exerciseType === "TRANSLATION" ? `Translate to English: "${activeQ.sentenceEn}"` : activeQ.sentenceEn}
+                  </p>
+                )}
+              </div>
             )}
 
             {activeQ.audioUrl && (
