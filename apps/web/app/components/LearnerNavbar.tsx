@@ -36,7 +36,7 @@ export default function LearnerNavbar() {
   const navLinks = [
     { name: "Home", href: "/", icon: Home },
     { name: "Courses", href: "/courses", icon: BookOpen },
-    { name: "Dashboard", href: "/dashboard", icon: Flame },
+    ...(user ? [{ name: "Dashboard", href: "/dashboard", icon: Flame }] : []),
     { name: "Contact", href: "/contact", icon: Mail },
   ];
 
