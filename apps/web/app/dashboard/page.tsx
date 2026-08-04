@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import LearnerNavbar from "../components/LearnerNavbar";
 import { createClient } from "../utils/supabase/client";
+import { DEFAULT_PASSAGES, PassageItem } from "@alarabi/curriculum";
 import {
   Flame,
   BookOpen,
@@ -12,9 +13,11 @@ import {
   ArrowRight,
   CheckCircle2,
   Lock,
+  Unlock,
   Play,
   GraduationCap,
   Loader2,
+  X,
 } from "lucide-react";
 
 interface LearnerStats {
@@ -35,6 +38,18 @@ export default function LearnerDashboardPage() {
     totalLessons: 0,
     progressPercent: 0,
   });
+
+  // Capstone Passages Category State
+  const [activeCategory, setActiveCategory] = useState<"ALL" | "QURAN" | "HADITH" | "LITERATURE">("ALL");
+  const [selectedPassage, setSelectedPassage] = useState<PassageItem | null>(null);
+
+  // Passage Solver Modal States
+  const [activeQIdx, setActiveQIdx] = useState(0);
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [isAnswered, setIsAnswered] = useState(false);
+  const [isCorrect, setIsCorrect] = useState(false);
+  const [score, setScore] = useState(0);
+  const [isCompleted, setIsCompleted] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -223,6 +238,15 @@ export default function LearnerDashboardPage() {
         (nextMedal
           ? ` (Next: ${nextMedal.tier.charAt(0) + nextMedal.tier.slice(1).toLowerCase()})`
           : " — All Earned! 🎉");
+
+  const handleOpenSolver = (passage: PassageItem) => {
+    setSelectedPassage(passage);
+    setActiveQIdx(0);
+    setSelectedOption(null);
+    setIsAnswered(false);
+    setScore(0);
+    setIsCompleted(false);
+  };
 
   if (loading) {
     return (
@@ -441,7 +465,236 @@ export default function LearnerDashboardPage() {
             })}
           </div>
         </div>
+
+        {/* Graduation Capstones Section (only visible after completion of modules and levels) */}
+        {learnerStats.progressPercent >= 100 && (
+          <div className="space-y-4 pt-6 border-t border-[#E2E8F0]">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <span className="text-xs font-bold text-[#C2410C] uppercase tracking-wider block">
+                  Graduation Capstones
+                </span>
+                <h3 className="text-2xl font-extrabold text-[#0F172A]">
+                  Classical Passages (Quran, Hadith & Poetry)
+                </h3>
+              </div>
+
+              {/* Category Tabs */}
+              <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[#F8FAF6] border border-[#E2E8F0] self-start md:self-auto">
+                {(["ALL", "QURAN", "HADITH", "LITERATURE"] as const).map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setActiveCategory(cat)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                      activeCategory === cat
+                        ? "bg-white text-[#C2410C] shadow-2xs border border-[#E2E8F0]"
+                        : "text-[#64748B] hover:text-[#0F172A]"
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {DEFAULT_PASSAGES.filter(p => activeCategory === "ALL" || p.category === activeCategory).map((pas) => {
+                return (
+                  <div
+                    key={pas.id}
+                    className="pro-card rounded-2xl bg-white border border-[#E2E8F0] p-6 space-y-4 flex flex-col justify-between shadow-xs"
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded border border-[#E2E8F0] bg-[#F8FAF6] text-[#0F172A]">
+                          {pas.category}
+                        </span>
+                        <span className="text-[10px] font-mono text-[#64748B]">
+                          <span className="text-emerald-700 font-bold flex items-center gap-1">
+                            <Unlock className="w-3 h-3" /> Unlocked
+                          </span>
+                        </span>
+                      </div>
+
+                      <div>
+                        <h3 className="text-sm font-extrabold text-[#0F172A]">{pas.titleEn}</h3>
+                        <span className="text-xs text-[#64748B] font-mono">{pas.citationEn}</span>
+                      </div>
+
+                      <div className="p-4 rounded-xl bg-[#F8FAF6] border border-[#E2E8F0] dir-rtl text-right" dir="rtl">
+                        <p className="font-arabic text-base font-bold text-[#090D16] leading-loose">
+                          {pas.arabicText}
+                        </p>
+                      </div>
+
+                      <p className="text-xs text-[#64748B] italic line-clamp-2">
+                        "{pas.englishTranslation}"
+                      </p>
+                    </div>
+
+                    <div className="pt-2 border-t border-[#E2E8F0]">
+                      <button
+                        onClick={() => handleOpenSolver(pas)}
+                        className="w-full py-2.5 rounded-xl brand-button font-bold text-xs shadow-2xs flex items-center justify-center gap-2"
+                      >
+                        Solve Grammatical Drills →
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </main>
+
+      {/* PASSAGE SOLVER MODAL */}
+      {selectedPassage && (
+        <div className="fixed inset-0 z-50 bg-[#0F172A]/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white border border-[#E2E8F0] rounded-3xl max-w-2xl w-full p-6 md:p-8 space-y-6 shadow-xl relative animate-in fade-in zoom-in-95 duration-200">
+            <button
+              onClick={() => setSelectedPassage(null)}
+              className="absolute top-6 right-6 p-2 rounded-full hover:bg-[#F8FAF6] text-[#64748B] transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {!isCompleted ? (
+              <div className="space-y-6">
+                <div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded border border-[#E2E8F0] bg-[#F8FAF6] text-[#0F172A]">
+                    {selectedPassage.category} Capstone
+                  </span>
+                  <h3 className="text-xl font-extrabold text-[#0F172A] mt-1">
+                    {selectedPassage.titleEn}
+                  </h3>
+                  <span className="text-xs text-[#64748B] font-mono">{selectedPassage.citationEn}</span>
+                </div>
+
+                <div className="p-4 rounded-xl bg-[#F8FAF6] border border-[#E2E8F0] text-right dir-rtl" dir="rtl">
+                  <p className="font-arabic text-lg font-bold text-[#090D16] leading-loose">
+                    {selectedPassage.arabicText}
+                  </p>
+                </div>
+
+                {/* Current Question */}
+                <div className="p-5 rounded-2xl bg-[#F8FAF6]/60 border border-[#E2E8F0] space-y-4">
+                  <div className="flex items-center justify-between text-xs font-mono text-[#64748B]">
+                    <span>
+                      Question {activeQIdx + 1} of {selectedPassage.questions.length}
+                    </span>
+                    <span>Score: {score}</span>
+                  </div>
+
+                  <div className="space-y-1">
+                    <span className="font-arabic text-lg font-bold text-[#090D16] block dir-rtl" dir="rtl">
+                      {selectedPassage.questions[activeQIdx]?.questionAr}
+                    </span>
+                    <p className="text-xs text-[#64748B] font-medium">
+                      {selectedPassage.questions[activeQIdx]?.questionEn}
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-2">
+                    {(selectedPassage.questions[activeQIdx]?.options || []).map((opt: string, idx: number) => {
+                      const isSelected = selectedOption === opt;
+                      let btnStyle = "bg-white border-[#E2E8F0] text-[#0F172A] hover:border-[#C2410C]";
+
+                      if (isAnswered) {
+                        if (opt.trim() === selectedPassage.questions[activeQIdx].correctAnswer.trim()) {
+                          btnStyle = "bg-emerald-50 border-emerald-500 text-emerald-900 font-bold";
+                        } else if (isSelected && !isCorrect) {
+                          btnStyle = "bg-rose-50 border-rose-400 text-rose-900";
+                        }
+                      } else if (isSelected) {
+                        btnStyle = "bg-[#FFF7ED] border-[#C2410C] text-[#C2410C] font-bold";
+                      }
+
+                      return (
+                        <button
+                          key={idx}
+                          onClick={() => setSelectedOption(opt)}
+                          disabled={isAnswered}
+                          className={`p-3.5 rounded-xl border text-right font-arabic text-base font-bold transition-all ${btnStyle}`}
+                          dir="rtl"
+                        >
+                          {opt}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {isAnswered && (
+                    <div className={`p-4 rounded-xl border text-xs space-y-1 ${
+                      isCorrect ? "bg-emerald-50 border-emerald-200 text-emerald-900" : "bg-rose-50 border-rose-200 text-rose-900"
+                    }`}>
+                      <span className="font-bold block">
+                        {isCorrect ? "✓ Correct!" : "✗ Incorrect"}
+                      </span>
+                      <p>{selectedPassage.questions[activeQIdx].grammaticalRuleEn}</p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-end gap-3 pt-2">
+                  {!isAnswered ? (
+                    <button
+                      onClick={() => {
+                        if (!selectedPassage || !selectedOption) return;
+                        const currentQ = selectedPassage.questions[activeQIdx];
+                        const correct = selectedOption.trim() === currentQ.correctAnswer.trim();
+                        setIsCorrect(correct);
+                        setIsAnswered(true);
+                        if (correct) setScore((prev) => prev + 1);
+                      }}
+                      disabled={!selectedOption}
+                      className="px-6 py-2.5 rounded-xl brand-button font-bold text-xs disabled:opacity-50"
+                    >
+                      Check Answer
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        if (!selectedPassage) return;
+                        if (activeQIdx + 1 < selectedPassage.questions.length) {
+                          setActiveQIdx((prev) => prev + 1);
+                          setSelectedOption(null);
+                          setIsAnswered(false);
+                        } else {
+                          setIsCompleted(true);
+                        }
+                      }}
+                      className="px-6 py-2.5 rounded-xl brand-button font-bold text-xs"
+                    >
+                      {activeQIdx + 1 < selectedPassage.questions.length ? "Next Question \u2192" : "View Results \u2192"}
+                    </button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-8 space-y-6">
+                <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center mx-auto text-2xl">
+                  ✓
+                </div>
+
+                <div className="space-y-2">
+                  <h3 className="text-2xl font-extrabold text-[#0F172A]">Capstone Completed!</h3>
+                  <p className="text-xs text-[#64748B]">
+                    You scored {score} out of {selectedPassage.questions.length} on {selectedPassage.titleEn}.
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => setSelectedPassage(null)}
+                  className="px-8 py-3 rounded-xl brand-button font-bold text-xs"
+                >
+                  Close Capstone
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
