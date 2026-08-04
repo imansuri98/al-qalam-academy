@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import LearnerNavbar from "../components/LearnerNavbar";
 import { createClient } from "../utils/supabase/client";
 
-export default function SignUpPage() {
+function SignUpForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get("redirect") || "/dashboard";
@@ -157,7 +157,7 @@ export default function SignUpPage() {
 
           <div className="relative flex items-center justify-center">
             <div className="border-t border-[#E2E8F0] w-full"></div>
-            <span className="bg-white px-3 text-[10px] uppercase font-bold text-[#64748B] tracking-wider absolute">
+            <span className="bg-[#FFFFFF] px-3 text-[10px] uppercase font-bold text-[#64748B] tracking-wider absolute">
               Or with email
             </span>
           </div>
@@ -244,5 +244,13 @@ export default function SignUpPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function SignUpPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#F8FAF6] flex items-center justify-center text-xs text-[#64748B]">Loading sign up...</div>}>
+      <SignUpForm />
+    </Suspense>
   );
 }
