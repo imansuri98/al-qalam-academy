@@ -1,12 +1,37 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { BookOpen, Flame, Mail, Home, ArrowRight } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { BookOpen, Flame, Mail, Home, ArrowRight, LogOut, User } from "lucide-react";
+import { createClient } from "../utils/supabase/client";
 
 export default function LearnerNavbar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const [user, setUser] = useState<any | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSignOut = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    setUser(null);
+    router.push("/");
+    router.refresh();
+  };
 
   const navLinks = [
     { name: "Home", href: "/", icon: Home },
@@ -60,15 +85,32 @@ export default function LearnerNavbar() {
           })}
         </nav>
 
-        {/* Action Button */}
+        {/* Action Button: Dynamic based on Auth state */}
         <div className="flex items-center gap-3">
-          <Link
-            href="/login"
-            className="px-4 py-2 rounded-xl brand-button font-bold text-xs flex items-center gap-1.5 shadow-xs"
-          >
-            <span>Sign In</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
+          {user ? (
+            <div className="flex items-center gap-3">
+              <span className="hidden sm:flex items-center gap-1.5 text-xs font-bold text-[#0F172A] bg-[#F8FAF6] border border-[#E2E8F0] px-3 py-1.5 rounded-xl">
+                <User className="w-3.5 h-3.5 text-[#C2410C]" />
+                <span className="max-w-[120px] truncate">{user.user_metadata?.full_name || user.email}</span>
+              </span>
+
+              <button
+                onClick={handleSignOut}
+                className="px-3.5 py-2 rounded-xl bg-white border border-[#E2E8F0] hover:border-rose-300 hover:text-rose-600 font-bold text-xs flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer text-[#475569]"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Sign Out</span>
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              className="px-4 py-2 rounded-xl brand-button font-bold text-xs flex items-center gap-1.5 shadow-xs"
+            >
+              <span>Sign In</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          )}
         </div>
       </div>
     </header>
