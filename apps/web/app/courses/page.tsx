@@ -10,6 +10,8 @@ import { createClient } from "../utils/supabase/client";
 export default function CourseCatalogPage() {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [course1Stats, setCourse1Stats] = useState({ modules: 18, lessons: 18 });
+  const [course2Stats, setCourse2Stats] = useState({ modules: 24, lessons: 24 });
 
   useEffect(() => {
     const supabase = createClient();
@@ -20,6 +22,64 @@ export default function CourseCatalogPage() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsAuthenticated(!!session);
     });
+
+    async function loadStats() {
+      // Get course 1 (CLASSICAL_GRAMMAR) id
+      const { data: c1 } = await supabase
+        .from("courses")
+        .select("id")
+        .eq("course_type", "CLASSICAL_GRAMMAR")
+        .single();
+
+      if (c1) {
+        const { data: mods } = await supabase
+          .from("modules")
+          .select("id")
+          .eq("course_id", c1.id);
+        
+        if (mods && mods.length > 0) {
+          const modIds = mods.map((m) => m.id);
+          const { data: less } = await supabase
+            .from("lessons")
+            .select("id")
+            .in("module_id", modIds);
+
+          setCourse1Stats({
+            modules: mods.length,
+            lessons: less ? less.length : 0,
+          });
+        }
+      }
+
+      // Get course 2 (INFORMAL_FUSHA) id
+      const { data: c2 } = await supabase
+        .from("courses")
+        .select("id")
+        .eq("course_type", "INFORMAL_FUSHA")
+        .single();
+
+      if (c2) {
+        const { data: mods } = await supabase
+          .from("modules")
+          .select("id")
+          .eq("course_id", c2.id);
+        
+        if (mods && mods.length > 0) {
+          const modIds = mods.map((m) => m.id);
+          const { data: less } = await supabase
+            .from("lessons")
+            .select("id")
+            .in("module_id", modIds);
+
+          setCourse2Stats({
+            modules: mods.length,
+            lessons: less ? less.length : 0,
+          });
+        }
+      }
+    }
+
+    loadStats();
 
     return () => subscription.unsubscribe();
   }, []);
@@ -79,7 +139,7 @@ export default function CourseCatalogPage() {
                 <ul className="space-y-1.5 text-[#475569]">
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-[#C2410C] shrink-0" />
-                    <span>18 Active Modules with Level → Module → Lesson tree</span>
+                    <span>{course1Stats.modules} Active Modules with Level → Module → Lesson tree</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-[#C2410C] shrink-0" />
@@ -94,7 +154,7 @@ export default function CourseCatalogPage() {
             </div>
 
             <div className="pt-4 border-t border-[#E2E8F0] flex items-center justify-between">
-              <span className="text-xs font-mono font-bold text-[#64748B]">18 Modules • 5-Q Units</span>
+              <span className="text-xs font-mono font-bold text-[#64748B]">{course1Stats.modules} Modules • {course1Stats.lessons} Lessons</span>
 
               <button
                 onClick={(e) => handleStartCourse(e, "/courses/course-1")}
@@ -144,7 +204,7 @@ export default function CourseCatalogPage() {
             </div>
 
             <div className="pt-4 border-t border-[#E2E8F0] flex items-center justify-between">
-              <span className="text-xs font-mono font-bold text-[#64748B]">24 Dialogues • Native Audio</span>
+              <span className="text-xs font-mono font-bold text-[#64748B]">{course2Stats.modules} Modules • {course2Stats.lessons} Lessons</span>
 
               <button
                 onClick={(e) => handleStartCourse(e, "/courses/course-2")}

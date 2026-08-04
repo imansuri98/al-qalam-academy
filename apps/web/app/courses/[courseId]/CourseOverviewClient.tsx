@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -18,6 +18,7 @@ import {
   FileText,
   X,
   Sparkles,
+  Loader2,
 } from "lucide-react";
 import {
   COURSE_1_LEVELS,
@@ -119,9 +120,93 @@ export default function CourseOverviewClient({ courseId }: CourseOverviewClientP
     setExpandedModules((prev) => ({ ...prev, [modId]: !prev[modId] }));
   };
 
-  const course1Levels = COURSE_1_LEVELS;
-  const course2Levels = COURSE_2_LEVELS;
-  const currentLevels = isCourse1 ? course1Levels : course2Levels;
+  const [dbLevels, setDbLevels] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    async function loadData() {
+      // 1. Get course ID
+      const courseType = isCourse1 ? "CLASSICAL_GRAMMAR" : "INFORMAL_FUSHA";
+      const { data: courseData } = await supabase
+        .from("courses")
+        .select("id")
+        .eq("course_type", courseType)
+        .single();
+
+      if (!courseData) {
+        setLoading(false);
+        return;
+      }
+
+      // 2. Fetch all modules for this course
+      const { data: modulesData } = await supabase
+        .from("modules")
+        .select("*")
+        .eq("course_id", courseData.id)
+        .order("order_index", { ascending: true });
+
+      if (!modulesData) {
+        setLoading(false);
+        return;
+      }
+
+      // 3. Fetch all lessons
+      const { data: lessonsData } = await supabase
+        .from("lessons")
+        .select("*")
+        .order("order_index", { ascending: true });
+
+      // 4. Map lessons to modules
+      const modulesWithLessons = modulesData.map((mod) => {
+        const modLessons = (lessonsData || [])
+          .filter((les) => les.module_id === mod.id)
+          .map((les) => ({
+            id: les.id,
+            titleEn: les.titleEn,
+            titleAr: les.titleAr,
+            durationMins: 15,
+          }));
+
+        return {
+          id: mod.id,
+          titleEn: mod.titleEn,
+          lessons: modLessons,
+        };
+      });
+
+      // 5. Group modules into levels dynamically
+      const levelsGrouped: any[] = [];
+      const modsPerLevel = isCourse1 ? 6 : 8;
+      const totalLevels = Math.ceil(modulesWithLessons.length / modsPerLevel) || 1;
+
+      for (let i = 0; i < totalLevels; i++) {
+        const startIdx = i * modsPerLevel;
+        const endIdx = startIdx + modsPerLevel;
+        const levelMods = modulesWithLessons.slice(startIdx, endIdx);
+
+        if (levelMods.length > 0) {
+          levelsGrouped.push({
+            id: `lvl-${i + 1}`,
+            titleEn: `Level ${i + 1}: ${
+              i === 0
+                ? "Foundations"
+                : i === 1
+                ? "Intermediate Mastery"
+                : "Advanced Master Class"
+            }`,
+            modules: levelMods,
+          });
+        }
+      }
+
+      setDbLevels(levelsGrouped);
+      setLoading(false);
+    }
+
+    loadData();
+  }, [courseId, isCourse1]);
 
   return (
     <div className="min-h-screen bg-[#F8FAF6] text-[#0F172A] font-sans antialiased pb-24">
@@ -148,9 +233,7 @@ export default function CourseOverviewClient({ courseId }: CourseOverviewClientP
               <h1 className="text-3xl font-extrabold text-[#0F172A]">
                 {isCourse1 ? "Classical Arabic Grammar (Nahw & Sarf)" : "Spoken Arabic"}
               </h1>
-              <span className="font-arabic text-2xl font-bold text-[#090D16] block dir-rtl" dir="rtl">
-                {isCourse1 ? "النَّحْوُ وَالصَّرْفُ الْكَلَاسِيكِيُّ" : "الْعَرَبِيَّةُ الْمُعَاصِرَةُ لِلْحَيَاةِ الْيَوْمِيَّةِ"}
-              </span>
+
             </div>
 
             <a
@@ -204,105 +287,107 @@ export default function CourseOverviewClient({ courseId }: CourseOverviewClientP
         </div>
 
         <div className="space-y-4">
-          {currentLevels.map((lvl, lvlIdx) => {
-            const isLvlExpanded = !!expandedLevels[lvl.id];
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-12 gap-3">
+              <Loader2 className="w-6 h-6 text-[#C2410C] animate-spin" />
+              <span className="text-xs font-bold text-[#64748B]">Loading curriculum tree...</span>
+            </div>
+          ) : dbLevels.length === 0 ? (
+            <div className="p-8 text-center border border-dashed border-[#E2E8F0] rounded-2xl text-xs text-[#64748B] font-bold bg-white">
+              No levels or modules have been added to this course yet.
+            </div>
+          ) : (
+            dbLevels.map((lvl, lvlIdx) => {
+              const isLvlExpanded = !!expandedLevels[lvl.id];
 
-            return (
-              <div key={lvl.id} className="pro-card rounded-2xl bg-white border border-[#E2E8F0] shadow-xs overflow-hidden transition-all">
-                <div
-                  onClick={() => toggleLevel(lvl.id)}
-                  className="p-5 bg-[#F8FAF6] hover:bg-white cursor-pointer flex items-center justify-between border-b border-[#E2E8F0] transition-colors select-none"
-                >
-                  <div className="flex items-center gap-4">
-                    <span className="w-7 h-7 rounded-lg bg-white border border-[#E2E8F0] font-bold text-xs flex items-center justify-center text-[#0F172A] shadow-2xs">
-                      {isLvlExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                    </span>
-
-                    <div className="space-y-0.5">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded border border-[#E2E8F0] bg-white text-[#0F172A]">
-                          Level {lvlIdx + 1}
-                        </span>
-                        <h3 className="text-base font-extrabold text-[#0F172A]">{lvl.titleEn}</h3>
-                      </div>
-                      <span className="font-arabic text-lg text-[#090D16] font-bold block dir-rtl" dir="rtl">
-                        {lvl.titleAr}
+              return (
+                <div key={lvl.id} className="pro-card rounded-2xl bg-white border border-[#E2E8F0] shadow-xs overflow-hidden transition-all">
+                  <div
+                    onClick={() => toggleLevel(lvl.id)}
+                    className="p-5 bg-[#F8FAF6] hover:bg-white cursor-pointer flex items-center justify-between border-b border-[#E2E8F0] transition-colors select-none"
+                  >
+                    <div className="flex items-center gap-4">
+                      <span className="w-7 h-7 rounded-lg bg-white border border-[#E2E8F0] font-bold text-xs flex items-center justify-center text-[#0F172A] shadow-2xs">
+                        {isLvlExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                       </span>
-                    </div>
-                  </div>
 
-                  <span className="text-xs font-bold text-[#64748B] font-mono">
-                    {lvl.modules.length} Modules
-                  </span>
-                </div>
-
-                {isLvlExpanded && (
-                  <div className="p-6 space-y-4 bg-white border-t border-[#E2E8F0]">
-                    {lvl.modules.map((mod, modIdx) => {
-                      const isModExpanded = !!expandedModules[mod.id];
-
-                      return (
-                        <div key={mod.id} className="border border-[#E2E8F0] rounded-xl overflow-hidden bg-[#F8FAF6]/50">
-                          <div
-                            onClick={() => toggleModule(mod.id)}
-                            className="p-4 bg-white hover:bg-[#F8FAF6] cursor-pointer flex items-center justify-between border-b border-[#E2E8F0] transition-colors select-none"
-                          >
-                            <div className="flex items-center gap-3">
-                              <span className="w-6 h-6 rounded bg-[#F8FAF6] border border-[#E2E8F0] font-bold text-xs flex items-center justify-center text-[#64748B]">
-                                {isModExpanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-                              </span>
-
-                              <div>
-                                <span className="text-[10px] font-bold text-[#C2410C] uppercase tracking-wider block">
-                                  Module {modIdx + 1}
-                                </span>
-                                <h4 className="text-sm font-bold text-[#0F172A]">{mod.titleEn}</h4>
-                                <span className="font-arabic text-base text-[#090D16] font-bold block dir-rtl" dir="rtl">
-                                  {mod.titleAr}
-                                </span>
-                              </div>
-                            </div>
-
-                            <span className="text-xs text-[#64748B] font-medium">
-                              {mod.lessons.length} Lessons
-                            </span>
-                          </div>
-
-                          {isModExpanded && (
-                            <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3 bg-[#F8FAF6]/30">
-                              {mod.lessons.map((les, lesIdx) => (
-                                <a
-                                  key={les.id}
-                                  href={`/lessons/${les.id}`}
-                                  onClick={(e) => handleLessonClick(e, les.id)}
-                                  className="p-4 rounded-xl bg-white border border-[#E2E8F0] hover:border-[#C2410C] hover:shadow-xs transition-all flex items-center justify-between group cursor-pointer"
-                                >
-                                  <div className="space-y-1">
-                                    <span className="text-[10px] font-mono text-[#64748B]">
-                                      Lesson {lesIdx + 1} • {les.durationMins || 15} mins
-                                    </span>
-                                    <h5 className="text-xs font-bold text-[#0F172A] group-hover:text-[#C2410C] transition-colors">
-                                      {les.titleEn}
-                                    </h5>
-                                    <span className="font-arabic text-sm text-[#090D16] font-bold block dir-rtl" dir="rtl">
-                                      {les.titleAr}
-                                    </span>
-                                  </div>
-                                  <span className="w-8 h-8 rounded-lg bg-[#F8FAF6] border border-[#E2E8F0] group-hover:bg-[#C2410C] group-hover:text-white flex items-center justify-center text-[#C2410C] transition-colors shrink-0">
-                                    <Play className="w-4 h-4 ml-0.5" />
-                                  </span>
-                                </a>
-                              ))}
-                            </div>
-                          )}
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded border border-[#E2E8F0] bg-white text-[#0F172A]">
+                            Level {lvlIdx + 1}
+                          </span>
+                          <h3 className="text-base font-extrabold text-[#0F172A]">{lvl.titleEn}</h3>
                         </div>
-                      );
-                    })}
+                      </div>
+                    </div>
+
+                    <span className="text-xs font-bold text-[#64748B] font-mono">
+                      {lvl.modules.length} Modules
+                    </span>
                   </div>
-                )}
-              </div>
-            );
-          })}
+
+                  {isLvlExpanded && (
+                    <div className="p-6 space-y-4 bg-white border-t border-[#E2E8F0]">
+                      {lvl.modules.map((mod, modIdx) => {
+                        const isModExpanded = !!expandedModules[mod.id];
+
+                        return (
+                          <div key={mod.id} className="border border-[#E2E8F0] rounded-xl overflow-hidden bg-[#F8FAF6]/50">
+                            <div
+                              onClick={() => toggleModule(mod.id)}
+                              className="p-4 bg-white hover:bg-[#F8FAF6] cursor-pointer flex items-center justify-between border-b border-[#E2E8F0] transition-colors select-none"
+                            >
+                              <div className="flex items-center gap-3">
+                                <span className="w-6 h-6 rounded bg-[#F8FAF6] border border-[#E2E8F0] font-bold text-xs flex items-center justify-center text-[#64748B]">
+                                  {isModExpanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                                </span>
+
+                                <div>
+                                  <span className="text-[10px] font-bold text-[#C2410C] uppercase tracking-wider block">
+                                    Module {modIdx + 1}
+                                  </span>
+                                  <h4 className="text-sm font-bold text-[#0F172A]">{mod.titleEn}</h4>
+                                </div>
+                              </div>
+
+                              <span className="text-xs text-[#64748B] font-medium">
+                                {mod.lessons.length} Lessons
+                              </span>
+                            </div>
+
+                            {isModExpanded && (
+                              <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3 bg-[#F8FAF6]/30">
+                                {mod.lessons.map((les, lesIdx) => (
+                                  <a
+                                    key={les.id}
+                                    href={`/lessons/${les.id}`}
+                                    onClick={(e) => handleLessonClick(e, les.id)}
+                                    className="p-4 rounded-xl bg-white border border-[#E2E8F0] hover:border-[#C2410C] hover:shadow-xs transition-all flex items-center justify-between group cursor-pointer"
+                                  >
+                                    <div className="space-y-1">
+                                      <span className="text-[10px] font-mono text-[#64748B]">
+                                        Lesson {lesIdx + 1} • {les.durationMins || 15} mins
+                                      </span>
+                                      <h5 className="text-xs font-bold text-[#0F172A] group-hover:text-[#C2410C] transition-colors">
+                                        {les.titleEn}
+                                      </h5>
+                                    </div>
+                                    <span className="w-8 h-8 rounded-lg bg-[#F8FAF6] border border-[#E2E8F0] group-hover:bg-[#C2410C] group-hover:text-white flex items-center justify-center text-[#C2410C] transition-colors shrink-0">
+                                      <Play className="w-4 h-4 ml-0.5" />
+                                    </span>
+                                  </a>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
         </div>
       </section>
 
