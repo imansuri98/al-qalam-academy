@@ -1,8 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import LearnerNavbar from "../components/LearnerNavbar";
+import { createClient } from "../utils/supabase/client";
 import {
   Flame,
   BookOpen,
@@ -12,50 +14,229 @@ import {
   Lock,
   Play,
   GraduationCap,
+  Loader2,
 } from "lucide-react";
 
+interface LearnerStats {
+  name: string;
+  streakDays: number;
+  completedLessons: number;
+  totalLessons: number;
+  progressPercent: number;
+}
+
 export default function LearnerDashboardPage() {
-  const learnerStats = {
-    name: "Abdullah Omar",
-    streakDays: 7,
-    completedLessons: 14,
-    totalLessons: 18,
-    progressPercent: 77,
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [learnerStats, setLearnerStats] = useState<LearnerStats>({
+    name: "",
+    streakDays: 0,
+    completedLessons: 0,
+    totalLessons: 0,
+    progressPercent: 0,
+  });
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    async function loadDashboardData() {
+      // 1. Get authenticated user session
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session) {
+        router.push("/login?redirect=/dashboard");
+        return;
+      }
+
+      const user = session.user;
+
+      // Determine display name from user metadata or email
+      const displayName =
+        user.user_metadata?.full_name ||
+        user.user_metadata?.name ||
+        user.email?.split("@")[0] ||
+        "Learner";
+
+      // 2. Fetch total number of lessons in the system
+      const { data: allLessons, error: lessonsError } = await supabase
+        .from("lessons")
+        .select("id");
+
+      const totalLessons =
+        !lessonsError && allLessons ? allLessons.length : 0;
+
+      // 3. Fetch user's completed progress records
+      const { data: progressRecords, error: progressError } = await supabase
+        .from("user_progress")
+        .select("id, lesson_id, completed_at")
+        .eq("user_id", user.id);
+
+      const completedLessons =
+        !progressError && progressRecords ? progressRecords.length : 0;
+
+      // 4. Calculate progress percentage
+      const progressPercent =
+        totalLessons > 0
+          ? Math.round((completedLessons / totalLessons) * 100)
+          : 0;
+
+      // 5. Calculate streak (count consecutive days with progress, ending today)
+      let streakDays = 0;
+      if (!progressError && progressRecords && progressRecords.length > 0) {
+        const completionDates = progressRecords
+          .map((r: any) => {
+            const d = new Date(r.completed_at);
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+          })
+          .filter((v: string, i: number, a: string[]) => a.indexOf(v) === i) // unique dates
+          .sort()
+          .reverse(); // most recent first
+
+        const today = new Date();
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+
+        // Check if the most recent activity was today or yesterday
+        if (completionDates.length > 0) {
+          const mostRecent = new Date(completionDates[0]);
+          const diffDays = Math.floor(
+            (today.getTime() - mostRecent.getTime()) / (1000 * 60 * 60 * 24)
+          );
+
+          if (diffDays <= 1) {
+            // Count consecutive days backwards
+            let checkDate = new Date(completionDates[0]);
+            for (const dateStr of completionDates) {
+              const checkStr = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, "0")}-${String(checkDate.getDate()).padStart(2, "0")}`;
+              if (dateStr === checkStr) {
+                streakDays++;
+                checkDate.setDate(checkDate.getDate() - 1);
+              } else {
+                break;
+              }
+            }
+          }
+        }
+      }
+
+      setLearnerStats({
+        name: displayName,
+        streakDays,
+        completedLessons,
+        totalLessons,
+        progressPercent,
+      });
+
+      setLoading(false);
+    }
+
+    loadDashboardData();
+
+    // Listen for auth changes (e.g., sign out)
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        router.push("/login?redirect=/dashboard");
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [router]);
+
+  // Determine medal status based on real progress
+  const getMedalStatus = () => {
+    const percent = learnerStats.progressPercent;
+    // Bronze = completed Level 1 (~33%), Silver = Level 2 (~66%), Gold = Level 3 (100%)
+    const bronzeUnlocked = percent >= 33;
+    const silverUnlocked = percent >= 66;
+    const goldUnlocked = percent >= 100;
+
+    return [
+      {
+        id: "medal-1",
+        tier: "BRONZE",
+        icon: Award,
+        title: "Bronze Medal: Level 1 Graduation",
+        arabicTitle:
+          "الْمِيدَالِيَّةُ الْبُرُونْزِيَّةُ: الْمُسْتَوَى الأَوَّلُ",
+        description:
+          "Mastered Level 1 Beginner Classical Grammar (Mubtada', Khabar & Harf Jarr)",
+        status: bronzeUnlocked ? "UNLOCKED" : "LOCKED",
+        unlockedDate: bronzeUnlocked
+          ? "Earned"
+          : "Unlocks after Level 1 Graduation",
+      },
+      {
+        id: "medal-2",
+        tier: "SILVER",
+        icon: Award,
+        title: "Silver Medal: Level 2 Graduation",
+        arabicTitle:
+          "الْمِيدَالِيَّةُ الْفِضِّيَّةُ: الْمُسْتَوَى الثَّانِي",
+        description:
+          "Mastered Level 2 Verbal Sentences, Kana & Inna Actions",
+        status: silverUnlocked ? "UNLOCKED" : "LOCKED",
+        unlockedDate: silverUnlocked
+          ? "Earned"
+          : "Unlocks after Level 2 Graduation",
+      },
+      {
+        id: "medal-3",
+        tier: "GOLD",
+        icon: Award,
+        title: "Gold Medal: Level 3 Advanced Master",
+        arabicTitle:
+          "الْمِيدَالِيَّةُ الذَّهَبِيَّةُ: الْمُسْتَوَى الثَّالِثُ",
+        description:
+          "Graduated Complete Advanced Irab Parsing & Classical Balagha Track",
+        status: goldUnlocked ? "UNLOCKED" : "LOCKED",
+        unlockedDate: goldUnlocked
+          ? "Earned"
+          : "Unlocks after Level 3 Graduation",
+      },
+    ];
   };
 
-  // Monochromatic Progressive Medal Badges (Bronze -> Silver -> Gold)
-  const levelMedalBadges = [
-    {
-      id: "medal-1",
-      tier: "BRONZE",
-      icon: Award,
-      title: "Bronze Medal: Level 1 Graduation",
-      arabicTitle: "الْمِيدَالِيَّةُ الْبُرُونْزِيَّةُ: الْمُسْتَوَى الأَوَّلُ",
-      description: "Mastered Level 1 Beginner Classical Grammar (Mubtada', Khabar & Harf Jarr)",
-      status: "UNLOCKED",
-      unlockedDate: "3 days ago",
-    },
-    {
-      id: "medal-2",
-      tier: "SILVER",
-      icon: Award,
-      title: "Silver Medal: Level 2 Graduation",
-      arabicTitle: "الْمِيدَالِيَّةُ الْفِضِّيَّةُ: الْمُسْتَوَى الثَّانِي",
-      description: "Mastered Level 2 Verbal Sentences, Kana & Inna Actions",
-      status: "UNLOCKED",
-      unlockedDate: "Yesterday",
-    },
-    {
-      id: "medal-3",
-      tier: "GOLD",
-      icon: Award,
-      title: "Gold Medal: Level 3 Advanced Master",
-      arabicTitle: "الْمِيدَالِيَّةُ الذَّهَبِيَّةُ: الْمُسْتَوَى الثَّالِثُ",
-      description: "Graduated Complete Advanced Irab Parsing & Classical Balagha Track",
-      status: "LOCKED",
-      unlockedDate: "Unlocks after Level 3 Graduation",
-    },
-  ];
+  const levelMedalBadges = getMedalStatus();
+
+  // Determine current level label
+  const currentLevel =
+    learnerStats.progressPercent >= 100
+      ? "Level 3 Graduate"
+      : learnerStats.progressPercent >= 66
+        ? "Level 2 Graduate"
+        : learnerStats.progressPercent >= 33
+          ? "Level 1 Graduate"
+          : "Getting Started";
+
+  // Earned medals summary
+  const earnedMedals = levelMedalBadges.filter(
+    (m) => m.status === "UNLOCKED"
+  );
+  const nextMedal = levelMedalBadges.find((m) => m.status === "LOCKED");
+  const medalSummary =
+    earnedMedals.length === 0
+      ? "No medals yet (Next: Bronze)"
+      : earnedMedals.map((m) => m.tier.charAt(0) + m.tier.slice(1).toLowerCase()).join(" • ") +
+        (nextMedal
+          ? ` (Next: ${nextMedal.tier.charAt(0) + nextMedal.tier.slice(1).toLowerCase()})`
+          : " — All Earned! 🎉");
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#F8FAF6] text-[#0F172A] font-sans antialiased">
+        <LearnerNavbar />
+        <div className="flex flex-col items-center justify-center pt-32 gap-4">
+          <Loader2 className="w-8 h-8 text-[#C2410C] animate-spin" />
+          <span className="text-sm font-bold text-[#475569]">
+            Loading your dashboard...
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F8FAF6] text-[#0F172A] font-sans antialiased pb-24">
@@ -71,14 +252,20 @@ export default function LearnerDashboardPage() {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h1 className="text-xl font-extrabold text-[#0F172A]">Welcome back, {learnerStats.name}!</h1>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded border border-[#E2E8F0] bg-[#F8FAF6] text-[#0F172A] flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3 text-[#C2410C]" />
-                    <span>Level 1 Graduate</span>
-                  </span>
+                  <h1 className="text-xl font-extrabold text-[#0F172A]">
+                    Welcome back, {learnerStats.name}!
+                  </h1>
+                  {learnerStats.progressPercent >= 33 && (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded border border-[#E2E8F0] bg-[#F8FAF6] text-[#0F172A] flex items-center gap-1">
+                      <CheckCircle2 className="w-3 h-3 text-[#C2410C]" />
+                      <span>{currentLevel}</span>
+                    </span>
+                  )}
                 </div>
                 <p className="text-xs text-[#475569] mt-1 font-medium">
-                  Complete each Level to advance from Bronze 🥉 to Silver 🥈 to Gold 🥇!
+                  {learnerStats.completedLessons === 0
+                    ? "Start your first lesson to begin earning Bronze 🥉, Silver 🥈, and Gold 🥇 medals!"
+                    : "Complete each Level to advance from Bronze 🥉 to Silver 🥈 to Gold 🥇!"}
                 </p>
               </div>
             </div>
@@ -88,9 +275,15 @@ export default function LearnerDashboardPage() {
               <Flame className="w-6 h-6 text-[#C2410C]" />
               <div>
                 <span className="text-lg font-extrabold text-[#0F172A] block">
-                  {learnerStats.streakDays} Day Streak!
+                  {learnerStats.streakDays > 0
+                    ? `${learnerStats.streakDays} Day Streak!`
+                    : "No Streak Yet"}
                 </span>
-                <span className="text-[10px] text-[#64748B] font-extrabold uppercase tracking-wider">Active Daily Streak</span>
+                <span className="text-[10px] text-[#64748B] font-extrabold uppercase tracking-wider">
+                  {learnerStats.streakDays > 0
+                    ? "Active Daily Streak"
+                    : "Complete a lesson to start!"}
+                </span>
               </div>
             </div>
           </div>
@@ -103,13 +296,18 @@ export default function LearnerDashboardPage() {
                 <span>Course 1 Completion Progress</span>
               </span>
               <div className="text-2xl font-extrabold text-[#0F172A]">
-                {learnerStats.completedLessons} / {learnerStats.totalLessons} Lessons Completed
+                {learnerStats.completedLessons} /{" "}
+                {learnerStats.totalLessons} Lessons Completed
               </div>
               <div className="w-full bg-[#E2E8F0] h-2 rounded-full overflow-hidden mt-3">
-                <div className="bg-[#C2410C] h-full" style={{ width: `${learnerStats.progressPercent}%` }}></div>
+                <div
+                  className="bg-[#C2410C] h-full transition-all duration-500"
+                  style={{ width: `${learnerStats.progressPercent}%` }}
+                ></div>
               </div>
               <span className="text-xs text-[#475569] font-bold block pt-1">
-                {learnerStats.progressPercent}% Completed of Classical Grammar Track
+                {learnerStats.progressPercent}% Completed of Classical
+                Grammar Track
               </span>
             </div>
 
@@ -119,7 +317,7 @@ export default function LearnerDashboardPage() {
                 <span>Earned Level Medals</span>
               </span>
               <div className="text-2xl font-extrabold text-[#0F172A]">
-                Bronze • Silver (Next: Gold)
+                {medalSummary}
               </div>
               <span className="text-xs text-[#475569] font-bold block pt-1">
                 Progressive Level Graduation Medals
@@ -136,16 +334,29 @@ export default function LearnerDashboardPage() {
           <div className="space-y-2">
             <span className="text-[10px] font-bold px-2.5 py-0.5 rounded brand-badge inline-flex items-center gap-1">
               <Play className="w-3 h-3 text-[#C2410C]" />
-              <span>Recommended Next Step</span>
+              <span>
+                {learnerStats.completedLessons === 0
+                  ? "Start Your Journey"
+                  : "Recommended Next Step"}
+              </span>
             </span>
             <h2 className="text-xl font-extrabold text-[#0F172A]">
-              Lesson 2: Prepositions (Harf Jarr) & Genitive Nouns
+              {learnerStats.completedLessons === 0
+                ? "Begin Course 1: Classical Arabic Grammar"
+                : "Continue Your Studies"}
             </h2>
-            <span className="font-arabic text-lg font-bold text-[#C2410C] block dir-rtl" dir="rtl">
-              حُرُوفُ الْجَرِّ وَأَحْكَامُهَا
+            <span
+              className="font-arabic text-lg font-bold text-[#C2410C] block dir-rtl"
+              dir="rtl"
+            >
+              {learnerStats.completedLessons === 0
+                ? "ابْدَأْ رِحْلَتَكَ فِي تَعَلُّمِ الْعَرَبِيَّةِ"
+                : "وَاصِلْ دُرُوسَكَ فِي النَّحْوِ الْعَرَبِيِّ"}
             </span>
             <p className="text-xs text-[#475569]">
-              Course 1 • Level 1 • Module 2 (Est. 18 mins with Native Audio)
+              {learnerStats.completedLessons === 0
+                ? "Course 1 • Level 1 • Start with Module 1 (Est. 15 mins with Native Audio)"
+                : `Course 1 • ${learnerStats.completedLessons} lessons done • Pick up where you left off`}
             </p>
           </div>
 
@@ -153,7 +364,11 @@ export default function LearnerDashboardPage() {
             href="/courses/course-1"
             className="px-6 py-3 rounded-xl brand-button font-bold text-xs shadow-2xs text-center shrink-0 flex items-center justify-center gap-2"
           >
-            <span>Continue Course 1</span>
+            <span>
+              {learnerStats.completedLessons === 0
+                ? "Start Course 1"
+                : "Continue Course 1"}
+            </span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
@@ -165,7 +380,9 @@ export default function LearnerDashboardPage() {
               <GraduationCap className="w-4 h-4 text-[#C2410C]" />
               <span>Progressive Level Graduation Medals</span>
             </h3>
-            <span className="text-xs font-mono text-[#64748B]">Earned as you complete Levels</span>
+            <span className="text-xs font-mono text-[#64748B]">
+              Earned as you complete Levels
+            </span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -176,7 +393,9 @@ export default function LearnerDashboardPage() {
                 <div
                   key={medal.id}
                   className={`pro-card rounded-xl p-5 space-y-3 ${
-                    medal.status === "UNLOCKED" ? "bg-white" : "bg-[#F8FAF6] opacity-70"
+                    medal.status === "UNLOCKED"
+                      ? "bg-white"
+                      : "bg-[#F8FAF6] opacity-70"
                   }`}
                 >
                   <div className="flex items-center justify-between">
@@ -189,19 +408,26 @@ export default function LearnerDashboardPage() {
                   </div>
 
                   <div>
-                    <span className="font-arabic text-sm font-bold block dir-rtl text-[#090D16]" dir="rtl">
+                    <span
+                      className="font-arabic text-sm font-bold block dir-rtl text-[#090D16]"
+                      dir="rtl"
+                    >
                       {medal.arabicTitle}
                     </span>
-                    <h4 className="font-bold text-[#0F172A] text-sm mt-0.5">{medal.title}</h4>
+                    <h4 className="font-bold text-[#0F172A] text-sm mt-0.5">
+                      {medal.title}
+                    </h4>
                   </div>
 
-                  <p className="text-xs leading-relaxed text-[#475569]">{medal.description}</p>
+                  <p className="text-xs leading-relaxed text-[#475569]">
+                    {medal.description}
+                  </p>
 
                   <div className="pt-2 border-t border-[#E2E8F0] text-[11px] font-bold">
                     {medal.status === "UNLOCKED" ? (
                       <span className="text-[#C2410C] inline-flex items-center gap-1">
                         <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>Unlocked {medal.unlockedDate}</span>
+                        <span>{medal.unlockedDate}</span>
                       </span>
                     ) : (
                       <span className="text-[#64748B] inline-flex items-center gap-1">
