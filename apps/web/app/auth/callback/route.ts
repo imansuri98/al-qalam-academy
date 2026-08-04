@@ -3,9 +3,15 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
+  const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
   const next = searchParams.get("next") ?? "/dashboard";
+
+  // Behind Nginx reverse proxy, request.url gives http://localhost:3002
+  // Use forwarded headers to get the real origin
+  const forwardedHost = request.headers.get("x-forwarded-host") || request.headers.get("host") || "";
+  const forwardedProto = request.headers.get("x-forwarded-proto") || "https";
+  const origin = `${forwardedProto}://${forwardedHost}`;
 
   if (code) {
     const cookieStore = cookies();
