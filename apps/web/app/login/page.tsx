@@ -2,12 +2,15 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import LearnerNavbar from "../components/LearnerNavbar";
 import { createClient } from "../utils/supabase/client";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectUrl = searchParams.get("redirect") || "/dashboard";
+
   const [email, setEmail] = useState("student@alarabi.edu");
   const [password, setPassword] = useState("password123");
   const [loading, setLoading] = useState(false);
@@ -48,7 +51,7 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/dashboard");
+    router.push(redirectUrl);
   };
 
   const handleOAuthLogin = async (provider: "google" | "apple") => {

@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { createClient } from "../../utils/supabase/client";
 import {
   COURSE_1_LEVELS,
   COURSE_2_LEVELS,
@@ -257,8 +258,18 @@ function FormattedText({ text }: { text: string }) {
 // ─────────────────────────────────────────────────────────────────────────────
 export default function FullLessonPage() {
   const params = useParams();
+  const router = useRouter();
   const lessonId = (params?.lessonId as string) || "";
   const context = findLessonAndContext(lessonId);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        router.push(`/login?redirect=${encodeURIComponent(`/lessons/${lessonId}`)}`);
+      }
+    });
+  }, [lessonId, router]);
 
   const [activeTab, setActiveTab] = useState<"NOTES" | "EXERCISES" | "CANVAS">("NOTES");
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);

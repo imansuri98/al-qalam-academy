@@ -1,21 +1,41 @@
-import React from "react";
-import Link from "next/link";
-import { Metadata } from "next";
-import LearnerNavbar from "../components/LearnerNavbar";
-import { BookOpen, MessageSquare, ArrowRight, CheckCircle2 } from "lucide-react";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Curriculum Catalog | Al-Arabi Academy",
-  description:
-    "Explore our 2 dedicated Arabic learning tracks: Classical Arabic Grammar (Nahw & Sarf) and Spoken Conversational Fusha.",
-  openGraph: {
-    title: "Curriculum Catalog | Al-Arabi Academy",
-    description:
-      "Explore 2 dedicated learning tracks: Classical Grammar and Spoken Fusha.",
-  },
-};
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import LearnerNavbar from "../components/LearnerNavbar";
+import { BookOpen, MessageSquare, ArrowRight, CheckCircle2, Lock } from "lucide-react";
+import { createClient } from "../utils/supabase/client";
 
 export default function CourseCatalogPage() {
+  const router = useRouter();
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsAuthenticated(!!session);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleStartCourse = async (e: React.MouseEvent, coursePath: string) => {
+    e.preventDefault();
+    const supabase = createClient();
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (!session) {
+      router.push(`/login?redirect=${encodeURIComponent(coursePath)}`);
+    } else {
+      router.push(coursePath);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#F8FAF6] text-[#0F172A] font-sans antialiased pb-24">
       <LearnerNavbar />
@@ -76,13 +96,13 @@ export default function CourseCatalogPage() {
             <div className="pt-4 border-t border-[#E2E8F0] flex items-center justify-between">
               <span className="text-xs font-mono font-bold text-[#64748B]">18 Modules • 5-Q Units</span>
 
-              <Link
-                href="/courses/course-1"
-                className="px-5 py-2.5 rounded-xl brand-button font-bold text-xs flex items-center gap-1.5 shadow-2xs"
+              <button
+                onClick={(e) => handleStartCourse(e, "/courses/course-1")}
+                className="px-5 py-2.5 rounded-xl brand-button font-bold text-xs flex items-center gap-1.5 shadow-2xs cursor-pointer"
               >
                 <span>Start Course 1</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
+                {isAuthenticated === false ? <Lock className="w-3.5 h-3.5" /> : <ArrowRight className="w-3.5 h-3.5" />}
+              </button>
             </div>
           </div>
 
@@ -126,13 +146,13 @@ export default function CourseCatalogPage() {
             <div className="pt-4 border-t border-[#E2E8F0] flex items-center justify-between">
               <span className="text-xs font-mono font-bold text-[#64748B]">24 Dialogues • Native Audio</span>
 
-              <Link
-                href="/courses/course-2"
-                className="px-5 py-2.5 rounded-xl brand-button font-bold text-xs flex items-center gap-1.5 shadow-2xs"
+              <button
+                onClick={(e) => handleStartCourse(e, "/courses/course-2")}
+                className="px-5 py-2.5 rounded-xl brand-button font-bold text-xs flex items-center gap-1.5 shadow-2xs cursor-pointer"
               >
                 <span>Start Course 2</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
+                {isAuthenticated === false ? <Lock className="w-3.5 h-3.5" /> : <ArrowRight className="w-3.5 h-3.5" />}
+              </button>
             </div>
           </div>
         </div>

@@ -2,7 +2,9 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { createClient } from "../../utils/supabase/client";
 import {
   Clock,
   GraduationCap,
@@ -88,6 +90,20 @@ interface CourseOverviewClientProps {
 
 export default function CourseOverviewClient({ courseId }: CourseOverviewClientProps) {
   const isCourse1 = courseId === "course-1";
+  const router = useRouter();
+
+  const handleLessonClick = async (e: React.MouseEvent, lesId: string) => {
+    e.preventDefault();
+    const supabase = createClient();
+    const { data: { session } } = await supabase.auth.getSession();
+    const targetUrl = `/lessons/${lesId}`;
+
+    if (!session) {
+      router.push(`/login?redirect=${encodeURIComponent(targetUrl)}`);
+    } else {
+      router.push(targetUrl);
+    }
+  };
 
   const [expandedLevels, setExpandedLevels] = useState<Record<string, boolean>>({});
   const [expandedModules, setExpandedModules] = useState<Record<string, boolean>>({});
@@ -307,10 +323,11 @@ export default function CourseOverviewClient({ courseId }: CourseOverviewClientP
                           {isModExpanded && (
                             <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3 bg-[#F8FAF6]/30">
                               {mod.lessons.map((les, lesIdx) => (
-                                <Link
+                                <a
                                   key={les.id}
                                   href={`/lessons/${les.id}`}
-                                  className="p-4 rounded-xl bg-white border border-[#E2E8F0] hover:border-[#C2410C] hover:shadow-xs transition-all flex items-center justify-between group"
+                                  onClick={(e) => handleLessonClick(e, les.id)}
+                                  className="p-4 rounded-xl bg-white border border-[#E2E8F0] hover:border-[#C2410C] hover:shadow-xs transition-all flex items-center justify-between group cursor-pointer"
                                 >
                                   <div className="space-y-1">
                                     <span className="text-[10px] font-mono text-[#64748B]">
@@ -327,7 +344,7 @@ export default function CourseOverviewClient({ courseId }: CourseOverviewClientP
                                   <span className="w-8 h-8 rounded-lg bg-[#F8FAF6] border border-[#E2E8F0] group-hover:bg-[#C2410C] group-hover:text-white flex items-center justify-center text-[#C2410C] transition-colors shrink-0">
                                     <Play className="w-4 h-4 ml-0.5" />
                                   </span>
-                                </Link>
+                                </a>
                               ))}
                             </div>
                           )}
