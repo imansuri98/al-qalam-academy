@@ -21,15 +21,15 @@ const connectionString = getEnvVar(
   "postgres://postgres:postgres@127.0.0.1:5432/alarabi"
 );
 
-const supabaseUrl = getEnvVar(
-  "NEXT_PUBLIC_SUPABASE_URL",
-  "https://demo.supabase.co"
-);
+const supabaseUrl =
+  process.env.NEXT_PUBLIC_SUPABASE_URL ||
+  process.env.SUPABASE_URL ||
+  "https://puhttyyxvilnkcqmsgjo.supabase.co";
 
-const supabaseAnonKey = getEnvVar(
-  "NEXT_PUBLIC_SUPABASE_ANON_KEY",
-  "demo-anon-key"
-);
+const supabaseAnonKey =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  process.env.SUPABASE_PUBLISHABLE_KEY ||
+  "sb_publishable_YKS5aIQOfP0biCh6CIGCWw_ia5CzZsk";
 
 /**
  * PostgreSQL Connection Pool for Drizzle ORM
