@@ -8,26 +8,23 @@ export default function ClassicalPassagesStudioPage() {
   const [activeCategory, setActiveCategory] = useState<"ALL" | "QURAN" | "HADITH" | "LITERATURE">("ALL");
   const [viewMode, setViewMode] = useState<"LIST" | "EDITOR">("LIST");
 
-  // Sample Passages Unlocked After Module & Level Completion with localStorage persistence
-  const [passages, setPassages] = useState<PassageItem[]>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("alarabi_passages_v1");
-      if (saved) {
-        try {
-          return JSON.parse(saved);
-        } catch (e) {
-          console.error(e);
-        }
-      }
-    }
-    return DEFAULT_PASSAGES;
-  });
+  // Sample Passages Unlocked After Module & Level Completion with Database integration
+  const [passages, setPassages] = useState<PassageItem[]>(DEFAULT_PASSAGES);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("alarabi_passages_v1", JSON.stringify(passages));
+    async function fetchPassages() {
+      try {
+        const res = await fetch("/api/v1/passages");
+        const data = await res.json();
+        if (data.success && data.passages) {
+          setPassages(data.passages);
+        }
+      } catch (e) {
+        console.error("Failed to load passages from API:", e);
+      }
     }
-  }, [passages]);
+    fetchPassages();
+  }, []);
 
   // Active Passage for Editor Mode
   const [activePassage, setActivePassage] = useState<PassageItem | null>(null);

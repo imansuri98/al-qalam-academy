@@ -42,6 +42,7 @@ export default function LearnerDashboardPage() {
   // Capstone Passages Category State
   const [activeCategory, setActiveCategory] = useState<"ALL" | "QURAN" | "HADITH" | "LITERATURE">("ALL");
   const [selectedPassage, setSelectedPassage] = useState<PassageItem | null>(null);
+  const [passagesList, setPassagesList] = useState<PassageItem[]>(DEFAULT_PASSAGES);
 
   // Passage Solver Modal States
   const [activeQIdx, setActiveQIdx] = useState(0);
@@ -143,6 +144,27 @@ export default function LearnerDashboardPage() {
         progressPercent,
       });
 
+      // 6. Fetch Capstone Passages from Supabase database
+      const { data: dbPassages, error: passagesError } = await supabase
+        .from("passages")
+        .select("*");
+
+      if (!passagesError && dbPassages && dbPassages.length > 0) {
+        const mappedPassages = dbPassages.map((p: any) => ({
+          id: p.id,
+          category: p.category,
+          titleAr: p.title_ar || p.titleAr || "",
+          titleEn: p.title_en || p.titleEn || "",
+          citationEn: p.citation_en || p.citationEn || "",
+          arabicText: p.arabic_text || p.arabicText || "",
+          englishTranslation: p.english_translation || p.englishTranslation || "",
+          unlockScope: p.unlock_scope || p.unlockScope || "MODULE",
+          unlockedAfterMilestoneTitle: p.unlocked_after_milestone_title || p.unlockedAfterMilestoneTitle || "",
+          questions: p.questions_json || p.questionsJson || [],
+        }));
+        setPassagesList(mappedPassages);
+      }
+
       setLoading(false);
     }
 
@@ -174,8 +196,6 @@ export default function LearnerDashboardPage() {
         tier: "BRONZE",
         icon: Award,
         title: "Bronze Medal: Level 1 Graduation",
-        arabicTitle:
-          "الْمِيدَالِيَّةُ الْبُرُونْزِيَّةُ: الْمُسْتَوَى الأَوَّلُ",
         description:
           "Mastered Level 1 Beginner Classical Grammar (Mubtada', Khabar & Harf Jarr)",
         status: bronzeUnlocked ? "UNLOCKED" : "LOCKED",
@@ -188,8 +208,6 @@ export default function LearnerDashboardPage() {
         tier: "SILVER",
         icon: Award,
         title: "Silver Medal: Level 2 Graduation",
-        arabicTitle:
-          "الْمِيدَالِيَّةُ الْفِضِّيَّةُ: الْمُسْتَوَى الثَّانِي",
         description:
           "Mastered Level 2 Verbal Sentences, Kana & Inna Actions",
         status: silverUnlocked ? "UNLOCKED" : "LOCKED",
@@ -202,8 +220,6 @@ export default function LearnerDashboardPage() {
         tier: "GOLD",
         icon: Award,
         title: "Gold Medal: Level 3 Advanced Master",
-        arabicTitle:
-          "الْمِيدَالِيَّةُ الذَّهَبِيَّةُ: الْمُسْتَوَى الثَّالِثُ",
         description:
           "Graduated Complete Advanced Irab Parsing & Classical Balagha Track",
         status: goldUnlocked ? "UNLOCKED" : "LOCKED",
@@ -369,14 +385,7 @@ export default function LearnerDashboardPage() {
                 ? "Begin Course 1: Classical Arabic Grammar"
                 : "Continue Your Studies"}
             </h2>
-            <span
-              className="font-arabic text-lg font-bold text-[#C2410C] block dir-rtl"
-              dir="rtl"
-            >
-              {learnerStats.completedLessons === 0
-                ? "ابْدَأْ رِحْلَتَكَ فِي تَعَلُّمِ الْعَرَبِيَّةِ"
-                : "وَاصِلْ دُرُوسَكَ فِي النَّحْوِ الْعَرَبِيِّ"}
-            </span>
+
             <p className="text-xs text-[#475569]">
               {learnerStats.completedLessons === 0
                 ? "Course 1 • Level 1 • Start with Module 1 (Est. 15 mins with Native Audio)"
@@ -432,12 +441,7 @@ export default function LearnerDashboardPage() {
                   </div>
 
                   <div>
-                    <span
-                      className="font-arabic text-sm font-bold block dir-rtl text-[#090D16]"
-                      dir="rtl"
-                    >
-                      {medal.arabicTitle}
-                    </span>
+
                     <h4 className="font-bold text-[#0F172A] text-sm mt-0.5">
                       {medal.title}
                     </h4>
@@ -498,7 +502,7 @@ export default function LearnerDashboardPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {DEFAULT_PASSAGES.filter(p => activeCategory === "ALL" || p.category === activeCategory).map((pas) => {
+              {passagesList.filter(p => activeCategory === "ALL" || p.category === activeCategory).map((pas) => {
                 return (
                   <div
                     key={pas.id}

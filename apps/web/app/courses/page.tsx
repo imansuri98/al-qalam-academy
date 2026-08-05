@@ -123,9 +123,7 @@ export default function CourseCatalogPage() {
                 <span className="text-[10px] font-bold px-2.5 py-1 rounded bg-[#F8FAF6] text-[#0F172A] border border-[#E2E8F0]">
                   Course 1 Track
                 </span>
-                <span className="font-arabic text-2xl font-bold text-[#090D16] dir-rtl" dir="rtl">
-                  النَّحْوُ وَالصَّرْفُ
-                </span>
+
               </div>
 
               <h2 className="text-xl font-extrabold text-[#0F172A]">Classical Arabic Grammar</h2>
@@ -173,9 +171,7 @@ export default function CourseCatalogPage() {
                 <span className="text-[10px] font-bold px-2.5 py-1 rounded bg-[#F8FAF6] text-[#0F172A] border border-[#E2E8F0]">
                   Course 2 Track
                 </span>
-                <span className="font-arabic text-2xl font-bold text-[#090D16] dir-rtl" dir="rtl">
-                  الْعَرَبِيَّةُ الْمُعَاصِرَةُ
-                </span>
+
               </div>
 
               <h2 className="text-xl font-extrabold text-[#0F172A]">Spoken Arabic</h2>
