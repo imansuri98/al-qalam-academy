@@ -122,6 +122,7 @@ export default function CourseOverviewClient({ courseId }: CourseOverviewClientP
 
   const [dbLevels, setDbLevels] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [insightsList, setInsightsList] = useState<InsightCard[]>(COURSE_1_INSIGHTS);
 
   useEffect(() => {
     const supabase = createClient();
@@ -202,6 +203,24 @@ export default function CourseOverviewClient({ courseId }: CourseOverviewClientP
       }
 
       setDbLevels(levelsGrouped);
+
+      // 6. Fetch rhetorical insights from Supabase database
+      const { data: dbInsights, error: insightsError } = await supabase
+        .from("insights")
+        .select("*");
+
+      if (!insightsError && dbInsights && dbInsights.length > 0) {
+        const mappedInsights = dbInsights.map((ins: any) => ({
+          id: ins.id,
+          titleEn: ins.title_en || ins.titleEn || "",
+          arabicExample: ins.arabic_example || ins.arabicExample || "",
+          insightBodyEn: ins.insight_body_en || ins.insightBodyEn || "",
+          category: ins.category || "GRAMMAR",
+          sourceEn: ins.source_en || ins.sourceEn || "",
+        }));
+        setInsightsList(mappedInsights);
+      }
+
       setLoading(false);
     }
 
@@ -408,7 +427,7 @@ export default function CourseOverviewClient({ courseId }: CourseOverviewClientP
 
           {/* Horizontal scroll row */}
           <div className="flex gap-4 overflow-x-auto pb-3 snap-x snap-mandatory scrollbar-hide">
-            {COURSE_1_INSIGHTS.map((ins) => (
+            {insightsList.map((ins) => (
               <button
                 key={ins.id}
                 onClick={() => setActiveInsight(ins)}

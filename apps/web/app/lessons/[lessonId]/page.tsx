@@ -12,7 +12,7 @@ import {
   LevelNode,
 } from "@alarabi/curriculum";
 import ExerciseEngine, { ExerciseData } from "../../components/exercises/ExerciseEngine";
-import { Play, Pause, ArrowRight, ArrowLeft, BookOpen, CheckCircle2, AlertCircle, LayoutGrid, Sparkles, X } from "lucide-react";
+import { Play, Pause, ArrowRight, ArrowLeft, BookOpen, CheckCircle2, AlertCircle, LayoutGrid, Sparkles, X, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
 
@@ -260,7 +260,9 @@ export default function FullLessonPage() {
   const params = useParams();
   const router = useRouter();
   const lessonId = (params?.lessonId as string) || "";
-  const context = findLessonAndContext(lessonId);
+  
+  const [context, setContext] = useState<LessonContext | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const supabase = createClient();
@@ -269,11 +271,151 @@ export default function FullLessonPage() {
         router.push(`/login?redirect=${encodeURIComponent(`/lessons/${lessonId}`)}`);
       }
     });
+
+    async function loadLessonData() {
+      if (!lessonId) {
+        setLoading(false);
+        return;
+      }
+
+      // 1. Get lesson from database
+      const { data: dbLesson } = await supabase
+        .from("lessons")
+        .select("*")
+        .eq("id", lessonId)
+        .single();
+
+      if (!dbLesson) {
+        // Fallback to static context
+        const staticCtx = findLessonAndContext(lessonId);
+        if (staticCtx) {
+          setContext(staticCtx);
+        }
+        setLoading(false);
+        return;
+      }
+
+      // 2. Get module
+      const { data: dbModule } = await supabase
+        .from("modules")
+        .select("*")
+        .eq("id", dbLesson.module_id)
+        .single();
+
+      if (!dbModule) {
+        setLoading(false);
+        return;
+      }
+
+      // 3. Get course
+      const { data: dbCourse } = await supabase
+        .from("courses")
+        .select("*")
+        .eq("id", dbModule.course_id)
+        .single();
+
+      if (!dbCourse) {
+        setLoading(false);
+        return;
+      }
+
+      // 4. Fetch all modules for this course to construct flat index list for prev/next buttons
+      const { data: allMods } = await supabase
+        .from("modules")
+        .select("id")
+        .eq("course_id", dbCourse.id)
+        .order("order_index", { ascending: true });
+
+      const modIds = allMods?.map((m) => m.id) || [];
+
+      // Fetch all lessons for these modules
+      const { data: allLessons } = await supabase
+        .from("lessons")
+        .select("id")
+        .in("module_id", modIds)
+        .order("order_index", { ascending: true });
+
+      const flatLessonIds = allLessons?.map((l) => l.id) || [];
+      const currentIdx = flatLessonIds.indexOf(lessonId);
+
+      const prevLessonId = currentIdx > 0 ? flatLessonIds[currentIdx - 1] : null;
+      const nextLessonId = currentIdx < flatLessonIds.length - 1 ? flatLessonIds[currentIdx + 1] : null;
+
+      // 5. Fetch exercises for this lesson
+      const { data: dbExercises } = await supabase
+        .from("exercises")
+        .select("*")
+        .eq("lesson_id", lessonId)
+        .order("order_index", { ascending: true });
+
+      const mappedExercises = (dbExercises || []).map((ex: any) => {
+        const payload = ex.payloadJson || {};
+        return {
+          id: ex.id,
+          titleAr: payload.titleAr || "",
+          titleEn: payload.titleEn || ex.promptEn || "",
+          exerciseType: ex.type,
+          questions: payload.questions || [],
+        };
+      });
+
+      // Construct dynamic lesson node
+      const mappedLesson: LessonNode & { insightCard?: any } = {
+        id: dbLesson.id,
+        titleAr: dbLesson.titleAr,
+        titleEn: dbLesson.titleEn,
+        durationMins: 15,
+        contentBodyEn: dbLesson.contentNotesEn || "",
+        exercises: mappedExercises as any,
+        canvasData: dbLesson.canvasJson || undefined,
+        insightCard: dbLesson.insightCard || undefined,
+      };
+
+      // Construct level group dynamically based on module order
+      const modsPerLevel = dbCourse.courseType === "CLASSICAL_GRAMMAR" ? 6 : 8;
+      const currentModIdx = modIds.indexOf(dbModule.id);
+      const levelNum = Math.floor(currentModIdx / modsPerLevel) + 1;
+
+      setContext({
+        lesson: mappedLesson,
+        module: {
+          id: dbModule.id,
+          titleAr: dbModule.titleAr,
+          titleEn: dbModule.titleEn,
+          lessons: [],
+        },
+        level: {
+          id: `lvl-${levelNum}`,
+          titleAr: "",
+          titleEn: `Level ${levelNum}`,
+          modules: [],
+        },
+        courseTitle: dbCourse.titleEn,
+        courseId: dbCourse.id === "course-2" || dbCourse.courseType === "INFORMAL_FUSHA" ? "course-2" : "course-1",
+        prevLessonId,
+        nextLessonId,
+        lessonIndexInCourse: currentIdx + 1,
+        totalLessonsInCourse: flatLessonIds.length,
+      });
+
+      setLoading(false);
+    }
+
+    loadLessonData();
   }, [lessonId, router]);
 
   const [activeTab, setActiveTab] = useState<"NOTES" | "EXERCISES" | "CANVAS">("NOTES");
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [activeInsightModal, setActiveInsightModal] = useState<any | null>(null);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#F8FAF6] text-[#0F172A] flex flex-col items-center justify-center p-6">
+        <Loader2 className="w-8 h-8 text-[#C2410C] animate-spin" />
+        <p className="text-xs text-[#64748B] mt-2 font-bold">Loading lesson content...</p>
+      </div>
+    );
+  }
 
   if (!context) {
     return (

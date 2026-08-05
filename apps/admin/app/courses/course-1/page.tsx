@@ -135,28 +135,41 @@ export default function Course1AdminPage() {
   const [activeQIdx, setActiveQIdx]   = useState(0);
 
   /* ── Passages ── */
-  const [passages, setPassages]                   = useState<PassageItem[]>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("alarabi_passages_v1");
-      if (saved) {
-        try { return JSON.parse(saved); } catch (e) { console.error(e); }
-      }
-    }
-    return DEFAULT_PASSAGES;
-  });
+  const [passages, setPassages] = useState<PassageItem[]>(DEFAULT_PASSAGES);
+  const [insights, setInsights] = useState<InsightCard[]>([]);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("alarabi_passages_v1", JSON.stringify(passages));
+    async function loadData() {
+      // Fetch passages
+      try {
+        const res = await fetch("/api/v1/passages");
+        const data = await res.json();
+        if (data.success && data.passages) {
+          setPassages(data.passages);
+        }
+      } catch (e) {
+        console.error("Failed to fetch passages:", e);
+      }
+
+      // Fetch insights
+      try {
+        const res = await fetch("/api/v1/insights");
+        const data = await res.json();
+        if (data.success && data.insights) {
+          setInsights(data.insights);
+        }
+      } catch (e) {
+        console.error("Failed to fetch insights:", e);
+      }
     }
-  }, [passages]);
+    loadData();
+  }, []);
 
   const [editingPassageId, setEditingPassageId]   = useState<string | null>(null);
   const [passageCategory, setPassageCategory]     = useState<"ALL"|"QURAN"|"HADITH"|"LITERATURE">("ALL");
   const [editPassageForm, setEditPassageForm]     = useState<Partial<PassageItem>>({});
 
   /* ── Insights ── */
-  const [insights, setInsights]               = useState<InsightCard[]>(DEFAULT_INSIGHTS);
   const [editingInsightId, setEditingInsightId] = useState<string | null>(null);
   const [editInsightForm, setEditInsightForm] = useState<Partial<InsightCard>>({});
   const [insightModal, setInsightModal]       = useState<InsightCard | null>(null);
@@ -495,13 +508,31 @@ export default function Course1AdminPage() {
     setEditInsightForm({ ...ins });
   };
 
-  const handleSaveInsight = () => {
-    setInsights(insights.map((ins) => ins.id === editingInsightId ? { ...ins, ...editInsightForm } as InsightCard : ins));
+  const handleSaveInsight = async () => {
+    const updated = { ...editInsightForm, id: editingInsightId } as InsightCard;
+    setInsights(insights.map((ins) => ins.id === editingInsightId ? updated : ins));
     setEditingInsightId(null);
+
+    try {
+      await fetch("/api/v1/insights", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ insight: updated }),
+      });
+    } catch (e) {
+      console.error("Failed to save insight:", e);
+    }
   };
 
-  const handleDeleteInsight = (id: string) => {
-    if (confirm("Delete this insight?")) setInsights(insights.filter((ins) => ins.id !== id));
+  const handleDeleteInsight = async (id: string) => {
+    if (confirm("Delete this insight?")) {
+      setInsights(insights.filter((ins) => ins.id !== id));
+      try {
+        await fetch(`/api/v1/insights?id=${id}`, { method: "DELETE" });
+      } catch (e) {
+        console.error("Failed to delete insight:", e);
+      }
+    }
   };
 
   const handleAddInsight = () => {

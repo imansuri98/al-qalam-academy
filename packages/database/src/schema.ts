@@ -141,3 +141,14 @@ export const passages = pgTable("passages", {
   questionsJson: jsonb("questions_json").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+// Rhetorical Insights Table
+export const insights = pgTable("insights", {
+  id: text("id").primaryKey(),
+  titleEn: text("title_en").notNull(),
+  arabicExample: text("arabic_example").notNull(),
+  insightBodyEn: text("insight_body_en").notNull(),
+  category: text("category").notNull(), // RHETORIC | GRAMMAR | WISDOM
+  sourceEn: text("source_en"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
